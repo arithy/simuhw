@@ -1,0 +1,46 @@
+version: "0.2"
+ignorePaths: []
+dictionaryDefinitions: []
+dictionaries: []
+words:
+  - apidoc
+  - Arihiro
+  - bysource
+  - Demultiplexer
+  - doctest
+  - doctests
+  - dumpvars
+  - errorlevel
+  - hcycle
+  - includehidden
+  - mypy
+  - NAND
+  - nbits
+  - ninputs
+  - noutputs
+  - ntargets
+  - peaceiris
+  - popd
+  - pushd
+  - pycache
+  - PYDOCOUTDIR
+  - PYDOCSRCDIR
+  - pypa
+  - pypi
+  - PYROOTDIR
+  - pytest
+  - setuptools
+  - sigstore
+  - Simu
+  - simuhw
+  - SOURCEDIR
+  - SPHINXBUILD
+  - SPHINXOPTS
+  - testpypi
+  - toctree
+  - undoc
+  - warningiserror
+  - XNOR
+  - Yoshida
+ignoreWords: []
+import: []
