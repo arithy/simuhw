@@ -5,7 +5,7 @@ PYROOTDIR = ./python
 PYDOCSRCDIR = ./python/docs/source
 PYDOCOUTDIR = ./python/docs/build
 
-.PHONY: all req lint type test dist doc
+.PHONY: all req lint type test dist doc clean
 
 all: lint type test dist doc
 
@@ -28,3 +28,6 @@ dist:
 doc:
 	$(SPHINX_APIDOC) -T -f -o $(PYDOCSRCDIR)/apidoc $(PYROOTDIR)/src
 	$(SPHINX_BUILD) -b html $(PYDOCSRCDIR) $(PYDOCOUTDIR)/html
+
+clean:
+	rm -rf $(PYDOCOUTDIR) $(PYROOTDIR)/src/simuhw.egg-info ./dist
