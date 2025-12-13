@@ -1,0 +1,13 @@
+name: Jobs executed on push to 'develop' branch
+
+on:
+  push:
+    branches:
+      - develop
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  call-test-workflow:
+    uses: ./.github/workflows/sub.test.yml
