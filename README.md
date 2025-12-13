@@ -79,8 +79,8 @@ import simuhw as hw
       - [`DLatch`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.DLatch)
       - [`DFlipFlop`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.DFlipFlop)
     - Memory
-      - [`LevelTriggeredMemory`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.memory.LevelTriggeredMemory)
-      - [`EdgeTriggeredMemory`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.memory.EdgeTriggeredMemory)
+      - [`LevelTriggeredMemory`](https://arithy.github.io/simuhw/apidoc/simuhw.memory.html#simuhw.memory.LevelTriggeredMemory)
+      - [`EdgeTriggeredMemory`](https://arithy.github.io/simuhw/apidoc/simuhw.memory.html#simuhw.memory.EdgeTriggeredMemory)
     
     An example is shown below.
     
