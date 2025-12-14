@@ -17,6 +17,7 @@ words:
   - mypy
   - NAND
   - nbits
+  - nbytes
   - ninputs
   - noutputs
   - ntargets

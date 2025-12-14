@@ -143,6 +143,19 @@ def test_Arbitrator() -> None:
                 (b'\x08', 1e-9), (b'\x04', 2e-9), (b'\x02', 3e-9),
                 (b'\x01', 4e-9), (b'\x08', 5e-9), (b'\x02', 7e-9), (b'\x04', 14e-9)
             ]
+        ),
+        (
+            33,
+            [
+                [(b'\x00\x00\x00\x00\x00', 0e-9), (b'\x01\x55\x55\xaa\xaa', 1e-9 * (17 - i)), (b'\x01\xff\xff\xff\xff', 18e-9)]
+                for i in range(17)
+            ],
+            [
+                (b'\x00\x00\x00\x00\x00', 0e-9), (b'\x01\x55\x55\xaa\xaa', 17e-9), (b'\x01\xff\xff\xff\xff', 18e-9)
+            ],
+            [
+                (b'\x01\x00\x00', 0e-9), *(((1 << (15 - i)).to_bytes(3), 1e-9 * (1 + i)) for i in range(16)), (b'\x01\x00\x00', 17e-9)
+            ]
         )
     ]
     for t in test_data:

@@ -160,6 +160,8 @@ class Arbitrator(Device):
         super().__init__()
         self._width: int = width
         """The data word width in bits."""
+        self._nbytes_s: int = (ninputs + 7) >> 3
+        """The number of bytes required to represent the selection bit flags."""
         self._policy: ArbitrationPolicy = policy
         """The arbitration policy."""
         self._ports_i: tuple[InputPort, ...] = tuple(InputPort(width) for _ in range(ninputs))
@@ -215,7 +217,7 @@ class Arbitrator(Device):
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
             i: int = self._policy.select([p.data for p in self._ports_i])
-            self._port_s.post(((1 << i).to_bytes(), self._time))
+            self._port_s.post(((1 << i).to_bytes(self._nbytes_s), self._time))
             self._port_o.post((
                 self._ports_i[i].data[0],
                 self._time
