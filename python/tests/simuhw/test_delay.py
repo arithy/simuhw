@@ -1,0 +1,55 @@
+# SimuHW: A behavioral hardware simulator provided as a Python module.
+#
+# Copyright (c) 2024-2025 Arihiro Yoshida. All rights reserved.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+from simuhw import Source, Drain, Delay, ChannelProbe, Simulator
+
+_EPS: float = 1e-18
+
+
+def test_Delay() -> None:
+    test_data: list[tuple[tuple[int, float], list[tuple[bytes | None, float]], list[tuple[bytes | None, float]]]] = [
+        (
+            (1, 5e-9),
+            [(b'\x01', 1e-9), (b'\x00', 4e-9), (None, 7e-9), (b'\x01', 10e-9), (b'\x00', 11e-9), (b'\x01', 12e-9), (b'\x00', 15e-9), (b'\x00', 16e-9)],
+            [(b'\x01', 6e-9), (b'\x00', 9e-9), (None, 12e-9), (b'\x01', 15e-9), (b'\x00', 16e-9), (b'\x01', 17e-9), (b'\x00', 20e-9)]
+        ),
+        (
+            (8, 5e-9),
+            [(b'\xf1', 1e-9), (b'\xf2', 4e-9), (None, 7e-9), (b'\xf3', 10e-9), (b'\xf4', 11e-9), (b'\xf5', 12e-9), (b'\xf6', 15e-9), (b'\xf6', 16e-9)],
+            [(b'\xf1', 6e-9), (b'\xf2', 9e-9), (None, 12e-9), (b'\xf3', 15e-9), (b'\xf4', 16e-9), (b'\xf5', 17e-9), (b'\xf6', 20e-9)]
+        )
+    ]
+    for t in test_data:
+        w: int = t[0][0]
+        po: ChannelProbe = ChannelProbe('out', w)
+        ti: Source = Source(w, t[1])
+        to: Drain = Drain(w)
+        ch: Delay = Delay(w, delay=t[0][1])
+        ch.port_o.connect(to.port_i)
+        ti.port_o.connect(ch.port_i)
+        ch.port_o.add_probe(po)
+        sim: Simulator = Simulator([ti, to, ch])
+        sim.start(show_time=True)
+        assert len(po.data) == len(t[2])
+        for io, o in enumerate(po.data):
+            assert o[0] == t[2][io][0]
+            assert abs(o[1] - t[2][io][1]) <= _EPS

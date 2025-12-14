@@ -27,6 +27,7 @@ __all__ = [
     'InputPort', 'OutputPort',
     'Device', 'Source', 'Drain',
     'Group',
+    'Delay',
     'Clock',
     'BufferGate', 'NOTGate', 'ANDGate', 'ORGate', 'XORGate', 'NANDGate', 'NORGate', 'XNORGate',
     'DataCombiner', 'DataSplitter', 'Arbitrator', 'Multiplexer', 'Demultiplexer', 'DataRetainingDemultiplexer', 'Distributor',
@@ -41,6 +42,7 @@ from ._analyzer import Probe, ChannelProbe, MemoryProbe, LogicAnalyzer
 from ._simulator import Simulator
 from ._base import InputPort, OutputPort, Device, Source, Drain
 from ._group import Group
+from ._delay import Delay
 from ._clock import Clock
 from ._gate import BufferGate, NOTGate, ANDGate, ORGate, XORGate, NANDGate, NORGate, XNORGate
 from ._branch import DataCombiner, DataSplitter, Arbitrator, Multiplexer, Demultiplexer, DataRetainingDemultiplexer, Distributor

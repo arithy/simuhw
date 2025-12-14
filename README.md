@@ -52,6 +52,7 @@ import simuhw as hw
     - Utility
       - [`Source`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.Source)
       - [`Drain`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.Drain)
+      - [`Delay`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.Delay)
       - [`Group`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.Group)
     - Clock
       - [`Clock`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.Clock)
