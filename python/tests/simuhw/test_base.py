@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simuhw._base import combine_bits, extract_bits
+from simuhw._base import combine_bits, extract_bits, to_signed_int
 from simuhw import Source, Drain, ChannelProbe, Simulator
 
 
@@ -47,6 +47,13 @@ def test_extract_bits() -> None:
             for j in range(n + 1):
                 for l in range(n - i):
                     assert extract_bits(n, b, j, l) == ((k >> j) & ((1 << l) - 1)).to_bytes((l + 7) >> 3)
+
+
+def test_to_signed_int() -> None:
+    assert to_signed_int(1, 0) == 0
+    assert to_signed_int(1, 1) == -1
+    assert to_signed_int(33, 0x00fffffffe) == 0xfffffffe
+    assert to_signed_int(33, 0x01fffffffe) == -2
 
 
 def test_Source_and_Drain() -> None:

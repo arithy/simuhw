@@ -60,6 +60,20 @@ def extract_bits(nbits: int, bits: bytes, start: int, length: int) -> bytes:
     return ((int.from_bytes(bits) >> start) & ((1 << length) - 1)).to_bytes((length + 7) >> 3)
 
 
+def to_signed_int(nbits: int, value: int) -> int:
+    """Returns the signed integer converted from the specified unsigned integer with the specified bits.
+
+    Args:
+        nbits: The number of bits of the unsigned integer.
+        value: The unsigned integer.
+
+    Returns:
+        The signed integer converted from the specified unsigned integer with the specified bits.
+
+    """
+    return value if nbits <= 0 or (value >> (nbits - 1)) & 1 == 0 else -((~value + 1) & ((1 << nbits) - 1))
+
+
 class Port(metaclass=ABCMeta):
     """The super class for all ports."""
 
