@@ -20,6 +20,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from collections.abc import Iterable
+import math
+
 from ._base import InputPort, OutputPort
 from ._gate import Gate
 
@@ -158,5 +161,73 @@ class FullAdder(HalfAdder):
                 )
                 self._port_o.post(((o & self._mask).to_bytes(self._nbytes), self._time))
                 self._port_co.post((((o >> self._width) & 1).to_bytes(1), self._time))
+            self._set_inputs_unchanged(ports_i)
+        return (ports_i, None)
+
+
+class SIMDAdder(Adder):
+    """A SIMD adder."""
+
+    def __init__(self, width: int, dsize: int | Iterable[int]) -> None:
+        """Creates a SIMD adder.
+
+        Args:
+            width: The total width of data words in bits.
+            dsize: The selectable data word width or widths in bits.
+
+        Raises:
+            ValueError: If `width` is not divisible by any of `dsize`.
+
+        """
+        super().__init__(width)
+        self._dsize: tuple[int, ...] = tuple(dsize) if isinstance(dsize, Iterable) else (dsize,)
+        """The selectable data word widths in bits."""
+        if len(self._dsize) == 0 or any((w <= 0 or width % w != 0 for w in self._dsize)):
+            raise ValueError('inconsistent data word widths')
+        self._port_s: InputPort = InputPort(math.ceil(math.log2(len(self._dsize))))
+        """The input port to select the data word width."""
+
+    @property
+    def dsize(self) -> tuple[int, ...]:
+        """The selectable data word widths in bits."""
+        return self._dsize
+
+    @property
+    def port_s(self) -> InputPort:
+        """The input port to select the data word width."""
+        return self._port_s
+
+    def reset(self) -> None:
+        """Resets the states."""
+        super().reset()
+        self._port_s.reset()
+
+    def work(self, time: float | None) -> tuple[list[InputPort], float | None]:
+        """Makes the device work.
+
+        Args:
+            time: The current time in seconds. `None` when starting to make the device work.
+
+        Returns:
+            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            The next resuming time can be `None` if resumable anytime.
+
+        """
+        ports_i: list[InputPort] = [*self._ports_i, self._port_s]
+        if self._update_time_and_check_inputs(time, ports_i):
+            if (
+                self._ports_i[0].data[0] is None or self._ports_i[1].data[0] is None or
+                self._port_s.data[0] is None or int.from_bytes(self._port_s.data[0]) >= len(self._dsize)
+            ):
+                self._port_o.post((None, self._time))
+            else:
+                w: int = self._dsize[int.from_bytes(self._port_s.data[0])]
+                m: int = (1 << w) - 1
+                v0: int = int.from_bytes(self._ports_i[0].data[0])
+                v1: int = int.from_bytes(self._ports_i[1].data[0])
+                o: int = 0
+                for i in range(0, self._width, w):
+                    o |= (((v0 >> i) + (v1 >> i)) & m) << i
+                self._port_o.post((o.to_bytes(self._nbytes), self._time))
             self._set_inputs_unchanged(ports_i)
         return (ports_i, None)

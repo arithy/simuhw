@@ -21,9 +21,11 @@
 # SOFTWARE.
 
 from simuhw import (
-    Source, Drain, Subtractor, HalfSubtractor, FullSubtractor,
+    Source, Drain, Subtractor, HalfSubtractor, FullSubtractor, SIMDSubtractor,
     ChannelProbe, Simulator
 )
+
+_EPS: float = 1e-18
 
 
 _test_data: list[tuple[int, list[list[list[tuple[bytes | None, float]]]]]] = [
@@ -208,3 +210,46 @@ def test_FullSubtractor() -> None:
             for io, o in enumerate(pco.data):
                 assert o[0] == c[io][0]
                 assert o[1] == c[io][1]
+
+
+def test_SIMDSubtractor() -> None:
+    data: list[tuple[list[int], list[int], list[list[tuple[bytes | None, float]]], list[tuple[bytes | None, float]]]] = [
+        (
+            [32, 2],
+            [4, 8, 16, 32],
+            [
+                [
+                    (b'\xff\xfe\x02\x01', 5e-9), (None, 15e-9)
+                ],
+                [
+                    (b'\x02\x01\xff\xfd', 10e-9)
+                ],
+                [
+                    ([None, b'\x00', b'\x01', b'\x02', b'\x03'][i % 5], 1e-9 * i) for i in range(20)
+                ]
+            ],
+            [
+                (b'\xfd\xfd\x13\x14', 11e-9), (b'\xfd\xfd\x03\x04', 12e-9), (b'\xfd\xfd\x02\x04', 13e-9), (b'\xfd\xfc\x02\x04', 14e-9),
+                (None, 15e-9)
+            ]
+        )
+    ]
+    for t in data:
+        w: int = t[0][0]
+        s: int = t[0][1]
+        po: ChannelProbe = ChannelProbe('out', w)
+        ti: list[Source] = [Source(w if i < 2 else s, d) for i, d in enumerate(t[2])]
+        to: Drain = Drain(w)
+        ar: SIMDSubtractor = SIMDSubtractor(w, t[1])
+        ar.port_o.connect(to.port_i)
+        ti[0].port_o.connect(ar.ports_i[0])
+        ti[1].port_o.connect(ar.ports_i[1])
+        ti[2].port_o.connect(ar.port_s)
+        ar.port_o.add_probe(po)
+        sim: Simulator = Simulator(ti + [to, ar])
+        sim.start(show_time=True)
+        r: list[tuple[bytes | None, float]] = t[3]
+        assert len(po.data) == len(r)
+        for io, o in enumerate(po.data):
+            assert o[0] == r[io][0]
+            assert abs(o[1] - r[io][1]) <= _EPS
