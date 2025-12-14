@@ -79,6 +79,13 @@ import simuhw as hw
     - Elementary Sequential Circuit
       - [`DLatch`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.DLatch)
       - [`DFlipFlop`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.DFlipFlop)
+    - Arithmetic
+      - [`Adder`](https://arithy.github.io/simuhw/apidoc/simuhw.arithmetic.html#simuhw.arithmetic.Adder)
+      - [`HalfAdder`](https://arithy.github.io/simuhw/apidoc/simuhw.arithmetic.html#simuhw.arithmetic.HalfAdder)
+      - [`FullAdder`](https://arithy.github.io/simuhw/apidoc/simuhw.arithmetic.html#simuhw.arithmetic.FullAdder)
+      - [`Subtractor`](https://arithy.github.io/simuhw/apidoc/simuhw.arithmetic.html#simuhw.arithmetic.Subtractor)
+      - [`HalfSubtractor`](https://arithy.github.io/simuhw/apidoc/simuhw.arithmetic.html#simuhw.arithmetic.HalfSubtractor)
+      - [`FullSubtractor`](https://arithy.github.io/simuhw/apidoc/simuhw.arithmetic.html#simuhw.arithmetic.FullSubtractor)
     - Memory
       - [`LevelTriggeredMemory`](https://arithy.github.io/simuhw/apidoc/simuhw.memory.html#simuhw.memory.LevelTriggeredMemory)
       - [`EdgeTriggeredMemory`](https://arithy.github.io/simuhw/apidoc/simuhw.memory.html#simuhw.memory.EdgeTriggeredMemory)

@@ -38,6 +38,8 @@ words:
   - SOURCEDIR
   - SPHINXBUILD
   - SPHINXOPTS
+  - subtractor
+  - subtractors
   - testpypi
   - toctree
   - undoc
