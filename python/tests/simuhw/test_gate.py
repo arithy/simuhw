@@ -98,6 +98,43 @@ _test_data: list[tuple[tuple[int, int], list[list[tuple[bytes | None, float]]], 
                 (b'\x29', 10e-9), (b'\xe5', 12e-9), (b'\xe9', 14e-9)
             ]
         }
+    ),
+    (
+        (33, 17),
+        [
+            [(b'\x00\x00\x00\x00\x00', 0e-9), (b'\x01\x55\x55\xaa\xaa', 1e-9 * (1 + i)), (b'\x01\xff\xff\xff\xff', 18e-9)]
+            for i in range(17)
+        ],
+        {
+            BufferGate: [
+                (b'\x00\x00\x00\x00\x00', 0e-9), (b'\x01\x55\x55\xaa\xaa', 1e-9), (b'\x01\xff\xff\xff\xff', 18e-9)
+            ],
+            NOTGate: [
+                (b'\x01\xff\xff\xff\xff', 0e-9), (b'\x00\xaa\xaa\x55\x55', 1e-9), (b'\x00\x00\x00\x00\x00', 18e-9)
+            ],
+            ANDGate: [
+                (b'\x00\x00\x00\x00\x00', 0e-9), (b'\x01\x55\x55\xaa\xaa', 17e-9), (b'\x01\xff\xff\xff\xff', 18e-9)
+            ],
+            ORGate: [
+                (b'\x00\x00\x00\x00\x00', 0e-9), (b'\x01\x55\x55\xaa\xaa', 1e-9), (b'\x01\xff\xff\xff\xff', 18e-9)
+            ],
+            XORGate: [
+                (b'\x00\x00\x00\x00\x00', 0e-9),
+                *((b'\x01\x55\x55\xaa\xaa' if i & 1 == 0 else b'\x00\x00\x00\x00\x00', 1e-9 * (1 + i)) for i in range(17)),
+                (b'\x01\xff\xff\xff\xff', 18e-9)
+            ],
+            NANDGate: [
+                (b'\x01\xff\xff\xff\xff', 0e-9), (b'\x00\xaa\xaa\x55\x55', 17e-9), (b'\x00\x00\x00\x00\x00', 18e-9)
+            ],
+            NORGate: [
+                (b'\x01\xff\xff\xff\xff', 0e-9), (b'\x00\xaa\xaa\x55\x55', 1e-9), (b'\x00\x00\x00\x00\x00', 18e-9)
+            ],
+            XNORGate: [
+                (b'\x01\xff\xff\xff\xff', 0e-9),
+                *((b'\x00\xaa\xaa\x55\x55' if i & 1 == 0 else b'\x01\xff\xff\xff\xff', 1e-9 * (1 + i)) for i in range(17)),
+                (b'\x00\x00\x00\x00\x00', 18e-9)
+            ]
+        }
     )
 ]
 

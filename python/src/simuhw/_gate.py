@@ -40,6 +40,8 @@ class Gate(Device, metaclass=ABCMeta):
         super().__init__()
         self._width: int = width
         """The data word width in bits."""
+        self._nbytes: int = (width + 7) >> 3
+        """The number of bytes required to represent the output."""
         self._mask: int = (1 << width) - 1
         """The mask."""
         self._ports_i: tuple[InputPort, ...] = tuple(InputPort(width) for _ in range(ninputs))
@@ -139,7 +141,7 @@ class NOTGate(Gate):
             self._port_o.post((
                 None if self._ports_i[0].data[0] is None else (
                     ~int.from_bytes(self._ports_i[0].data[0]) & self._mask
-                ).to_bytes(),
+                ).to_bytes(self._nbytes),
                 self._time
             ))
             self._set_inputs_unchanged(self._ports_i)
@@ -174,7 +176,7 @@ class ANDGate(Gate):
             self._port_o.post((
                 None if any((p.data[0] is None for p in self._ports_i)) else (
                     reduce(lambda x, y: x & y, (int.from_bytes(p.data[0]) for p in self._ports_i), self._mask)  # type: ignore
-                ).to_bytes(),
+                ).to_bytes(self._nbytes),
                 self._time
             ))
             self._set_inputs_unchanged(self._ports_i)
@@ -209,7 +211,7 @@ class ORGate(Gate):
             self._port_o.post((
                 None if any((p.data[0] is None for p in self._ports_i)) else (
                     reduce(lambda x, y: x | y, (int.from_bytes(p.data[0]) for p in self._ports_i), 0)  # type: ignore
-                ).to_bytes(),
+                ).to_bytes(self._nbytes),
                 self._time
             ))
             self._set_inputs_unchanged(self._ports_i)
@@ -244,7 +246,7 @@ class XORGate(Gate):
             self._port_o.post((
                 None if any((p.data[0] is None for p in self._ports_i)) else (
                     reduce(lambda x, y: x ^ y, (int.from_bytes(p.data[0]) for p in self._ports_i), 0)  # type: ignore
-                ).to_bytes(),
+                ).to_bytes(self._nbytes),
                 self._time
             ))
             self._set_inputs_unchanged(self._ports_i)
@@ -279,7 +281,7 @@ class NANDGate(Gate):
             self._port_o.post((
                 None if any((p.data[0] is None for p in self._ports_i)) else (
                     ~reduce(lambda x, y: x & y, (int.from_bytes(p.data[0]) for p in self._ports_i), self._mask) & self._mask  # type: ignore
-                ).to_bytes(),
+                ).to_bytes(self._nbytes),
                 self._time
             ))
             self._set_inputs_unchanged(self._ports_i)
@@ -314,7 +316,7 @@ class NORGate(Gate):
             self._port_o.post((
                 None if any((p.data[0] is None for p in self._ports_i)) else (
                     ~reduce(lambda x, y: x | y, (int.from_bytes(p.data[0]) for p in self._ports_i), 0) & self._mask  # type: ignore
-                ).to_bytes(),
+                ).to_bytes(self._nbytes),
                 self._time
             ))
             self._set_inputs_unchanged(self._ports_i)
@@ -349,7 +351,7 @@ class XNORGate(Gate):
             self._port_o.post((
                 None if any((p.data[0] is None for p in self._ports_i)) else (
                     ~reduce(lambda x, y: x ^ y, (int.from_bytes(p.data[0]) for p in self._ports_i), 0) & self._mask  # type: ignore
-                ).to_bytes(),
+                ).to_bytes(self._nbytes),
                 self._time
             ))
             self._set_inputs_unchanged(self._ports_i)
