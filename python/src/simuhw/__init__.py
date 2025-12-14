@@ -33,7 +33,9 @@ __all__ = [
     'DataCombiner', 'DataSplitter', 'Arbitrator', 'Multiplexer', 'Demultiplexer', 'DataRetainingDemultiplexer', 'Distributor',
     'Channel', 'MultiplexChannel',
     'DLatch',
-    'DFlipFlop'
+    'DFlipFlop',
+    'Adder', 'HalfAdder', 'FullAdder',
+    'Subtractor', 'HalfSubtractor', 'FullSubtractor'
 ]
 
 from ._version import __version__  # noqa:F401
@@ -49,3 +51,5 @@ from ._branch import DataCombiner, DataSplitter, Arbitrator, Multiplexer, Demult
 from ._channel import Channel, MultiplexChannel
 from ._latch import DLatch
 from ._flipflop import DFlipFlop
+from ._adder import Adder, HalfAdder, FullAdder
+from ._subtractor import Subtractor, HalfSubtractor, FullSubtractor

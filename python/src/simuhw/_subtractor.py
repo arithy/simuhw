@@ -20,15 +20,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from .._base import InputPort, OutputPort
-from .._gate import Gate
+from ._base import InputPort, OutputPort
+from ._gate import Gate
 
 
-class Adder(Gate):
-    """An adder."""
+class Subtractor(Gate):
+    """A subtractor."""
 
     def __init__(self, width: int) -> None:
-        """Creates an adder.
+        """Creates a subtractor.
 
         Args:
             width: The data word width in bits.
@@ -56,17 +56,17 @@ class Adder(Gate):
             if self._ports_i[0].data[0] is None or self._ports_i[1].data[0] is None:
                 self._port_o.post((None, self._time))
             else:
-                o: int = int.from_bytes(self._ports_i[0].data[0]) + int.from_bytes(self._ports_i[1].data[0])
+                o: int = int.from_bytes(self._ports_i[0].data[0]) - int.from_bytes(self._ports_i[1].data[0])
                 self._port_o.post(((o & self._mask).to_bytes(self._nbytes), self._time))
             self._set_inputs_unchanged(ports_i)
         return (ports_i, None)
 
 
-class HalfAdder(Adder):
-    """A half adder."""
+class HalfSubtractor(Subtractor):
+    """A half subtractor."""
 
     def __init__(self, width: int) -> None:
-        """Creates a half adder.
+        """Creates a half subtractor.
 
         Args:
             width: The data word width in bits.
@@ -74,11 +74,11 @@ class HalfAdder(Adder):
         """
         super().__init__(width)
         self._port_co: OutputPort = OutputPort(1)
-        """The output carry port."""
+        """The output borrow port."""
 
     @property
     def port_co(self) -> OutputPort:
-        """The output carry port."""
+        """The output borrow port."""
         return self._port_co
 
     def reset(self) -> None:
@@ -103,18 +103,18 @@ class HalfAdder(Adder):
                 self._port_o.post((None, self._time))
                 self._port_co.post((None, self._time))
             else:
-                o: int = int.from_bytes(self._ports_i[0].data[0]) + int.from_bytes(self._ports_i[1].data[0])
+                o: int = int.from_bytes(self._ports_i[0].data[0]) - int.from_bytes(self._ports_i[1].data[0])
                 self._port_o.post(((o & self._mask).to_bytes(self._nbytes), self._time))
                 self._port_co.post((((o >> self._width) & 1).to_bytes(1), self._time))
             self._set_inputs_unchanged(ports_i)
         return (ports_i, None)
 
 
-class FullAdder(HalfAdder):
-    """A full adder."""
+class FullSubtractor(HalfSubtractor):
+    """A full subtractor."""
 
     def __init__(self, width: int) -> None:
-        """Creates a full adder.
+        """Creates a full subtractor.
 
         Args:
             width: The data word width in bits.
@@ -122,11 +122,11 @@ class FullAdder(HalfAdder):
         """
         super().__init__(width)
         self._port_ci: InputPort = InputPort(1)
-        """The input carry port."""
+        """The input borrow port."""
 
     @property
     def port_ci(self) -> InputPort:
-        """The input carry port."""
+        """The input borrow port."""
         return self._port_ci
 
     def reset(self) -> None:
@@ -152,8 +152,8 @@ class FullAdder(HalfAdder):
                 self._port_co.post((None, self._time))
             else:
                 o: int = (
-                    int.from_bytes(self._ports_i[0].data[0]) +
-                    int.from_bytes(self._ports_i[1].data[0]) +
+                    int.from_bytes(self._ports_i[0].data[0]) -
+                    int.from_bytes(self._ports_i[1].data[0]) -
                     int.from_bytes(self._port_ci.data[0])
                 )
                 self._port_o.post(((o & self._mask).to_bytes(self._nbytes), self._time))

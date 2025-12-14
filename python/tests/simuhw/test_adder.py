@@ -20,8 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simuhw import Source, Drain, ChannelProbe, Simulator
-from simuhw.arithmetic import Adder, HalfAdder, FullAdder
+from simuhw import (
+    Source, Drain, Adder, HalfAdder, FullAdder,
+    ChannelProbe, Simulator
+)
 
 
 _test_data: list[tuple[int, list[list[list[tuple[bytes | None, float]]]]]] = [
