@@ -24,10 +24,10 @@ from collections.abc import Iterable
 import math
 
 from ._base import InputPort, OutputPort
-from ._gate import Gate
+from ._gate import BinaryGate
 
 
-class Subtractor(Gate):
+class Subtractor(BinaryGate):
     """A subtractor."""
 
     def __init__(self, width: int) -> None:
@@ -37,7 +37,7 @@ class Subtractor(Gate):
             width: The data word width in bits.
 
         """
-        super().__init__(width, ninputs=2)
+        super().__init__(width)
 
     def reset(self) -> None:
         """Resets the states."""
@@ -165,7 +165,7 @@ class FullSubtractor(HalfSubtractor):
         return (ports_i, None)
 
 
-class SIMDSubtractor(Subtractor):
+class SIMDSubtractor(BinaryGate):
     """A SIMD subtractor."""
 
     def __init__(self, width: int, dsize: int | Iterable[int]) -> None:

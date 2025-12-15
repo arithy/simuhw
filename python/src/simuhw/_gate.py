@@ -72,11 +72,11 @@ class Gate(Device, metaclass=ABCMeta):
         self._port_o.reset()
 
 
-class BufferGate(Gate):
-    """A buffer gate."""
+class UnaryGate(Gate, metaclass=ABCMeta):
+    """The super class for all 1-input gates."""
 
     def __init__(self, width: int) -> None:
-        """Creates a buffer gate.
+        """Creates a 1-input gate.
 
         Args:
             width: The data word width in bits.
@@ -88,6 +88,32 @@ class BufferGate(Gate):
     def port_i(self) -> InputPort:
         """The input port."""
         return self._ports_i[0]
+
+
+class BinaryGate(Gate, metaclass=ABCMeta):
+    """The super class for all 2-input gates."""
+
+    def __init__(self, width: int) -> None:
+        """Creates a 2-input gate.
+
+        Args:
+            width: The data word width in bits.
+
+        """
+        super().__init__(width, ninputs=2)
+
+
+class BufferGate(UnaryGate):
+    """A buffer gate."""
+
+    def __init__(self, width: int) -> None:
+        """Creates a buffer gate.
+
+        Args:
+            width: The data word width in bits.
+
+        """
+        super().__init__(width)
 
     def work(self, time: float | None) -> tuple[list[InputPort], float | None]:
         """Makes the device work.
@@ -109,7 +135,7 @@ class BufferGate(Gate):
         return (list(self._ports_i), None)
 
 
-class NOTGate(Gate):
+class NOTGate(UnaryGate):
     """A NOT gate."""
 
     def __init__(self, width: int) -> None:
@@ -119,12 +145,7 @@ class NOTGate(Gate):
             width: The data word width in bits.
 
         """
-        super().__init__(width, ninputs=1)
-
-    @property
-    def port_i(self) -> InputPort:
-        """The input port."""
-        return self._ports_i[0]
+        super().__init__(width)
 
     def work(self, time: float | None) -> tuple[list[InputPort], float | None]:
         """Makes the device work.
