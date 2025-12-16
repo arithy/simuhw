@@ -36,7 +36,9 @@ __all__ = [
     'DFlipFlop',
     'Adder', 'HalfAdder', 'FullAdder', 'SIMDAdder',
     'Subtractor', 'HalfSubtractor', 'FullSubtractor', 'SIMDSubtractor',
-    'Multiplier', 'SignedMultiplier', 'SIMDMultiplier', 'SIMDSignedMultiplier'
+    'Multiplier', 'SignedMultiplier', 'SIMDMultiplier', 'SIMDSignedMultiplier',
+    'Divider', 'SignedDivider', 'SIMDDivider', 'SIMDSignedDivider',
+    'Modulo', 'SignedModulo', 'SIMDModulo', 'SIMDSignedModulo'
 ]
 
 from ._version import __version__  # noqa:F401
@@ -55,3 +57,5 @@ from ._flipflop import DFlipFlop
 from ._adder import Adder, HalfAdder, FullAdder, SIMDAdder
 from ._subtractor import Subtractor, HalfSubtractor, FullSubtractor, SIMDSubtractor
 from ._multiplier import Multiplier, SignedMultiplier, SIMDMultiplier, SIMDSignedMultiplier
+from ._divider import Divider, SignedDivider, SIMDDivider, SIMDSignedDivider
+from ._modulo import Modulo, SignedModulo, SIMDModulo, SIMDSignedModulo
