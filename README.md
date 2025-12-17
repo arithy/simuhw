@@ -47,10 +47,13 @@ import simuhw as hw
 
 ### Simulation of Hardware Devices
 
-1. Create instances of the derived classes of [`Device`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.Device) class. As of version 0.1.0, the following device classes are available.
+1. Create instances of the derived classes of [`Device`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.Device) class. As of version 0.2.0, the following device classes are available.
     
     - Utility
       - [`Source`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.Source)
+      - [`LogicLowSource`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.LogicLowSource)
+      - [`LogicHighSource`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.LogicHighSource)
+      - [`LogicUnknownSource`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.LogicUnknownSource)
       - [`Drain`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.Drain)
       - [`Delay`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.Delay)
       - [`Group`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.Group)
@@ -79,13 +82,46 @@ import simuhw as hw
     - Elementary Sequential Circuit
       - [`DLatch`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.DLatch)
       - [`DFlipFlop`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.DFlipFlop)
-    - Arithmetic
-      - [`Adder`](https://arithy.github.io/simuhw/apidoc/simuhw.arithmetic.html#simuhw.arithmetic.Adder)
-      - [`HalfAdder`](https://arithy.github.io/simuhw/apidoc/simuhw.arithmetic.html#simuhw.arithmetic.HalfAdder)
-      - [`FullAdder`](https://arithy.github.io/simuhw/apidoc/simuhw.arithmetic.html#simuhw.arithmetic.FullAdder)
-      - [`Subtractor`](https://arithy.github.io/simuhw/apidoc/simuhw.arithmetic.html#simuhw.arithmetic.Subtractor)
-      - [`HalfSubtractor`](https://arithy.github.io/simuhw/apidoc/simuhw.arithmetic.html#simuhw.arithmetic.HalfSubtractor)
-      - [`FullSubtractor`](https://arithy.github.io/simuhw/apidoc/simuhw.arithmetic.html#simuhw.arithmetic.FullSubtractor)
+    - Bit Operation
+      - [`LeftShifter`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.LeftShifter)
+      - [`RightShifter`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.RightShifter)
+      - [`ArithmeticRightShifter`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.ArithmeticRightShifter)
+      - [`LeftRotator`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.LeftRotator)
+      - [`RightRotator`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.RightRotator)
+      - [`PopulationCounter`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.PopulationCounter)
+      - [`LeadingZeroCounter`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.LeadingZeroCounter)
+      - [`TrailingZeroCounter`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.TrailingZeroCounter)
+      - [`BitReverser`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.BitReverser)
+      - [`SIMDLeftShifter`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.SIMDLeftShifter)
+      - [`SIMDRightShifter`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.SIMDRightShifter)
+      - [`SIMDArithmeticRightShifter`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.SIMDArithmeticRightShifter)
+      - [`SIMDLeftRotator`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.SIMDLeftRotator)
+      - [`SIMDRightRotator`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.SIMDRightRotator)
+      - [`SIMDPopulationCounter`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.SIMDPopulationCounter)
+      - [`SIMDLeadingZeroCounter`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.SIMDLeadingZeroCounter)
+      - [`SIMDTrailingZeroCounter`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.SIMDTrailingZeroCounter)
+      - [`SIMDBitReverser`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.SIMDBitReverser)
+    - Integer Arithmetic
+      - [`Adder`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.Adder)
+      - [`HalfAdder`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.HalfAdder)
+      - [`FullAdder`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.FullAdder)
+      - [`Subtractor`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.Subtractor)
+      - [`HalfSubtractor`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.HalfSubtractor)
+      - [`FullSubtractor`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.FullSubtractor)
+      - [`Multiplier`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.Multiplier)
+      - [`SignedMultiplier`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.SignedMultiplier)
+      - [`Divider`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.Divider)
+      - [`SignedDivider`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.SignedDivider)
+      - [`Modulo`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.Modulo)
+      - [`SignedModulo`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.SignedModulo)
+      - [`SIMDAdder`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.SIMDAdder)
+      - [`SIMDSubtractor`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.SIMDSubtractor)
+      - [`SIMDMultiplier`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.SIMDMultiplier)
+      - [`SIMDSignedMultiplier`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.SIMDSignedMultiplier)
+      - [`SIMDDivider`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.SIMDDivider)
+      - [`SIMDSignedDivider`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.SIMDSignedDivider)
+      - [`SIMDModulo`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.SIMDModulo)
+      - [`SIMDSignedModulo`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.SIMDSignedModulo)
     - Memory
       - [`LevelTriggeredMemory`](https://arithy.github.io/simuhw/apidoc/simuhw.memory.html#simuhw.memory.LevelTriggeredMemory)
       - [`EdgeTriggeredMemory`](https://arithy.github.io/simuhw/apidoc/simuhw.memory.html#simuhw.memory.EdgeTriggeredMemory)
