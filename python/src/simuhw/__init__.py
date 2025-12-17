@@ -34,6 +34,8 @@ __all__ = [
     'Channel', 'MultiplexChannel',
     'DLatch',
     'DFlipFlop',
+    'Shifter', 'LeftShifter', 'RightShifter', 'ArithmeticRightShifter', 'LeftRotator', 'RightRotator',
+    'SIMDShifter', 'SIMDLeftShifter', 'SIMDRightShifter', 'SIMDArithmeticRightShifter', 'SIMDLeftRotator', 'SIMDRightRotator',
     'Adder', 'HalfAdder', 'FullAdder', 'SIMDAdder',
     'Subtractor', 'HalfSubtractor', 'FullSubtractor', 'SIMDSubtractor',
     'Multiplier', 'SignedMultiplier', 'SIMDMultiplier', 'SIMDSignedMultiplier',
@@ -54,6 +56,10 @@ from ._branch import DataCombiner, DataSplitter, Arbitrator, Multiplexer, Demult
 from ._channel import Channel, MultiplexChannel
 from ._latch import DLatch
 from ._flipflop import DFlipFlop
+from ._shifter import (
+    Shifter, LeftShifter, RightShifter, ArithmeticRightShifter, LeftRotator, RightRotator,
+    SIMDShifter, SIMDLeftShifter, SIMDRightShifter, SIMDArithmeticRightShifter, SIMDLeftRotator, SIMDRightRotator
+)
 from ._adder import Adder, HalfAdder, FullAdder, SIMDAdder
 from ._subtractor import Subtractor, HalfSubtractor, FullSubtractor, SIMDSubtractor
 from ._multiplier import Multiplier, SignedMultiplier, SIMDMultiplier, SIMDSignedMultiplier
