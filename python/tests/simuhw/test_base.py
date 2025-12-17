@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 from simuhw._base import combine_bits, extract_bits, to_signed_int
-from simuhw import Source, Drain, ChannelProbe, Simulator
+from simuhw import Source, LogicLowSource, LogicHighSource, LogicUnknownSource, Drain, ChannelProbe, Simulator
 
 
 _test_data: list[int] = [0, 1, 2, 3, 7, 8, 9, 30, 31, 32, 33, 62, 63, 64, 65, 66]
@@ -63,6 +63,45 @@ def test_Source_and_Drain() -> None:
     ]
     po: ChannelProbe = ChannelProbe('out', w)
     ti: Source = Source(w, d)
+    to: Drain = Drain(w)
+    ti.port_o.connect(to.port_i)
+    to.port_i.add_probe(po)
+    sim: Simulator = Simulator([ti, to])
+    sim.start(show_time=True)
+    assert po.data == d
+
+
+def test_LogicLowSource() -> None:
+    w: int = 10
+    d: list[tuple[bytes | None, float]] = [(b'\x00\x00', 0.0)]
+    po: ChannelProbe = ChannelProbe('out', w)
+    ti: Source = LogicLowSource(w)
+    to: Drain = Drain(w)
+    ti.port_o.connect(to.port_i)
+    to.port_i.add_probe(po)
+    sim: Simulator = Simulator([ti, to])
+    sim.start(show_time=True)
+    assert po.data == d
+
+
+def test_LogicHighSource() -> None:
+    w: int = 10
+    d: list[tuple[bytes | None, float]] = [(b'\x03\xff', 0.0)]
+    po: ChannelProbe = ChannelProbe('out', w)
+    ti: Source = LogicHighSource(w)
+    to: Drain = Drain(w)
+    ti.port_o.connect(to.port_i)
+    to.port_i.add_probe(po)
+    sim: Simulator = Simulator([ti, to])
+    sim.start(show_time=True)
+    assert po.data == d
+
+
+def test_LogicUnknownSource() -> None:
+    w: int = 10
+    d: list[tuple[bytes | None, float]] = []
+    po: ChannelProbe = ChannelProbe('out', w)
+    ti: Source = LogicUnknownSource(w)
     to: Drain = Drain(w)
     ti.port_o.connect(to.port_i)
     to.port_i.add_probe(po)

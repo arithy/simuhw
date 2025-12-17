@@ -356,6 +356,45 @@ class Source(Device):
         return ([], None)
 
 
+class LogicLowSource(Source):
+    """A source device to emit logic-low data words."""
+
+    def __init__(self, width: int) -> None:
+        """Creates a source device to emit logic-low data words.
+
+        Args:
+            width: The data word width in bits.
+
+        """
+        super().__init__(width, [((0).to_bytes((width + 7) >> 3), 0.0)])
+
+
+class LogicHighSource(Source):
+    """A source device to emit logic-high data words."""
+
+    def __init__(self, width: int) -> None:
+        """Creates a source device to emit logic-high data words.
+
+        Args:
+            width: The data word width in bits.
+
+        """
+        super().__init__(width, [(((1 << width) - 1).to_bytes((width + 7) >> 3), 0.0)])
+
+
+class LogicUnknownSource(Source):
+    """A source device to emit logic-unknown data words."""
+
+    def __init__(self, width: int) -> None:
+        """Creates a source device to emit logic-unknown data words.
+
+        Args:
+            width: The data word width in bits.
+
+        """
+        super().__init__(width, [(None, 0.0)])
+
+
 class Drain(Device):
     """A drain device to absorb data words."""
 

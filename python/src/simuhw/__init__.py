@@ -25,7 +25,7 @@ __all__ = [
     'Probe', 'ChannelProbe', 'MemoryProbe',
     'Simulator',
     'InputPort', 'OutputPort',
-    'Device', 'Source', 'Drain',
+    'Device', 'Source', 'LogicLowSource', 'LogicHighSource', 'LogicUnknownSource', 'Drain',
     'Group',
     'Delay',
     'Clock',
@@ -49,7 +49,7 @@ from ._version import __version__  # noqa:F401
 
 from ._analyzer import Probe, ChannelProbe, MemoryProbe, LogicAnalyzer
 from ._simulator import Simulator
-from ._base import InputPort, OutputPort, Device, Source, Drain
+from ._base import InputPort, OutputPort, Device, Source, LogicLowSource, LogicHighSource, LogicUnknownSource, Drain
 from ._group import Group
 from ._delay import Delay
 from ._clock import Clock
