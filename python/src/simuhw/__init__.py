@@ -36,6 +36,8 @@ __all__ = [
     'DFlipFlop',
     'Shifter', 'LeftShifter', 'RightShifter', 'ArithmeticRightShifter', 'LeftRotator', 'RightRotator',
     'SIMDShifter', 'SIMDLeftShifter', 'SIMDRightShifter', 'SIMDArithmeticRightShifter', 'SIMDLeftRotator', 'SIMDRightRotator',
+    'BitOperator', 'PopulationCounter', 'LeadingZeroCounter', 'TrailingZeroCounter', 'BitReverser',
+    'SIMDBitOperator', 'SIMDPopulationCounter', 'SIMDLeadingZeroCounter', 'SIMDTrailingZeroCounter', 'SIMDBitReverser',
     'Adder', 'HalfAdder', 'FullAdder', 'SIMDAdder',
     'Subtractor', 'HalfSubtractor', 'FullSubtractor', 'SIMDSubtractor',
     'Multiplier', 'SignedMultiplier', 'SIMDMultiplier', 'SIMDSignedMultiplier',
@@ -59,6 +61,10 @@ from ._flipflop import DFlipFlop
 from ._shifter import (
     Shifter, LeftShifter, RightShifter, ArithmeticRightShifter, LeftRotator, RightRotator,
     SIMDShifter, SIMDLeftShifter, SIMDRightShifter, SIMDArithmeticRightShifter, SIMDLeftRotator, SIMDRightRotator
+)
+from ._bit_op import (
+    BitOperator, PopulationCounter, LeadingZeroCounter, TrailingZeroCounter, BitReverser,
+    SIMDBitOperator, SIMDPopulationCounter, SIMDLeadingZeroCounter, SIMDTrailingZeroCounter, SIMDBitReverser
 )
 from ._adder import Adder, HalfAdder, FullAdder, SIMDAdder
 from ._subtractor import Subtractor, HalfSubtractor, FullSubtractor, SIMDSubtractor
