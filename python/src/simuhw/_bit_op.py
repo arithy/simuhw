@@ -181,7 +181,7 @@ class BitReverser(BitOperator):
         return (list(self._ports_i), None)
 
 
-class SIMDBitOperator(UnaryGate, metaclass=ABCMeta):
+class SIMD_BitOperator(UnaryGate, metaclass=ABCMeta):
     """The super class for all SIMD bit operators."""
 
     def __init__(self, width: int, dsize: int | Iterable[int]) -> None:
@@ -219,7 +219,7 @@ class SIMDBitOperator(UnaryGate, metaclass=ABCMeta):
         self._port_s.reset()
 
 
-class SIMDPopulationCounter(SIMDBitOperator):
+class SIMD_PopulationCounter(SIMD_BitOperator):
     """A SIMD bit population counter."""
 
     def __init__(self, width: int, dsize: int | Iterable[int]) -> None:
@@ -263,7 +263,7 @@ class SIMDPopulationCounter(SIMDBitOperator):
         return (ports_i, None)
 
 
-class SIMDLeadingZeroCounter(SIMDBitOperator):
+class SIMD_LeadingZeroCounter(SIMD_BitOperator):
     """A SIMD leading bit-0 counter."""
 
     def __init__(self, width: int, dsize: int | Iterable[int]) -> None:
@@ -307,7 +307,7 @@ class SIMDLeadingZeroCounter(SIMDBitOperator):
         return (ports_i, None)
 
 
-class SIMDTrailingZeroCounter(SIMDBitOperator):
+class SIMD_TrailingZeroCounter(SIMD_BitOperator):
     """A SIMD trailing bit-0 counter."""
 
     def __init__(self, width: int, dsize: int | Iterable[int]) -> None:
@@ -351,7 +351,7 @@ class SIMDTrailingZeroCounter(SIMDBitOperator):
         return (ports_i, None)
 
 
-class SIMDBitReverser(SIMDBitOperator):
+class SIMD_BitReverser(SIMD_BitOperator):
     """A SIMD bit reverser."""
 
     def __init__(self, width: int, dsize: int | Iterable[int]) -> None:

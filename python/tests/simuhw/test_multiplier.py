@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 from simuhw import (
-    Source, Drain, Multiplier, SignedMultiplier, SIMDMultiplier, SIMDSignedMultiplier,
+    Source, Drain, Multiplier, SignedMultiplier, SIMD_Multiplier, SIMD_SignedMultiplier,
     ChannelProbe, Simulator
 )
 
@@ -165,7 +165,7 @@ def test_SignedMultiplier() -> None:
                 assert abs(o[1] - q[1]) <= _EPS
 
 
-def test_SIMDMultiplier() -> None:
+def test_SIMD_Multiplier() -> None:
     test_data: list[tuple[list[int], list[int], list[list[tuple[bytes | None, float]]], list[list[tuple[bytes | None, float]]]]] = [
         (
             [32, 2, 8],
@@ -200,7 +200,7 @@ def test_SIMDMultiplier() -> None:
         po: list[ChannelProbe] = [ChannelProbe('out', w), ChannelProbe('overflow', e)]
         ti: list[Source] = [Source(u, d) for u, d in zip([w, w, s], t[2])]
         to: list[Drain] = [Drain(w), Drain(e)]
-        dev: SIMDMultiplier = SIMDMultiplier(w, t[1])
+        dev: SIMD_Multiplier = SIMD_Multiplier(w, t[1])
         dev.port_o.connect(to[0].port_i)
         dev.port_e.connect(to[1].port_i)
         ti[0].port_o.connect(dev.ports_i[0])
@@ -217,7 +217,7 @@ def test_SIMDMultiplier() -> None:
                 assert abs(o[1] - q[1]) <= _EPS
 
 
-def test_SIMDSignedMultiplier() -> None:
+def test_SIMD_SignedMultiplier() -> None:
     test_data: list[tuple[list[int], list[int], list[list[tuple[bytes | None, float]]], list[list[tuple[bytes | None, float]]]]] = [
         (
             [32, 2, 8],
@@ -252,7 +252,7 @@ def test_SIMDSignedMultiplier() -> None:
         po: list[ChannelProbe] = [ChannelProbe('out', w), ChannelProbe('overflow', e)]
         ti: list[Source] = [Source(u, d) for u, d in zip([w, w, s], t[2])]
         to: list[Drain] = [Drain(w), Drain(e)]
-        dev: SIMDSignedMultiplier = SIMDSignedMultiplier(w, t[1])
+        dev: SIMD_SignedMultiplier = SIMD_SignedMultiplier(w, t[1])
         dev.port_o.connect(to[0].port_i)
         dev.port_e.connect(to[1].port_i)
         ti[0].port_o.connect(dev.ports_i[0])

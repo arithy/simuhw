@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 from simuhw import (
-    Source, Drain, Divider, SignedDivider, SIMDDivider, SIMDSignedDivider,
+    Source, Drain, Divider, SignedDivider, SIMD_Divider, SIMD_SignedDivider,
     ChannelProbe, Simulator
 )
 
@@ -181,7 +181,7 @@ def test_SignedDivider() -> None:
                 assert abs(o[1] - q[1]) <= _EPS
 
 
-def test_SIMDDivider() -> None:
+def test_SIMD_Divider() -> None:
     test_data: list[tuple[list[int], list[int], list[list[tuple[bytes | None, float]]], list[list[tuple[bytes | None, float]]]]] = [
         (
             [32, 2, 8],
@@ -216,7 +216,7 @@ def test_SIMDDivider() -> None:
         po: list[ChannelProbe] = [ChannelProbe('out', w), ChannelProbe('overflow', e)]
         ti: list[Source] = [Source(u, d) for u, d in zip([w, w, s], t[2])]
         to: list[Drain] = [Drain(w), Drain(e)]
-        dev: SIMDDivider = SIMDDivider(w, t[1])
+        dev: SIMD_Divider = SIMD_Divider(w, t[1])
         dev.port_o.connect(to[0].port_i)
         dev.port_e.connect(to[1].port_i)
         ti[0].port_o.connect(dev.ports_i[0])
@@ -233,7 +233,7 @@ def test_SIMDDivider() -> None:
                 assert abs(o[1] - q[1]) <= _EPS
 
 
-def test_SIMDSignedDivider() -> None:
+def test_SIMD_SignedDivider() -> None:
     test_data: list[tuple[list[int], list[int], list[list[tuple[bytes | None, float]]], list[list[tuple[bytes | None, float]]]]] = [
         (
             [32, 2, 8],
@@ -268,7 +268,7 @@ def test_SIMDSignedDivider() -> None:
         po: list[ChannelProbe] = [ChannelProbe('out', w), ChannelProbe('overflow', e)]
         ti: list[Source] = [Source(u, d) for u, d in zip([w, w, s], t[2])]
         to: list[Drain] = [Drain(w), Drain(e)]
-        dev: SIMDSignedDivider = SIMDSignedDivider(w, t[1])
+        dev: SIMD_SignedDivider = SIMD_SignedDivider(w, t[1])
         dev.port_o.connect(to[0].port_i)
         dev.port_e.connect(to[1].port_i)
         ti[0].port_o.connect(dev.ports_i[0])

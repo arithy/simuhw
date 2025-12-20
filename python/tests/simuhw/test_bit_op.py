@@ -23,7 +23,7 @@
 from simuhw import (
     Source, Drain,
     PopulationCounter, LeadingZeroCounter, TrailingZeroCounter, BitReverser,
-    SIMDPopulationCounter, SIMDLeadingZeroCounter, SIMDTrailingZeroCounter, SIMDBitReverser,
+    SIMD_PopulationCounter, SIMD_LeadingZeroCounter, SIMD_TrailingZeroCounter, SIMD_BitReverser,
     ChannelProbe, Simulator
 )
 
@@ -180,7 +180,7 @@ def test_BitReverser() -> None:
             assert abs(o[1] - q[1]) <= _EPS
 
 
-def test_SIMDPopulationCounter() -> None:
+def test_SIMD_PopulationCounter() -> None:
     test_data: list[tuple[list[int], list[int], list[list[tuple[bytes | None, float]]], list[tuple[bytes | None, float]]]] = [
         (
             [32, 2],
@@ -204,7 +204,7 @@ def test_SIMDPopulationCounter() -> None:
         po: ChannelProbe = ChannelProbe('out', w)
         ti: list[Source] = [Source(u, d) for u, d in zip([w, s], t[2])]
         to: Drain = Drain(w)
-        dev: SIMDPopulationCounter = SIMDPopulationCounter(w, t[1])
+        dev: SIMD_PopulationCounter = SIMD_PopulationCounter(w, t[1])
         dev.port_o.connect(to.port_i)
         ti[0].port_o.connect(dev.port_i)
         ti[1].port_o.connect(dev.port_s)
@@ -218,7 +218,7 @@ def test_SIMDPopulationCounter() -> None:
             assert abs(o[1] - q[1]) <= _EPS
 
 
-def test_SIMDLeadingZeroCounter() -> None:
+def test_SIMD_LeadingZeroCounter() -> None:
     test_data: list[tuple[list[int], list[int], list[list[tuple[bytes | None, float]]], list[tuple[bytes | None, float]]]] = [
         (
             [32, 2],
@@ -242,7 +242,7 @@ def test_SIMDLeadingZeroCounter() -> None:
         po: ChannelProbe = ChannelProbe('out', w)
         ti: list[Source] = [Source(u, d) for u, d in zip([w, s], t[2])]
         to: Drain = Drain(w)
-        dev: SIMDLeadingZeroCounter = SIMDLeadingZeroCounter(w, t[1])
+        dev: SIMD_LeadingZeroCounter = SIMD_LeadingZeroCounter(w, t[1])
         dev.port_o.connect(to.port_i)
         ti[0].port_o.connect(dev.port_i)
         ti[1].port_o.connect(dev.port_s)
@@ -256,7 +256,7 @@ def test_SIMDLeadingZeroCounter() -> None:
             assert abs(o[1] - q[1]) <= _EPS
 
 
-def test_SIMDTrailingZeroCounter() -> None:
+def test_SIMD_TrailingZeroCounter() -> None:
     test_data: list[tuple[list[int], list[int], list[list[tuple[bytes | None, float]]], list[tuple[bytes | None, float]]]] = [
         (
             [32, 2],
@@ -280,7 +280,7 @@ def test_SIMDTrailingZeroCounter() -> None:
         po: ChannelProbe = ChannelProbe('out', w)
         ti: list[Source] = [Source(u, d) for u, d in zip([w, s], t[2])]
         to: Drain = Drain(w)
-        dev: SIMDTrailingZeroCounter = SIMDTrailingZeroCounter(w, t[1])
+        dev: SIMD_TrailingZeroCounter = SIMD_TrailingZeroCounter(w, t[1])
         dev.port_o.connect(to.port_i)
         ti[0].port_o.connect(dev.port_i)
         ti[1].port_o.connect(dev.port_s)
@@ -294,7 +294,7 @@ def test_SIMDTrailingZeroCounter() -> None:
             assert abs(o[1] - q[1]) <= _EPS
 
 
-def test_SIMDBitReverser() -> None:
+def test_SIMD_BitReverser() -> None:
     test_data: list[tuple[list[int], list[int], list[list[tuple[bytes | None, float]]], list[tuple[bytes | None, float]]]] = [
         (
             [32, 2],
@@ -318,7 +318,7 @@ def test_SIMDBitReverser() -> None:
         po: ChannelProbe = ChannelProbe('out', w)
         ti: list[Source] = [Source(u, d) for u, d in zip([w, s], t[2])]
         to: Drain = Drain(w)
-        dev: SIMDBitReverser = SIMDBitReverser(w, t[1])
+        dev: SIMD_BitReverser = SIMD_BitReverser(w, t[1])
         dev.port_o.connect(to.port_i)
         ti[0].port_o.connect(dev.port_i)
         ti[1].port_o.connect(dev.port_s)

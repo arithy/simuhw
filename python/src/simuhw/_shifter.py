@@ -221,7 +221,7 @@ class RightRotator(Shifter):
         return (ports_i, None)
 
 
-class SIMDShifter(BinaryGate, metaclass=ABCMeta):
+class SIMD_Shifter(BinaryGate, metaclass=ABCMeta):
     """The super class for all SIMD barrel shifters."""
 
     def __init__(self, width: int, dsize: int | Iterable[int]) -> None:
@@ -259,7 +259,7 @@ class SIMDShifter(BinaryGate, metaclass=ABCMeta):
         self._port_s.reset()
 
 
-class SIMDLeftShifter(SIMDShifter):
+class SIMD_LeftShifter(SIMD_Shifter):
     """A SIMD left barrel shifter."""
 
     def __init__(self, width: int, dsize: int | Iterable[int]) -> None:
@@ -304,7 +304,7 @@ class SIMDLeftShifter(SIMDShifter):
         return (ports_i, None)
 
 
-class SIMDRightShifter(SIMDShifter):
+class SIMD_RightShifter(SIMD_Shifter):
     """A SIMD right barrel shifter."""
 
     def __init__(self, width: int, dsize: int | Iterable[int]) -> None:
@@ -349,7 +349,7 @@ class SIMDRightShifter(SIMDShifter):
         return (ports_i, None)
 
 
-class SIMDArithmeticRightShifter(SIMDShifter):
+class SIMD_ArithmeticRightShifter(SIMD_Shifter):
     """A SIMD arithmetic right barrel shifter."""
 
     def __init__(self, width: int, dsize: int | Iterable[int]) -> None:
@@ -395,7 +395,7 @@ class SIMDArithmeticRightShifter(SIMDShifter):
         return (ports_i, None)
 
 
-class SIMDLeftRotator(SIMDShifter):
+class SIMD_LeftRotator(SIMD_Shifter):
     """A SIMD left barrel rotator."""
 
     def __init__(self, width: int, dsize: int | Iterable[int]) -> None:
@@ -441,7 +441,7 @@ class SIMDLeftRotator(SIMDShifter):
         return (ports_i, None)
 
 
-class SIMDRightRotator(SIMDShifter):
+class SIMD_RightRotator(SIMD_Shifter):
     """A SIMD right barrel rotator."""
 
     def __init__(self, width: int, dsize: int | Iterable[int]) -> None:

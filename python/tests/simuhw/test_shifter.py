@@ -23,7 +23,7 @@
 from simuhw import (
     Source, Drain,
     LeftShifter, RightShifter, ArithmeticRightShifter, LeftRotator, RightRotator,
-    SIMDLeftShifter, SIMDRightShifter, SIMDArithmeticRightShifter, SIMDLeftRotator, SIMDRightRotator,
+    SIMD_LeftShifter, SIMD_RightShifter, SIMD_ArithmeticRightShifter, SIMD_LeftRotator, SIMD_RightRotator,
     ChannelProbe, Simulator
 )
 
@@ -295,7 +295,7 @@ def test_RightRotator() -> None:
             assert abs(o[1] - q[1]) <= _EPS
 
 
-def test_SIMDLeftShifter() -> None:
+def test_SIMD_LeftShifter() -> None:
     test_data: list[tuple[list[int], list[int], list[list[tuple[bytes | None, float]]], list[tuple[bytes | None, float]]]] = [
         (
             [32, 2],
@@ -323,7 +323,7 @@ def test_SIMDLeftShifter() -> None:
         po: ChannelProbe = ChannelProbe('out', w)
         ti: list[Source] = [Source(u, d) for u, d in zip([w, w, s], t[2])]
         to: Drain = Drain(w)
-        dev: SIMDLeftShifter = SIMDLeftShifter(w, t[1])
+        dev: SIMD_LeftShifter = SIMD_LeftShifter(w, t[1])
         dev.port_o.connect(to.port_i)
         ti[0].port_o.connect(dev.ports_i[0])
         ti[1].port_o.connect(dev.ports_i[1])
@@ -338,7 +338,7 @@ def test_SIMDLeftShifter() -> None:
             assert abs(o[1] - q[1]) <= _EPS
 
 
-def test_SIMDRightShifter() -> None:
+def test_SIMD_RightShifter() -> None:
     test_data: list[tuple[list[int], list[int], list[list[tuple[bytes | None, float]]], list[tuple[bytes | None, float]]]] = [
         (
             [32, 2],
@@ -366,7 +366,7 @@ def test_SIMDRightShifter() -> None:
         po: ChannelProbe = ChannelProbe('out', w)
         ti: list[Source] = [Source(u, d) for u, d in zip([w, w, s], t[2])]
         to: Drain = Drain(w)
-        dev: SIMDRightShifter = SIMDRightShifter(w, t[1])
+        dev: SIMD_RightShifter = SIMD_RightShifter(w, t[1])
         dev.port_o.connect(to.port_i)
         ti[0].port_o.connect(dev.ports_i[0])
         ti[1].port_o.connect(dev.ports_i[1])
@@ -381,7 +381,7 @@ def test_SIMDRightShifter() -> None:
             assert abs(o[1] - q[1]) <= _EPS
 
 
-def test_SIMDArithmeticRightShifter() -> None:
+def test_SIMD_ArithmeticRightShifter() -> None:
     test_data: list[tuple[list[int], list[int], list[list[tuple[bytes | None, float]]], list[tuple[bytes | None, float]]]] = [
         (
             [32, 2],
@@ -409,7 +409,7 @@ def test_SIMDArithmeticRightShifter() -> None:
         po: ChannelProbe = ChannelProbe('out', w)
         ti: list[Source] = [Source(u, d) for u, d in zip([w, w, s], t[2])]
         to: Drain = Drain(w)
-        dev: SIMDArithmeticRightShifter = SIMDArithmeticRightShifter(w, t[1])
+        dev: SIMD_ArithmeticRightShifter = SIMD_ArithmeticRightShifter(w, t[1])
         dev.port_o.connect(to.port_i)
         ti[0].port_o.connect(dev.ports_i[0])
         ti[1].port_o.connect(dev.ports_i[1])
@@ -424,7 +424,7 @@ def test_SIMDArithmeticRightShifter() -> None:
             assert abs(o[1] - q[1]) <= _EPS
 
 
-def test_SIMDLeftRotator() -> None:
+def test_SIMD_LeftRotator() -> None:
     test_data: list[tuple[list[int], list[int], list[list[tuple[bytes | None, float]]], list[tuple[bytes | None, float]]]] = [
         (
             [32, 2],
@@ -452,7 +452,7 @@ def test_SIMDLeftRotator() -> None:
         po: ChannelProbe = ChannelProbe('out', w)
         ti: list[Source] = [Source(u, d) for u, d in zip([w, w, s], t[2])]
         to: Drain = Drain(w)
-        dev: SIMDLeftRotator = SIMDLeftRotator(w, t[1])
+        dev: SIMD_LeftRotator = SIMD_LeftRotator(w, t[1])
         dev.port_o.connect(to.port_i)
         ti[0].port_o.connect(dev.ports_i[0])
         ti[1].port_o.connect(dev.ports_i[1])
@@ -467,7 +467,7 @@ def test_SIMDLeftRotator() -> None:
             assert abs(o[1] - q[1]) <= _EPS
 
 
-def test_SIMDRightRotator() -> None:
+def test_SIMD_RightRotator() -> None:
     test_data: list[tuple[list[int], list[int], list[list[tuple[bytes | None, float]]], list[tuple[bytes | None, float]]]] = [
         (
             [32, 2],
@@ -495,7 +495,7 @@ def test_SIMDRightRotator() -> None:
         po: ChannelProbe = ChannelProbe('out', w)
         ti: list[Source] = [Source(u, d) for u, d in zip([w, w, s], t[2])]
         to: Drain = Drain(w)
-        dev: SIMDRightRotator = SIMDRightRotator(w, t[1])
+        dev: SIMD_RightRotator = SIMD_RightRotator(w, t[1])
         dev.port_o.connect(to.port_i)
         ti[0].port_o.connect(dev.ports_i[0])
         ti[1].port_o.connect(dev.ports_i[1])

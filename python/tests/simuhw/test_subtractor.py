@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 from simuhw import (
-    Source, Drain, Subtractor, HalfSubtractor, FullSubtractor, SIMDSubtractor,
+    Source, Drain, Subtractor, HalfSubtractor, FullSubtractor, SIMD_Subtractor,
     ChannelProbe, Simulator
 )
 
@@ -197,7 +197,7 @@ def test_FullSubtractor() -> None:
                     assert abs(o[1] - q[1]) <= _EPS
 
 
-def test_SIMDSubtractor() -> None:
+def test_SIMD_Subtractor() -> None:
     test_data: list[tuple[list[int], list[int], list[list[tuple[bytes | None, float]]], list[tuple[bytes | None, float]]]] = [
         (
             [32, 2],
@@ -225,7 +225,7 @@ def test_SIMDSubtractor() -> None:
         po: ChannelProbe = ChannelProbe('out', w)
         ti: list[Source] = [Source(u, d) for u, d in zip([w, w, s], t[2])]
         to: Drain = Drain(w)
-        dev: SIMDSubtractor = SIMDSubtractor(w, t[1])
+        dev: SIMD_Subtractor = SIMD_Subtractor(w, t[1])
         dev.port_o.connect(to.port_i)
         ti[0].port_o.connect(dev.ports_i[0])
         ti[1].port_o.connect(dev.ports_i[1])

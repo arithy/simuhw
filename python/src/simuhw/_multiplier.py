@@ -126,7 +126,7 @@ class SignedMultiplier(Multiplier):
         return (ports_i, None)
 
 
-class SIMDMultiplier(BinaryGate):
+class SIMD_Multiplier(BinaryGate):
     """A SIMD multiplier.
 
     This device calculates respective multiplications of multiple pairs of unsigned binary integers simultaneously.
@@ -213,7 +213,7 @@ class SIMDMultiplier(BinaryGate):
         return (ports_i, None)
 
 
-class SIMDSignedMultiplier(SIMDMultiplier):
+class SIMD_SignedMultiplier(SIMD_Multiplier):
     """A SIMD signed multiplier.
 
     This device calculates respective multiplications of multiple pairs of signed binary integers simultaneously.

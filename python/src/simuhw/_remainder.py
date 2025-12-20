@@ -134,7 +134,7 @@ class SignedRemainder(Remainder):
         return (ports_i, None)
 
 
-class SIMDRemainder(BinaryGate):
+class SIMD_Remainder(BinaryGate):
     """A SIMD remainder calculator.
 
     This device calculates respective remainders of multiple pairs of unsigned binary integers simultaneously.
@@ -226,7 +226,7 @@ class SIMDRemainder(BinaryGate):
         return (ports_i, None)
 
 
-class SIMDSignedRemainder(SIMDRemainder):
+class SIMD_SignedRemainder(SIMD_Remainder):
     """A SIMD signed remainder calculator.
 
     This device calculates respective remainders of multiple pairs of signed binary integers simultaneously.

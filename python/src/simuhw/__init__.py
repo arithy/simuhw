@@ -35,14 +35,14 @@ __all__ = [
     'DLatch',
     'DFlipFlop',
     'Shifter', 'LeftShifter', 'RightShifter', 'ArithmeticRightShifter', 'LeftRotator', 'RightRotator',
-    'SIMDShifter', 'SIMDLeftShifter', 'SIMDRightShifter', 'SIMDArithmeticRightShifter', 'SIMDLeftRotator', 'SIMDRightRotator',
+    'SIMD_Shifter', 'SIMD_LeftShifter', 'SIMD_RightShifter', 'SIMD_ArithmeticRightShifter', 'SIMD_LeftRotator', 'SIMD_RightRotator',
     'BitOperator', 'PopulationCounter', 'LeadingZeroCounter', 'TrailingZeroCounter', 'BitReverser',
-    'SIMDBitOperator', 'SIMDPopulationCounter', 'SIMDLeadingZeroCounter', 'SIMDTrailingZeroCounter', 'SIMDBitReverser',
-    'Adder', 'HalfAdder', 'FullAdder', 'SIMDAdder',
-    'Subtractor', 'HalfSubtractor', 'FullSubtractor', 'SIMDSubtractor',
-    'Multiplier', 'SignedMultiplier', 'SIMDMultiplier', 'SIMDSignedMultiplier',
-    'Divider', 'SignedDivider', 'SIMDDivider', 'SIMDSignedDivider',
-    'Remainder', 'SignedRemainder', 'SIMDRemainder', 'SIMDSignedRemainder'
+    'SIMD_BitOperator', 'SIMD_PopulationCounter', 'SIMD_LeadingZeroCounter', 'SIMD_TrailingZeroCounter', 'SIMD_BitReverser',
+    'Adder', 'HalfAdder', 'FullAdder', 'SIMD_Adder',
+    'Subtractor', 'HalfSubtractor', 'FullSubtractor', 'SIMD_Subtractor',
+    'Multiplier', 'SignedMultiplier', 'SIMD_Multiplier', 'SIMD_SignedMultiplier',
+    'Divider', 'SignedDivider', 'SIMD_Divider', 'SIMD_SignedDivider',
+    'Remainder', 'SignedRemainder', 'SIMD_Remainder', 'SIMD_SignedRemainder'
 ]
 
 from ._version import __version__  # noqa:F401
@@ -60,14 +60,14 @@ from ._latch import DLatch
 from ._flipflop import DFlipFlop
 from ._shifter import (
     Shifter, LeftShifter, RightShifter, ArithmeticRightShifter, LeftRotator, RightRotator,
-    SIMDShifter, SIMDLeftShifter, SIMDRightShifter, SIMDArithmeticRightShifter, SIMDLeftRotator, SIMDRightRotator
+    SIMD_Shifter, SIMD_LeftShifter, SIMD_RightShifter, SIMD_ArithmeticRightShifter, SIMD_LeftRotator, SIMD_RightRotator
 )
 from ._bit_op import (
     BitOperator, PopulationCounter, LeadingZeroCounter, TrailingZeroCounter, BitReverser,
-    SIMDBitOperator, SIMDPopulationCounter, SIMDLeadingZeroCounter, SIMDTrailingZeroCounter, SIMDBitReverser
+    SIMD_BitOperator, SIMD_PopulationCounter, SIMD_LeadingZeroCounter, SIMD_TrailingZeroCounter, SIMD_BitReverser
 )
-from ._adder import Adder, HalfAdder, FullAdder, SIMDAdder
-from ._subtractor import Subtractor, HalfSubtractor, FullSubtractor, SIMDSubtractor
-from ._multiplier import Multiplier, SignedMultiplier, SIMDMultiplier, SIMDSignedMultiplier
-from ._divider import Divider, SignedDivider, SIMDDivider, SIMDSignedDivider
-from ._remainder import Remainder, SignedRemainder, SIMDRemainder, SIMDSignedRemainder
+from ._adder import Adder, HalfAdder, FullAdder, SIMD_Adder
+from ._subtractor import Subtractor, HalfSubtractor, FullSubtractor, SIMD_Subtractor
+from ._multiplier import Multiplier, SignedMultiplier, SIMD_Multiplier, SIMD_SignedMultiplier
+from ._divider import Divider, SignedDivider, SIMD_Divider, SIMD_SignedDivider
+from ._remainder import Remainder, SignedRemainder, SIMD_Remainder, SIMD_SignedRemainder

@@ -134,7 +134,7 @@ class SignedDivider(Divider):
         return (ports_i, None)
 
 
-class SIMDDivider(BinaryGate):
+class SIMD_Divider(BinaryGate):
     """A SIMD divider.
 
     This device calculates respective divisions of multiple pairs of unsigned binary integers simultaneously.
@@ -226,7 +226,7 @@ class SIMDDivider(BinaryGate):
         return (ports_i, None)
 
 
-class SIMDSignedDivider(SIMDDivider):
+class SIMD_SignedDivider(SIMD_Divider):
     """A SIMD signed divider.
 
     This device calculates respective divisions of multiple pairs of signed binary integers simultaneously.

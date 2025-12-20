@@ -180,7 +180,7 @@ class FullSubtractor(HalfSubtractor):
         return (ports_i, None)
 
 
-class SIMDSubtractor(BinaryGate):
+class SIMD_Subtractor(BinaryGate):
     """A SIMD subtractor.
 
     This device calculates respective subtractions of multiple pairs of binary integers simultaneously.

@@ -180,7 +180,7 @@ class FullAdder(HalfAdder):
         return (ports_i, None)
 
 
-class SIMDAdder(BinaryGate):
+class SIMD_Adder(BinaryGate):
     """A SIMD adder.
 
     This device calculates respective additions of multiple pairs of binary integers simultaneously.
