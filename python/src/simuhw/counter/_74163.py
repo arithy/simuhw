@@ -59,15 +59,15 @@ class SynchronousBinaryCounter74163(SynchronousBinaryCounter):
         self._port_clr: InputPort = InputPort(1)
         """The clear port.
 
-        0 for activate."""
+        Active if the data word is 0."""
         self._port_load: InputPort = InputPort(1)
         """The load enable port.
 
-        0 for activate."""
+        Active if the data word is 0."""
         self._port_enp: InputPort = InputPort(1)
         """The count enable port.
 
-        1 for activate."""
+        Active if the data word is 1."""
         self._port_ent: InputPort = InputPort(1)
         """The carry input port."""
 
@@ -75,21 +75,21 @@ class SynchronousBinaryCounter74163(SynchronousBinaryCounter):
     def port_clr(self) -> InputPort:
         """The clear port.
 
-        0 for activate."""
+        Active if the data word is 0."""
         return self._port_clr
 
     @property
     def port_load(self) -> InputPort:
         """The load enable port.
 
-        0 for activate."""
+        Active if the data word is 0."""
         return self._port_load
 
     @property
     def port_enp(self) -> InputPort:
         """The count enable port.
 
-        1 for activate."""
+        Active if the data word is 1."""
         return self._port_enp
 
     @property

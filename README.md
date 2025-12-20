@@ -47,7 +47,7 @@ import simuhw as hw
 
 ### Simulation of Hardware Devices
 
-1. Create instances of the derived classes of [`Device`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.Device) class. As of version 0.2.0, the following device classes are available.
+1. Create instances of the derived classes of [`Device`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.Device) class. As of version 0.3.0, the following device classes are available.
     
     - Utility
       - [`Source`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.Source)
@@ -70,7 +70,7 @@ import simuhw as hw
       - [`Demultiplexer`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.Demultiplexer)
       - [`DataRetainDemultiplexer`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.DataRetainDemultiplexer)
       - [`Distributor`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.Distributor)
-   - Elementary Combinational Circuit
+    - Elementary Combinational Circuit
       - [`BufferGate`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.BufferGate)
       - [`NOTGate`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.NOTGate)
       - [`ANDGate`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.ANDGate)
@@ -82,6 +82,9 @@ import simuhw as hw
     - Elementary Sequential Circuit
       - [`DLatch`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.DLatch)
       - [`DFlipFlop`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.DFlipFlop)
+    - Counter
+      - [`SynchronousBinaryCounter74161`](https://arithy.github.io/simuhw/apidoc/simuhw.counter.html#simuhw.counter.SynchronousBinaryCounter74161)
+      - [`SynchronousBinaryCounter74163`](https://arithy.github.io/simuhw/apidoc/simuhw.counter.html#simuhw.counter.SynchronousBinaryCounter74163)
     - Bit Operation
       - [`LeftShifter`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.LeftShifter)
       - [`RightShifter`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.RightShifter)
