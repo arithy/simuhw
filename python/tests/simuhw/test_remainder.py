@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 from simuhw import (
-    Source, Drain, Modulo, SignedModulo, SIMDModulo, SIMDSignedModulo,
+    Source, Drain, Remainder, SignedRemainder, SIMDRemainder, SIMDSignedRemainder,
     ChannelProbe, Simulator
 )
 
@@ -137,13 +137,13 @@ _test_data: list[tuple[int, list[list[tuple[bytes | None, float]]], list[list[li
 ]
 
 
-def test_Modulo() -> None:
+def test_Remainder() -> None:
     for t in _test_data:
         w: int = t[0]
         po: list[ChannelProbe] = [ChannelProbe('out', w), ChannelProbe('overflow', 1)]
         ti: list[Source] = [Source(w, d) for d in t[1]]
         to: list[Drain] = [Drain(w), Drain(1)]
-        dev: Modulo = Modulo(w)
+        dev: Remainder = Remainder(w)
         dev.port_o.connect(to[0].port_i)
         dev.port_e.connect(to[1].port_i)
         for i in range(2):
@@ -159,13 +159,13 @@ def test_Modulo() -> None:
                 assert abs(o[1] - q[1]) <= _EPS
 
 
-def test_SignedModulo() -> None:
+def test_SignedRemainder() -> None:
     for t in _test_data:
         w: int = t[0]
         po: list[ChannelProbe] = [ChannelProbe('out', w), ChannelProbe('overflow', 1)]
         ti: list[Source] = [Source(w, d) for d in t[1]]
         to: list[Drain] = [Drain(w), Drain(1)]
-        dev: SignedModulo = SignedModulo(w)
+        dev: SignedRemainder = SignedRemainder(w)
         dev.port_o.connect(to[0].port_i)
         dev.port_e.connect(to[1].port_i)
         for i in range(2):
@@ -181,7 +181,7 @@ def test_SignedModulo() -> None:
                 assert abs(o[1] - q[1]) <= _EPS
 
 
-def test_SIMDModulo() -> None:
+def test_SIMDRemainder() -> None:
     test_data: list[tuple[list[int], list[int], list[list[tuple[bytes | None, float]]], list[list[tuple[bytes | None, float]]]]] = [
         (
             [32, 2, 8],
@@ -216,7 +216,7 @@ def test_SIMDModulo() -> None:
         po: list[ChannelProbe] = [ChannelProbe('out', w), ChannelProbe('overflow', e)]
         ti: list[Source] = [Source(u, d) for u, d in zip([w, w, s], t[2])]
         to: list[Drain] = [Drain(w), Drain(e)]
-        dev: SIMDModulo = SIMDModulo(w, t[1])
+        dev: SIMDRemainder = SIMDRemainder(w, t[1])
         dev.port_o.connect(to[0].port_i)
         dev.port_e.connect(to[1].port_i)
         ti[0].port_o.connect(dev.ports_i[0])
@@ -233,7 +233,7 @@ def test_SIMDModulo() -> None:
                 assert abs(o[1] - q[1]) <= _EPS
 
 
-def test_SIMDSignedModulo() -> None:
+def test_SIMDSignedRemainder() -> None:
     test_data: list[tuple[list[int], list[int], list[list[tuple[bytes | None, float]]], list[list[tuple[bytes | None, float]]]]] = [
         (
             [32, 2, 8],
@@ -268,7 +268,7 @@ def test_SIMDSignedModulo() -> None:
         po: list[ChannelProbe] = [ChannelProbe('out', w), ChannelProbe('overflow', e)]
         ti: list[Source] = [Source(u, d) for u, d in zip([w, w, s], t[2])]
         to: list[Drain] = [Drain(w), Drain(e)]
-        dev: SIMDSignedModulo = SIMDSignedModulo(w, t[1])
+        dev: SIMDSignedRemainder = SIMDSignedRemainder(w, t[1])
         dev.port_o.connect(to[0].port_i)
         dev.port_e.connect(to[1].port_i)
         ti[0].port_o.connect(dev.ports_i[0])

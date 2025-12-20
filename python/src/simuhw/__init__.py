@@ -42,7 +42,7 @@ __all__ = [
     'Subtractor', 'HalfSubtractor', 'FullSubtractor', 'SIMDSubtractor',
     'Multiplier', 'SignedMultiplier', 'SIMDMultiplier', 'SIMDSignedMultiplier',
     'Divider', 'SignedDivider', 'SIMDDivider', 'SIMDSignedDivider',
-    'Modulo', 'SignedModulo', 'SIMDModulo', 'SIMDSignedModulo'
+    'Remainder', 'SignedRemainder', 'SIMDRemainder', 'SIMDSignedRemainder'
 ]
 
 from ._version import __version__  # noqa:F401
@@ -70,4 +70,4 @@ from ._adder import Adder, HalfAdder, FullAdder, SIMDAdder
 from ._subtractor import Subtractor, HalfSubtractor, FullSubtractor, SIMDSubtractor
 from ._multiplier import Multiplier, SignedMultiplier, SIMDMultiplier, SIMDSignedMultiplier
 from ._divider import Divider, SignedDivider, SIMDDivider, SIMDSignedDivider
-from ._modulo import Modulo, SignedModulo, SIMDModulo, SIMDSignedModulo
+from ._remainder import Remainder, SignedRemainder, SIMDRemainder, SIMDSignedRemainder

@@ -27,15 +27,15 @@ from ._base import InputPort, OutputPort, to_signed_int
 from ._gate import BinaryGate
 
 
-class Modulo(BinaryGate):
-    """A modulo calculator.
+class Remainder(BinaryGate):
+    """A remainder calculator.
 
-    This device calculates a modulo of two unsigned binary integers.
+    This device calculates a remainder of two unsigned binary integers.
 
     """
 
     def __init__(self, width: int) -> None:
-        """Creates a modulo calculator.
+        """Creates a remainder calculator.
 
         Args:
             width: The data word width in bits.
@@ -84,15 +84,15 @@ class Modulo(BinaryGate):
         return (ports_i, None)
 
 
-class SignedModulo(Modulo):
-    """A signed modulo calculator.
+class SignedRemainder(Remainder):
+    """A signed remainder calculator.
 
-    This device calculates a modulo of two signed binary integers.
+    This device calculates a remainder of two signed binary integers.
 
     """
 
     def __init__(self, width: int) -> None:
-        """Creates a signed modulo calculator.
+        """Creates a signed remainder calculator.
 
         Args:
             width: The data word width in bits.
@@ -134,15 +134,15 @@ class SignedModulo(Modulo):
         return (ports_i, None)
 
 
-class SIMDModulo(BinaryGate):
-    """A SIMD modulo calculator.
+class SIMDRemainder(BinaryGate):
+    """A SIMD remainder calculator.
 
-    This device calculates respective moduli of multiple pairs of unsigned binary integers simultaneously.
+    This device calculates respective remainders of multiple pairs of unsigned binary integers simultaneously.
 
     """
 
     def __init__(self, width: int, dsize: int | Iterable[int]) -> None:
-        """Creates a SIMD modulo calculator.
+        """Creates a SIMD remainder calculator.
 
         Args:
             width: The total width of data words in bits.
@@ -226,15 +226,15 @@ class SIMDModulo(BinaryGate):
         return (ports_i, None)
 
 
-class SIMDSignedModulo(SIMDModulo):
-    """A SIMD signed modulo calculator.
+class SIMDSignedRemainder(SIMDRemainder):
+    """A SIMD signed remainder calculator.
 
-    This device calculates respective moduli of multiple pairs of signed binary integers simultaneously.
+    This device calculates respective remainders of multiple pairs of signed binary integers simultaneously.
 
     """
 
     def __init__(self, width: int, dsize: int | Iterable[int]) -> None:
-        """Creates a SIMD signed modulo calculator.
+        """Creates a SIMD signed remainder calculator.
 
         Args:
             width: The total width of data words in bits.
