@@ -27,7 +27,11 @@ from ._group import Group
 
 
 class Simulator:
-    """A simulator."""
+    """A simulator.
+
+    It executes behavioral simulation of devices.
+
+    """
 
     default_max_iter: int | None = 1000
     """The default maximum iteration count during the same current time. No limit in iteration if `None`."""

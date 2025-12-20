@@ -28,7 +28,11 @@ from ._gate import BinaryGate
 
 
 class Divider(BinaryGate):
-    """A divider."""
+    """A divider.
+
+    This device calculates a division of two unsigned binary integers.
+
+    """
 
     def __init__(self, width: int) -> None:
         """Creates a divider.
@@ -81,7 +85,11 @@ class Divider(BinaryGate):
 
 
 class SignedDivider(Divider):
-    """A signed divider."""
+    """A signed divider.
+
+    This device calculates a division of two signed binary integers.
+
+    """
 
     def __init__(self, width: int) -> None:
         """Creates a signed divider.
@@ -127,7 +135,11 @@ class SignedDivider(Divider):
 
 
 class SIMDDivider(BinaryGate):
-    """A SIMD divider."""
+    """A SIMD divider.
+
+    This device calculates respective divisions of multiple pairs of unsigned binary integers simultaneously.
+
+    """
 
     def __init__(self, width: int, dsize: int | Iterable[int]) -> None:
         """Creates a SIMD divider.
@@ -215,7 +227,11 @@ class SIMDDivider(BinaryGate):
 
 
 class SIMDSignedDivider(SIMDDivider):
-    """A SIMD signed divider."""
+    """A SIMD signed divider.
+
+    This device calculates respective divisions of multiple pairs of signed binary integers simultaneously.
+
+    """
 
     def __init__(self, width: int, dsize: int | Iterable[int]) -> None:
         """Creates a SIMD signed divider.

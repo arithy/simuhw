@@ -24,7 +24,12 @@ from ._base import InputPort, OutputPort, Device
 
 
 class Delay(Device):
-    """A device to delay data transfer."""
+    """A device to delay data transfer.
+
+    This device can be also utilized to compose a realistic device
+    with delay in signal transmission and gate switching.
+
+    """
 
     def __init__(self, width: int, *, delay: float) -> None:
         """Creates a device to delay data transfer.

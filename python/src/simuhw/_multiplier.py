@@ -28,7 +28,11 @@ from ._gate import BinaryGate
 
 
 class Multiplier(BinaryGate):
-    """A multiplier."""
+    """A multiplier.
+
+    This device calculates a multiplication of two unsigned binary integers.
+
+    """
 
     def __init__(self, width: int) -> None:
         """Creates a multiplier.
@@ -76,7 +80,11 @@ class Multiplier(BinaryGate):
 
 
 class SignedMultiplier(Multiplier):
-    """A signed multiplier."""
+    """A signed multiplier.
+
+    This device calculates a multiplication of two signed binary integers.
+
+    """
 
     def __init__(self, width: int) -> None:
         """Creates a signed multiplier.
@@ -119,7 +127,11 @@ class SignedMultiplier(Multiplier):
 
 
 class SIMDMultiplier(BinaryGate):
-    """A SIMD multiplier."""
+    """A SIMD multiplier.
+
+    This device calculates respective multiplications of multiple pairs of unsigned binary integers simultaneously.
+
+    """
 
     def __init__(self, width: int, dsize: int | Iterable[int]) -> None:
         """Creates a SIMD multiplier.
@@ -202,7 +214,11 @@ class SIMDMultiplier(BinaryGate):
 
 
 class SIMDSignedMultiplier(SIMDMultiplier):
-    """A SIMD signed multiplier."""
+    """A SIMD signed multiplier.
+
+    This device calculates respective multiplications of multiple pairs of signed binary integers simultaneously.
+
+    """
 
     def __init__(self, width: int, dsize: int | Iterable[int]) -> None:
         """Creates a SIMD signed multiplier.

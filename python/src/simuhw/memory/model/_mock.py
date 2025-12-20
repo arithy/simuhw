@@ -26,7 +26,12 @@ from ._base import MemorizingModel
 
 
 class MockMemorizingModel(MemorizingModel):
-    """A mock memorizing model."""
+    """A mock memorizing model.
+
+    This model does not memorize any input data, and always outputs the same data at respective addresses.
+    It is intended to be used for experiments and tests.
+
+    """
 
     def __init__(self, data_func: Callable[[bytes | None], bytes | None] | None = None) -> None:
         """Creates a mock memorizing model.

@@ -28,7 +28,13 @@ from .arbitrate.policy import ArbitrationPolicy, IndexOrderArbitrationPolicy, Ti
 
 
 class DataCombiner(Device):
-    """A data word combiner."""
+    """A data word combiner.
+
+    This device combines multiple input data words into one data word.
+    The data word from the first input port will be the most significant bits
+    in the output data word.
+
+    """
 
     def __init__(self, widths: Iterable[int]) -> None:
         """Creates a data word combiner.
@@ -84,7 +90,12 @@ class DataCombiner(Device):
 
 
 class DataSplitter(Device):
-    """A data word splitter."""
+    """A data word splitter.
+
+    This device splits an input data word into multiple data words.
+    The most significant bits in the input data word will be output to the first output port.
+
+    """
 
     def __init__(self, widths: Iterable[int]) -> None:
         """Creates a data word splitter.

@@ -28,7 +28,11 @@ from ._gate import BinaryGate
 
 
 class Modulo(BinaryGate):
-    """A modulo calculator."""
+    """A modulo calculator.
+
+    This device calculates a modulo of two unsigned binary integers.
+
+    """
 
     def __init__(self, width: int) -> None:
         """Creates a modulo calculator.
@@ -81,7 +85,11 @@ class Modulo(BinaryGate):
 
 
 class SignedModulo(Modulo):
-    """A signed modulo calculator."""
+    """A signed modulo calculator.
+
+    This device calculates a modulo of two signed binary integers.
+
+    """
 
     def __init__(self, width: int) -> None:
         """Creates a signed modulo calculator.
@@ -127,7 +135,11 @@ class SignedModulo(Modulo):
 
 
 class SIMDModulo(BinaryGate):
-    """A SIMD modulo calculator."""
+    """A SIMD modulo calculator.
+
+    This device calculates respective moduli of multiple pairs of unsigned binary integers simultaneously.
+
+    """
 
     def __init__(self, width: int, dsize: int | Iterable[int]) -> None:
         """Creates a SIMD modulo calculator.
@@ -215,7 +227,11 @@ class SIMDModulo(BinaryGate):
 
 
 class SIMDSignedModulo(SIMDModulo):
-    """A SIMD signed modulo calculator."""
+    """A SIMD signed modulo calculator.
+
+    This device calculates respective moduli of multiple pairs of signed binary integers simultaneously.
+
+    """
 
     def __init__(self, width: int, dsize: int | Iterable[int]) -> None:
         """Creates a SIMD signed modulo calculator.

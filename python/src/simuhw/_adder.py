@@ -28,7 +28,12 @@ from ._gate import BinaryGate
 
 
 class Adder(BinaryGate):
-    """An adder."""
+    """An adder.
+
+    This device calculates an addition of two binary integers.
+    It has no carry input and no carry output.
+
+    """
 
     def __init__(self, width: int) -> None:
         """Creates an adder.
@@ -66,7 +71,12 @@ class Adder(BinaryGate):
 
 
 class HalfAdder(Adder):
-    """A half adder."""
+    """A half adder.
+
+    This device calculates an addition of two binary integers.
+    It has carry output, but has no carry input.
+
+    """
 
     def __init__(self, width: int) -> None:
         """Creates a half adder.
@@ -77,11 +87,11 @@ class HalfAdder(Adder):
         """
         super().__init__(width)
         self._port_co: OutputPort = OutputPort(1)
-        """The output carry port."""
+        """The carry output port."""
 
     @property
     def port_co(self) -> OutputPort:
-        """The output carry port."""
+        """The carry output port."""
         return self._port_co
 
     def reset(self) -> None:
@@ -114,7 +124,12 @@ class HalfAdder(Adder):
 
 
 class FullAdder(HalfAdder):
-    """A full adder."""
+    """A full adder.
+
+    This device calculates an addition of two binary integers.
+    It has carry input and carry output.
+
+    """
 
     def __init__(self, width: int) -> None:
         """Creates a full adder.
@@ -125,11 +140,11 @@ class FullAdder(HalfAdder):
         """
         super().__init__(width)
         self._port_ci: InputPort = InputPort(1)
-        """The input carry port."""
+        """The carry input port."""
 
     @property
     def port_ci(self) -> InputPort:
-        """The input carry port."""
+        """The carry input port."""
         return self._port_ci
 
     def reset(self) -> None:
@@ -166,7 +181,11 @@ class FullAdder(HalfAdder):
 
 
 class SIMDAdder(BinaryGate):
-    """A SIMD adder."""
+    """A SIMD adder.
+
+    This device calculates respective additions of multiple pairs of binary integers simultaneously.
+
+    """
 
     def __init__(self, width: int, dsize: int | Iterable[int]) -> None:
         """Creates a SIMD adder.

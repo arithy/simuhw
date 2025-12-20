@@ -28,7 +28,12 @@ from ._gate import BinaryGate
 
 
 class Subtractor(BinaryGate):
-    """A subtractor."""
+    """A subtractor.
+
+    This device calculates a subtraction of two binary integers.
+    It has no borrow input and no borrow output.
+
+    """
 
     def __init__(self, width: int) -> None:
         """Creates a subtractor.
@@ -66,7 +71,12 @@ class Subtractor(BinaryGate):
 
 
 class HalfSubtractor(Subtractor):
-    """A half subtractor."""
+    """A half subtractor.
+
+    This device calculates a subtraction of two binary integers.
+    It has borrow output, but has no borrow input.
+
+    """
 
     def __init__(self, width: int) -> None:
         """Creates a half subtractor.
@@ -77,11 +87,11 @@ class HalfSubtractor(Subtractor):
         """
         super().__init__(width)
         self._port_co: OutputPort = OutputPort(1)
-        """The output borrow port."""
+        """The borrow output port."""
 
     @property
     def port_co(self) -> OutputPort:
-        """The output borrow port."""
+        """The borrow output port."""
         return self._port_co
 
     def reset(self) -> None:
@@ -114,7 +124,12 @@ class HalfSubtractor(Subtractor):
 
 
 class FullSubtractor(HalfSubtractor):
-    """A full subtractor."""
+    """A full subtractor.
+
+    This device calculates a subtraction of two binary integers.
+    It has borrow input and borrow output.
+
+    """
 
     def __init__(self, width: int) -> None:
         """Creates a full subtractor.
@@ -125,11 +140,11 @@ class FullSubtractor(HalfSubtractor):
         """
         super().__init__(width)
         self._port_ci: InputPort = InputPort(1)
-        """The input borrow port."""
+        """The borrow input port."""
 
     @property
     def port_ci(self) -> InputPort:
-        """The input borrow port."""
+        """The borrow input port."""
         return self._port_ci
 
     def reset(self) -> None:
@@ -166,7 +181,11 @@ class FullSubtractor(HalfSubtractor):
 
 
 class SIMDSubtractor(BinaryGate):
-    """A SIMD subtractor."""
+    """A SIMD subtractor.
+
+    This device calculates respective subtractions of multiple pairs of binary integers simultaneously.
+
+    """
 
     def __init__(self, width: int, dsize: int | Iterable[int]) -> None:
         """Creates a SIMD subtractor.
