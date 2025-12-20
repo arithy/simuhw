@@ -140,63 +140,49 @@ _test_data: list[tuple[int, list[list[tuple[bytes | None, float]]], list[list[li
 def test_Modulo() -> None:
     for t in _test_data:
         w: int = t[0]
-        po: ChannelProbe = ChannelProbe('out', w)
-        pe: ChannelProbe = ChannelProbe('overflow', 1)
+        po: list[ChannelProbe] = [ChannelProbe('out', w), ChannelProbe('overflow', 1)]
         ti: list[Source] = [Source(w, d) for d in t[1]]
-        to: Drain = Drain(w)
-        te: Drain = Drain(1)
-        ar: Modulo = Modulo(w)
-        ar.port_o.connect(to.port_i)
-        ar.port_e.connect(te.port_i)
+        to: list[Drain] = [Drain(w), Drain(1)]
+        dev: Modulo = Modulo(w)
+        dev.port_o.connect(to[0].port_i)
+        dev.port_e.connect(to[1].port_i)
         for i in range(2):
-            ti[i].port_o.connect(ar.ports_i[i])
-        ar.port_o.add_probe(po)
-        ar.port_e.add_probe(pe)
-        sim: Simulator = Simulator(ti + [to, te, ar])
+            ti[i].port_o.connect(dev.ports_i[i])
+        dev.port_o.add_probe(po[0])
+        dev.port_e.add_probe(po[1])
+        sim: Simulator = Simulator([*ti, *to, dev])
         sim.start(show_time=True)
-        r: list[tuple[bytes | None, float]] = t[2][0][0]
-        e: list[tuple[bytes | None, float]] = t[2][0][1]
-        assert len(po.data) == len(r)
-        for io, o in enumerate(po.data):
-            assert o[0] == r[io][0]
-            assert abs(o[1] - r[io][1]) <= _EPS
-        assert len(pe.data) == len(e)
-        for io, o in enumerate(pe.data):
-            assert o[0] == e[io][0]
-            assert abs(o[1] - e[io][1]) <= _EPS
+        for p, r in zip(po, t[2][0]):
+            assert len(p.data) == len(r)
+            for o, q in zip(p.data, r):
+                assert o[0] == q[0]
+                assert abs(o[1] - q[1]) <= _EPS
 
 
 def test_SignedModulo() -> None:
     for t in _test_data:
         w: int = t[0]
-        po: ChannelProbe = ChannelProbe('out', w)
-        pe: ChannelProbe = ChannelProbe('overflow', 1)
+        po: list[ChannelProbe] = [ChannelProbe('out', w), ChannelProbe('overflow', 1)]
         ti: list[Source] = [Source(w, d) for d in t[1]]
-        to: Drain = Drain(w)
-        te: Drain = Drain(1)
-        ar: SignedModulo = SignedModulo(w)
-        ar.port_o.connect(to.port_i)
-        ar.port_e.connect(te.port_i)
+        to: list[Drain] = [Drain(w), Drain(1)]
+        dev: SignedModulo = SignedModulo(w)
+        dev.port_o.connect(to[0].port_i)
+        dev.port_e.connect(to[1].port_i)
         for i in range(2):
-            ti[i].port_o.connect(ar.ports_i[i])
-        ar.port_o.add_probe(po)
-        ar.port_e.add_probe(pe)
-        sim: Simulator = Simulator(ti + [to, te, ar])
+            ti[i].port_o.connect(dev.ports_i[i])
+        dev.port_o.add_probe(po[0])
+        dev.port_e.add_probe(po[1])
+        sim: Simulator = Simulator([*ti, *to, dev])
         sim.start(show_time=True)
-        r: list[tuple[bytes | None, float]] = t[2][1][0]
-        e: list[tuple[bytes | None, float]] = t[2][1][1]
-        assert len(po.data) == len(r)
-        for io, o in enumerate(po.data):
-            assert o[0] == r[io][0]
-            assert abs(o[1] - r[io][1]) <= _EPS
-        assert len(pe.data) == len(e)
-        for io, o in enumerate(pe.data):
-            assert o[0] == e[io][0]
-            assert abs(o[1] - e[io][1]) <= _EPS
+        for p, r in zip(po, t[2][1]):
+            assert len(p.data) == len(r)
+            for o, q in zip(p.data, r):
+                assert o[0] == q[0]
+                assert abs(o[1] - q[1]) <= _EPS
 
 
 def test_SIMDModulo() -> None:
-    data: list[tuple[list[int], list[int], list[list[tuple[bytes | None, float]]], list[list[tuple[bytes | None, float]]]]] = [
+    test_data: list[tuple[list[int], list[int], list[list[tuple[bytes | None, float]]], list[list[tuple[bytes | None, float]]]]] = [
         (
             [32, 2, 8],
             [4, 8, 16, 32],
@@ -223,39 +209,32 @@ def test_SIMDModulo() -> None:
             ]
         )
     ]
-    for t in data:
-        wo: int = t[0][0]
-        ws: int = t[0][1]
-        we: int = t[0][2]
-        po: ChannelProbe = ChannelProbe('out', wo)
-        pe: ChannelProbe = ChannelProbe('overflow', we)
-        ti: list[Source] = [Source(wo if i < 2 else ws, d) for i, d in enumerate(t[2])]
-        to: Drain = Drain(wo)
-        te: Drain = Drain(we)
-        ar: SIMDModulo = SIMDModulo(wo, t[1])
-        ar.port_o.connect(to.port_i)
-        ar.port_e.connect(te.port_i)
-        ti[0].port_o.connect(ar.ports_i[0])
-        ti[1].port_o.connect(ar.ports_i[1])
-        ti[2].port_o.connect(ar.port_s)
-        ar.port_o.add_probe(po)
-        ar.port_e.add_probe(pe)
-        sim: Simulator = Simulator(ti + [to, te, ar])
+    for t in test_data:
+        w: int = t[0][0]
+        s: int = t[0][1]
+        e: int = t[0][2]
+        po: list[ChannelProbe] = [ChannelProbe('out', w), ChannelProbe('overflow', e)]
+        ti: list[Source] = [Source(u, d) for u, d in zip([w, w, s], t[2])]
+        to: list[Drain] = [Drain(w), Drain(e)]
+        dev: SIMDModulo = SIMDModulo(w, t[1])
+        dev.port_o.connect(to[0].port_i)
+        dev.port_e.connect(to[1].port_i)
+        ti[0].port_o.connect(dev.ports_i[0])
+        ti[1].port_o.connect(dev.ports_i[1])
+        ti[2].port_o.connect(dev.port_s)
+        dev.port_o.add_probe(po[0])
+        dev.port_e.add_probe(po[1])
+        sim: Simulator = Simulator([*ti, *to, dev])
         sim.start(show_time=True)
-        r: list[tuple[bytes | None, float]] = t[3][0]
-        e: list[tuple[bytes | None, float]] = t[3][1]
-        assert len(po.data) == len(r)
-        for io, o in enumerate(po.data):
-            assert o[0] == r[io][0]
-            assert abs(o[1] - r[io][1]) <= _EPS
-        assert len(pe.data) == len(e)
-        for io, o in enumerate(pe.data):
-            assert o[0] == e[io][0]
-            assert abs(o[1] - e[io][1]) <= _EPS
+        for p, r in zip(po, t[3]):
+            assert len(p.data) == len(r)
+            for o, q in zip(p.data, r):
+                assert o[0] == q[0]
+                assert abs(o[1] - q[1]) <= _EPS
 
 
 def test_SIMDSignedModulo() -> None:
-    data: list[tuple[list[int], list[int], list[list[tuple[bytes | None, float]]], list[list[tuple[bytes | None, float]]]]] = [
+    test_data: list[tuple[list[int], list[int], list[list[tuple[bytes | None, float]]], list[list[tuple[bytes | None, float]]]]] = [
         (
             [32, 2, 8],
             [4, 8, 16, 32],
@@ -282,32 +261,25 @@ def test_SIMDSignedModulo() -> None:
             ]
         )
     ]
-    for t in data:
-        wo: int = t[0][0]
-        ws: int = t[0][1]
-        we: int = t[0][2]
-        po: ChannelProbe = ChannelProbe('out', wo)
-        pe: ChannelProbe = ChannelProbe('overflow', we)
-        ti: list[Source] = [Source(wo if i < 2 else ws, d) for i, d in enumerate(t[2])]
-        to: Drain = Drain(wo)
-        te: Drain = Drain(we)
-        ar: SIMDSignedModulo = SIMDSignedModulo(wo, t[1])
-        ar.port_o.connect(to.port_i)
-        ar.port_e.connect(te.port_i)
-        ti[0].port_o.connect(ar.ports_i[0])
-        ti[1].port_o.connect(ar.ports_i[1])
-        ti[2].port_o.connect(ar.port_s)
-        ar.port_o.add_probe(po)
-        ar.port_e.add_probe(pe)
-        sim: Simulator = Simulator(ti + [to, te, ar])
+    for t in test_data:
+        w: int = t[0][0]
+        s: int = t[0][1]
+        e: int = t[0][2]
+        po: list[ChannelProbe] = [ChannelProbe('out', w), ChannelProbe('overflow', e)]
+        ti: list[Source] = [Source(u, d) for u, d in zip([w, w, s], t[2])]
+        to: list[Drain] = [Drain(w), Drain(e)]
+        dev: SIMDSignedModulo = SIMDSignedModulo(w, t[1])
+        dev.port_o.connect(to[0].port_i)
+        dev.port_e.connect(to[1].port_i)
+        ti[0].port_o.connect(dev.ports_i[0])
+        ti[1].port_o.connect(dev.ports_i[1])
+        ti[2].port_o.connect(dev.port_s)
+        dev.port_o.add_probe(po[0])
+        dev.port_e.add_probe(po[1])
+        sim: Simulator = Simulator([*ti, *to, dev])
         sim.start(show_time=True)
-        r: list[tuple[bytes | None, float]] = t[3][0]
-        e: list[tuple[bytes | None, float]] = t[3][1]
-        assert len(po.data) == len(r)
-        for io, o in enumerate(po.data):
-            assert o[0] == r[io][0]
-            assert abs(o[1] - r[io][1]) <= _EPS
-        assert len(pe.data) == len(e)
-        for io, o in enumerate(pe.data):
-            assert o[0] == e[io][0]
-            assert abs(o[1] - e[io][1]) <= _EPS
+        for p, r in zip(po, t[3]):
+            assert len(p.data) == len(r)
+            for o, q in zip(p.data, r):
+                assert o[0] == q[0]
+                assert abs(o[1] - q[1]) <= _EPS

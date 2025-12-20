@@ -26,6 +26,8 @@ from simuhw import (
     ChannelProbe, Simulator
 )
 
+_EPS: float = 1e-18
+
 
 _test_data: list[tuple[tuple[int, int], list[list[tuple[bytes | None, float]]], dict[type, list[tuple[bytes | None, float]]]]] = [
     (
@@ -145,17 +147,17 @@ def test_BufferGate() -> None:
         po: ChannelProbe = ChannelProbe('out', w)
         ti: Source = Source(w, t[1][0])
         to: Drain = Drain(w)
-        gt: BufferGate = BufferGate(w)
-        gt.port_o.connect(to.port_i)
-        ti.port_o.connect(gt.port_i)
-        gt.port_o.add_probe(po)
-        sim: Simulator = Simulator([ti, to, gt])
+        dev: BufferGate = BufferGate(w)
+        dev.port_o.connect(to.port_i)
+        ti.port_o.connect(dev.port_i)
+        dev.port_o.add_probe(po)
+        sim: Simulator = Simulator([ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[bytes | None, float]] = t[2][BufferGate]
         assert len(po.data) == len(r)
-        for io, o in enumerate(po.data):
-            assert o[0] == r[io][0]
-            assert o[1] == r[io][1]
+        for o, q in zip(po.data, r):
+            assert o[0] == q[0]
+            assert abs(o[1] - q[1]) <= _EPS
 
 
 def test_NOTGate() -> None:
@@ -164,17 +166,17 @@ def test_NOTGate() -> None:
         po: ChannelProbe = ChannelProbe('out', w)
         ti: Source = Source(w, t[1][0])
         to: Drain = Drain(w)
-        gt: NOTGate = NOTGate(w)
-        gt.port_o.connect(to.port_i)
-        ti.port_o.connect(gt.port_i)
-        gt.port_o.add_probe(po)
-        sim: Simulator = Simulator([ti, to, gt])
+        dev: NOTGate = NOTGate(w)
+        dev.port_o.connect(to.port_i)
+        ti.port_o.connect(dev.port_i)
+        dev.port_o.add_probe(po)
+        sim: Simulator = Simulator([ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[bytes | None, float]] = t[2][NOTGate]
         assert len(po.data) == len(r)
-        for io, o in enumerate(po.data):
-            assert o[0] == r[io][0]
-            assert o[1] == r[io][1]
+        for o, q in zip(po.data, r):
+            assert o[0] == q[0]
+            assert abs(o[1] - q[1]) <= _EPS
 
 
 def test_ANDGate() -> None:
@@ -184,18 +186,18 @@ def test_ANDGate() -> None:
         po: ChannelProbe = ChannelProbe('out', w)
         ti: list[Source] = [Source(w, d) for d in t[1]]
         to: Drain = Drain(w)
-        gt: ANDGate = ANDGate(w, ninputs=n)
-        gt.port_o.connect(to.port_i)
+        dev: ANDGate = ANDGate(w, ninputs=n)
+        dev.port_o.connect(to.port_i)
         for i in range(n):
-            ti[i].port_o.connect(gt.ports_i[i])
-        gt.port_o.add_probe(po)
-        sim: Simulator = Simulator(ti + [to, gt])
+            ti[i].port_o.connect(dev.ports_i[i])
+        dev.port_o.add_probe(po)
+        sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[bytes | None, float]] = t[2][ANDGate]
         assert len(po.data) == len(r)
-        for io, o in enumerate(po.data):
-            assert o[0] == r[io][0]
-            assert o[1] == r[io][1]
+        for o, q in zip(po.data, r):
+            assert o[0] == q[0]
+            assert abs(o[1] - q[1]) <= _EPS
 
 
 def test_ORGate() -> None:
@@ -205,18 +207,18 @@ def test_ORGate() -> None:
         po: ChannelProbe = ChannelProbe('out', w)
         ti: list[Source] = [Source(w, d) for d in t[1]]
         to: Drain = Drain(w)
-        gt: ORGate = ORGate(w, ninputs=n)
-        gt.port_o.connect(to.port_i)
+        dev: ORGate = ORGate(w, ninputs=n)
+        dev.port_o.connect(to.port_i)
         for i in range(n):
-            ti[i].port_o.connect(gt.ports_i[i])
-        gt.port_o.add_probe(po)
-        sim: Simulator = Simulator(ti + [to, gt])
+            ti[i].port_o.connect(dev.ports_i[i])
+        dev.port_o.add_probe(po)
+        sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[bytes | None, float]] = t[2][ORGate]
         assert len(po.data) == len(r)
-        for io, o in enumerate(po.data):
-            assert o[0] == r[io][0]
-            assert o[1] == r[io][1]
+        for o, q in zip(po.data, r):
+            assert o[0] == q[0]
+            assert abs(o[1] - q[1]) <= _EPS
 
 
 def test_XORGate() -> None:
@@ -226,18 +228,18 @@ def test_XORGate() -> None:
         po: ChannelProbe = ChannelProbe('out', w)
         ti: list[Source] = [Source(w, d) for d in t[1]]
         to: Drain = Drain(w)
-        gt: XORGate = XORGate(w, ninputs=n)
-        gt.port_o.connect(to.port_i)
+        dev: XORGate = XORGate(w, ninputs=n)
+        dev.port_o.connect(to.port_i)
         for i in range(n):
-            ti[i].port_o.connect(gt.ports_i[i])
-        gt.port_o.add_probe(po)
-        sim: Simulator = Simulator(ti + [to, gt])
+            ti[i].port_o.connect(dev.ports_i[i])
+        dev.port_o.add_probe(po)
+        sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[bytes | None, float]] = t[2][XORGate]
         assert len(po.data) == len(r)
-        for io, o in enumerate(po.data):
-            assert o[0] == r[io][0]
-            assert o[1] == r[io][1]
+        for o, q in zip(po.data, r):
+            assert o[0] == q[0]
+            assert abs(o[1] - q[1]) <= _EPS
 
 
 def test_NANDGate() -> None:
@@ -247,18 +249,18 @@ def test_NANDGate() -> None:
         po: ChannelProbe = ChannelProbe('out', w)
         ti: list[Source] = [Source(w, d) for d in t[1]]
         to: Drain = Drain(w)
-        gt: NANDGate = NANDGate(w, ninputs=n)
-        gt.port_o.connect(to.port_i)
+        dev: NANDGate = NANDGate(w, ninputs=n)
+        dev.port_o.connect(to.port_i)
         for i in range(n):
-            ti[i].port_o.connect(gt.ports_i[i])
-        gt.port_o.add_probe(po)
-        sim: Simulator = Simulator(ti + [to, gt])
+            ti[i].port_o.connect(dev.ports_i[i])
+        dev.port_o.add_probe(po)
+        sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[bytes | None, float]] = t[2][NANDGate]
         assert len(po.data) == len(r)
-        for io, o in enumerate(po.data):
-            assert o[0] == r[io][0]
-            assert o[1] == r[io][1]
+        for o, q in zip(po.data, r):
+            assert o[0] == q[0]
+            assert abs(o[1] - q[1]) <= _EPS
 
 
 def test_NORGate() -> None:
@@ -268,18 +270,18 @@ def test_NORGate() -> None:
         po: ChannelProbe = ChannelProbe('out', w)
         ti: list[Source] = [Source(w, d) for d in t[1]]
         to: Drain = Drain(w)
-        gt: NORGate = NORGate(w, ninputs=n)
-        gt.port_o.connect(to.port_i)
+        dev: NORGate = NORGate(w, ninputs=n)
+        dev.port_o.connect(to.port_i)
         for i in range(n):
-            ti[i].port_o.connect(gt.ports_i[i])
-        gt.port_o.add_probe(po)
-        sim: Simulator = Simulator(ti + [to, gt])
+            ti[i].port_o.connect(dev.ports_i[i])
+        dev.port_o.add_probe(po)
+        sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[bytes | None, float]] = t[2][NORGate]
         assert len(po.data) == len(r)
-        for io, o in enumerate(po.data):
-            assert o[0] == r[io][0]
-            assert o[1] == r[io][1]
+        for o, q in zip(po.data, r):
+            assert o[0] == q[0]
+            assert abs(o[1] - q[1]) <= _EPS
 
 
 def test_XNORGate() -> None:
@@ -289,15 +291,15 @@ def test_XNORGate() -> None:
         po: ChannelProbe = ChannelProbe('out', w)
         ti: list[Source] = [Source(w, d) for d in t[1]]
         to: Drain = Drain(w)
-        gt: XNORGate = XNORGate(w, ninputs=n)
-        gt.port_o.connect(to.port_i)
+        dev: XNORGate = XNORGate(w, ninputs=n)
+        dev.port_o.connect(to.port_i)
         for i in range(n):
-            ti[i].port_o.connect(gt.ports_i[i])
-        gt.port_o.add_probe(po)
-        sim: Simulator = Simulator(ti + [to, gt])
+            ti[i].port_o.connect(dev.ports_i[i])
+        dev.port_o.add_probe(po)
+        sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[bytes | None, float]] = t[2][XNORGate]
         assert len(po.data) == len(r)
-        for io, o in enumerate(po.data):
-            assert o[0] == r[io][0]
-            assert o[1] == r[io][1]
+        for o, q in zip(po.data, r):
+            assert o[0] == q[0]
+            assert abs(o[1] - q[1]) <= _EPS

@@ -138,83 +138,68 @@ def test_Adder() -> None:
         po: ChannelProbe = ChannelProbe('out', w)
         ti: list[Source] = [Source(w, d) for d in t[1][0]]
         to: Drain = Drain(w)
-        ar: Adder = Adder(w)
-        ar.port_o.connect(to.port_i)
-        for i in range(2):
-            ti[i].port_o.connect(ar.ports_i[i])
-        ar.port_o.add_probe(po)
-        sim: Simulator = Simulator(ti + [to, ar])
+        dev: Adder = Adder(w)
+        dev.port_o.connect(to.port_i)
+        ti[0].port_o.connect(dev.ports_i[0])
+        ti[1].port_o.connect(dev.ports_i[1])
+        dev.port_o.add_probe(po)
+        sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[bytes | None, float]] = t[1][1][0]
         assert len(po.data) == len(r)
-        for io, o in enumerate(po.data):
-            assert o[0] == r[io][0]
-            assert o[1] == r[io][1]
+        for o, q in zip(po.data, r):
+            assert o[0] == q[0]
+            assert abs(o[1] - q[1]) <= _EPS
 
 
 def test_HalfAdder() -> None:
     for t in _test_data:
         w: int = t[0]
-        po: ChannelProbe = ChannelProbe('out', w)
-        pco: ChannelProbe = ChannelProbe('carry', 1)
+        po: list[ChannelProbe] = [ChannelProbe('out', w), ChannelProbe('carry', 1)]
         ti: list[Source] = [Source(w, d) for d in t[1][0]]
-        to: Drain = Drain(w)
-        tco: Drain = Drain(1)
-        ar: HalfAdder = HalfAdder(w)
-        ar.port_o.connect(to.port_i)
-        ar.port_co.connect(tco.port_i)
-        for i in range(2):
-            ti[i].port_o.connect(ar.ports_i[i])
-        ar.port_o.add_probe(po)
-        ar.port_co.add_probe(pco)
-        sim: Simulator = Simulator(ti + [to, tco, ar])
+        to: list[Drain] = [Drain(w), Drain(1)]
+        dev: HalfAdder = HalfAdder(w)
+        dev.port_o.connect(to[0].port_i)
+        dev.port_co.connect(to[1].port_i)
+        ti[0].port_o.connect(dev.ports_i[0])
+        ti[1].port_o.connect(dev.ports_i[1])
+        dev.port_o.add_probe(po[0])
+        dev.port_co.add_probe(po[1])
+        sim: Simulator = Simulator([*ti, *to, dev])
         sim.start(show_time=True)
-        r: list[tuple[bytes | None, float]] = t[1][1][0]
-        assert len(po.data) == len(r)
-        for io, o in enumerate(po.data):
-            assert o[0] == r[io][0]
-            assert o[1] == r[io][1]
-        c: list[tuple[bytes | None, float]] = t[1][1][1]
-        assert len(pco.data) == len(c)
-        for io, o in enumerate(pco.data):
-            assert o[0] == c[io][0]
-            assert o[1] == c[io][1]
+        for p, r in zip(po, t[1][1]):
+            assert len(p.data) == len(r)
+            for o, q in zip(p.data, r):
+                assert o[0] == q[0]
+                assert abs(o[1] - q[1]) <= _EPS
 
 
 def test_FullAdder() -> None:
     for t in _test_data:
         w: int = t[0]
         for j, ci in enumerate([b'\x00', b'\x01', None]):
-            po: ChannelProbe = ChannelProbe('out', w)
-            pco: ChannelProbe = ChannelProbe('carry', 1)
-            ti: list[Source] = [Source(w, d) for d in t[1][0]]
-            tci: Source = Source(1, [(ci, 0.0)])
-            to: Drain = Drain(w)
-            tco: Drain = Drain(1)
-            ar: FullAdder = FullAdder(w)
-            ar.port_o.connect(to.port_i)
-            ar.port_co.connect(tco.port_i)
-            for i in range(2):
-                ti[i].port_o.connect(ar.ports_i[i])
-            tci.port_o.connect(ar.port_ci)
-            ar.port_o.add_probe(po)
-            ar.port_co.add_probe(pco)
-            sim: Simulator = Simulator(ti + [to, tci, tco, ar])
+            po: list[ChannelProbe] = [ChannelProbe('out', w), ChannelProbe('carry', 1)]
+            ti: list[Source] = [Source(u, d) for u, d in zip([w, w, 1], [*t[1][0], [(ci, 0.0)]])]
+            to: list[Drain] = [Drain(w), Drain(1)]
+            dev: FullAdder = FullAdder(w)
+            dev.port_o.connect(to[0].port_i)
+            dev.port_co.connect(to[1].port_i)
+            ti[0].port_o.connect(dev.ports_i[0])
+            ti[1].port_o.connect(dev.ports_i[1])
+            ti[2].port_o.connect(dev.port_ci)
+            dev.port_o.add_probe(po[0])
+            dev.port_co.add_probe(po[1])
+            sim: Simulator = Simulator([*ti, *to, dev])
             sim.start(show_time=True)
-            r: list[tuple[bytes | None, float]] = t[1][1 + j][0]
-            assert len(po.data) == len(r)
-            for io, o in enumerate(po.data):
-                assert o[0] == r[io][0]
-                assert o[1] == r[io][1]
-            c: list[tuple[bytes | None, float]] = t[1][1 + j][1]
-            assert len(pco.data) == len(c)
-            for io, o in enumerate(pco.data):
-                assert o[0] == c[io][0]
-                assert o[1] == c[io][1]
+            for p, r in zip(po, t[1][1 + j]):
+                assert len(p.data) == len(r)
+                for o, q in zip(p.data, r):
+                    assert o[0] == q[0]
+                    assert abs(o[1] - q[1]) <= _EPS
 
 
 def test_SIMDAdder() -> None:
-    data: list[tuple[list[int], list[int], list[list[tuple[bytes | None, float]]], list[tuple[bytes | None, float]]]] = [
+    test_data: list[tuple[list[int], list[int], list[list[tuple[bytes | None, float]]], list[tuple[bytes | None, float]]]] = [
         (
             [32, 2],
             [4, 8, 16, 32],
@@ -235,22 +220,22 @@ def test_SIMDAdder() -> None:
             ]
         )
     ]
-    for t in data:
+    for t in test_data:
         w: int = t[0][0]
         s: int = t[0][1]
         po: ChannelProbe = ChannelProbe('out', w)
-        ti: list[Source] = [Source(w if i < 2 else s, d) for i, d in enumerate(t[2])]
+        ti: list[Source] = [Source(u, d) for u, d in zip([w, w, s], t[2])]
         to: Drain = Drain(w)
-        ar: SIMDAdder = SIMDAdder(w, t[1])
-        ar.port_o.connect(to.port_i)
-        ti[0].port_o.connect(ar.ports_i[0])
-        ti[1].port_o.connect(ar.ports_i[1])
-        ti[2].port_o.connect(ar.port_s)
-        ar.port_o.add_probe(po)
-        sim: Simulator = Simulator(ti + [to, ar])
+        dev: SIMDAdder = SIMDAdder(w, t[1])
+        dev.port_o.connect(to.port_i)
+        ti[0].port_o.connect(dev.ports_i[0])
+        ti[1].port_o.connect(dev.ports_i[1])
+        ti[2].port_o.connect(dev.port_s)
+        dev.port_o.add_probe(po)
+        sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[bytes | None, float]] = t[3]
         assert len(po.data) == len(r)
-        for io, o in enumerate(po.data):
-            assert o[0] == r[io][0]
-            assert abs(o[1] - r[io][1]) <= _EPS
+        for o, q in zip(po.data, r):
+            assert o[0] == q[0]
+            assert abs(o[1] - q[1]) <= _EPS

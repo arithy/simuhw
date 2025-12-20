@@ -201,18 +201,18 @@ def test_LeftShifter() -> None:
         po: ChannelProbe = ChannelProbe('out', w)
         ti: list[Source] = [Source(w, d) for d in t[1]]
         to: Drain = Drain(w)
-        sh: LeftShifter = LeftShifter(w)
-        sh.port_o.connect(to.port_i)
+        dev: LeftShifter = LeftShifter(w)
+        dev.port_o.connect(to.port_i)
         for i in range(2):
-            ti[i].port_o.connect(sh.ports_i[i])
-        sh.port_o.add_probe(po)
-        sim: Simulator = Simulator(ti + [to, sh])
+            ti[i].port_o.connect(dev.ports_i[i])
+        dev.port_o.add_probe(po)
+        sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[bytes | None, float]] = t[2][LeftShifter]
         assert len(po.data) == len(r)
-        for io, o in enumerate(po.data):
-            assert o[0] == r[io][0]
-            assert abs(o[1] - r[io][1]) <= _EPS
+        for o, q in zip(po.data, r):
+            assert o[0] == q[0]
+            assert abs(o[1] - q[1]) <= _EPS
 
 
 def test_RightShifter() -> None:
@@ -221,18 +221,18 @@ def test_RightShifter() -> None:
         po: ChannelProbe = ChannelProbe('out', w)
         ti: list[Source] = [Source(w, d) for d in t[1]]
         to: Drain = Drain(w)
-        sh: RightShifter = RightShifter(w)
-        sh.port_o.connect(to.port_i)
+        dev: RightShifter = RightShifter(w)
+        dev.port_o.connect(to.port_i)
         for i in range(2):
-            ti[i].port_o.connect(sh.ports_i[i])
-        sh.port_o.add_probe(po)
-        sim: Simulator = Simulator(ti + [to, sh])
+            ti[i].port_o.connect(dev.ports_i[i])
+        dev.port_o.add_probe(po)
+        sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[bytes | None, float]] = t[2][RightShifter]
         assert len(po.data) == len(r)
-        for io, o in enumerate(po.data):
-            assert o[0] == r[io][0]
-            assert abs(o[1] - r[io][1]) <= _EPS
+        for o, q in zip(po.data, r):
+            assert o[0] == q[0]
+            assert abs(o[1] - q[1]) <= _EPS
 
 
 def test_ArithmeticRightShifter() -> None:
@@ -241,18 +241,18 @@ def test_ArithmeticRightShifter() -> None:
         po: ChannelProbe = ChannelProbe('out', w)
         ti: list[Source] = [Source(w, d) for d in t[1]]
         to: Drain = Drain(w)
-        sh: ArithmeticRightShifter = ArithmeticRightShifter(w)
-        sh.port_o.connect(to.port_i)
+        dev: ArithmeticRightShifter = ArithmeticRightShifter(w)
+        dev.port_o.connect(to.port_i)
         for i in range(2):
-            ti[i].port_o.connect(sh.ports_i[i])
-        sh.port_o.add_probe(po)
-        sim: Simulator = Simulator(ti + [to, sh])
+            ti[i].port_o.connect(dev.ports_i[i])
+        dev.port_o.add_probe(po)
+        sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[bytes | None, float]] = t[2][ArithmeticRightShifter]
         assert len(po.data) == len(r)
-        for io, o in enumerate(po.data):
-            assert o[0] == r[io][0]
-            assert abs(o[1] - r[io][1]) <= _EPS
+        for o, q in zip(po.data, r):
+            assert o[0] == q[0]
+            assert abs(o[1] - q[1]) <= _EPS
 
 
 def test_LeftRotator() -> None:
@@ -261,18 +261,18 @@ def test_LeftRotator() -> None:
         po: ChannelProbe = ChannelProbe('out', w)
         ti: list[Source] = [Source(w, d) for d in t[1]]
         to: Drain = Drain(w)
-        sh: LeftRotator = LeftRotator(w)
-        sh.port_o.connect(to.port_i)
+        dev: LeftRotator = LeftRotator(w)
+        dev.port_o.connect(to.port_i)
         for i in range(2):
-            ti[i].port_o.connect(sh.ports_i[i])
-        sh.port_o.add_probe(po)
-        sim: Simulator = Simulator(ti + [to, sh])
+            ti[i].port_o.connect(dev.ports_i[i])
+        dev.port_o.add_probe(po)
+        sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[bytes | None, float]] = t[2][LeftRotator]
         assert len(po.data) == len(r)
-        for io, o in enumerate(po.data):
-            assert o[0] == r[io][0]
-            assert abs(o[1] - r[io][1]) <= _EPS
+        for o, q in zip(po.data, r):
+            assert o[0] == q[0]
+            assert abs(o[1] - q[1]) <= _EPS
 
 
 def test_RightRotator() -> None:
@@ -281,22 +281,22 @@ def test_RightRotator() -> None:
         po: ChannelProbe = ChannelProbe('out', w)
         ti: list[Source] = [Source(w, d) for d in t[1]]
         to: Drain = Drain(w)
-        sh: RightRotator = RightRotator(w)
-        sh.port_o.connect(to.port_i)
+        dev: RightRotator = RightRotator(w)
+        dev.port_o.connect(to.port_i)
         for i in range(2):
-            ti[i].port_o.connect(sh.ports_i[i])
-        sh.port_o.add_probe(po)
-        sim: Simulator = Simulator(ti + [to, sh])
+            ti[i].port_o.connect(dev.ports_i[i])
+        dev.port_o.add_probe(po)
+        sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[bytes | None, float]] = t[2][RightRotator]
         assert len(po.data) == len(r)
-        for io, o in enumerate(po.data):
-            assert o[0] == r[io][0]
-            assert abs(o[1] - r[io][1]) <= _EPS
+        for o, q in zip(po.data, r):
+            assert o[0] == q[0]
+            assert abs(o[1] - q[1]) <= _EPS
 
 
 def test_SIMDLeftShifter() -> None:
-    data: list[tuple[list[int], list[int], list[list[tuple[bytes | None, float]]], list[tuple[bytes | None, float]]]] = [
+    test_data: list[tuple[list[int], list[int], list[list[tuple[bytes | None, float]]], list[tuple[bytes | None, float]]]] = [
         (
             [32, 2],
             [4, 8, 16, 32],
@@ -317,29 +317,29 @@ def test_SIMDLeftShifter() -> None:
             ]
         )
     ]
-    for t in data:
-        wo: int = t[0][0]
-        ws: int = t[0][1]
-        po: ChannelProbe = ChannelProbe('out', wo)
-        ti: list[Source] = [Source(wo if i < 2 else ws, d) for i, d in enumerate(t[2])]
-        to: Drain = Drain(wo)
-        sh: SIMDLeftShifter = SIMDLeftShifter(wo, t[1])
-        sh.port_o.connect(to.port_i)
-        ti[0].port_o.connect(sh.ports_i[0])
-        ti[1].port_o.connect(sh.ports_i[1])
-        ti[2].port_o.connect(sh.port_s)
-        sh.port_o.add_probe(po)
-        sim: Simulator = Simulator(ti + [to, sh])
+    for t in test_data:
+        w: int = t[0][0]
+        s: int = t[0][1]
+        po: ChannelProbe = ChannelProbe('out', w)
+        ti: list[Source] = [Source(u, d) for u, d in zip([w, w, s], t[2])]
+        to: Drain = Drain(w)
+        dev: SIMDLeftShifter = SIMDLeftShifter(w, t[1])
+        dev.port_o.connect(to.port_i)
+        ti[0].port_o.connect(dev.ports_i[0])
+        ti[1].port_o.connect(dev.ports_i[1])
+        ti[2].port_o.connect(dev.port_s)
+        dev.port_o.add_probe(po)
+        sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[bytes | None, float]] = t[3]
         assert len(po.data) == len(r)
-        for io, o in enumerate(po.data):
-            assert o[0] == r[io][0]
-            assert abs(o[1] - r[io][1]) <= _EPS
+        for o, q in zip(po.data, r):
+            assert o[0] == q[0]
+            assert abs(o[1] - q[1]) <= _EPS
 
 
 def test_SIMDRightShifter() -> None:
-    data: list[tuple[list[int], list[int], list[list[tuple[bytes | None, float]]], list[tuple[bytes | None, float]]]] = [
+    test_data: list[tuple[list[int], list[int], list[list[tuple[bytes | None, float]]], list[tuple[bytes | None, float]]]] = [
         (
             [32, 2],
             [4, 8, 16, 32],
@@ -360,29 +360,29 @@ def test_SIMDRightShifter() -> None:
             ]
         )
     ]
-    for t in data:
-        wo: int = t[0][0]
-        ws: int = t[0][1]
-        po: ChannelProbe = ChannelProbe('out', wo)
-        ti: list[Source] = [Source(wo if i < 2 else ws, d) for i, d in enumerate(t[2])]
-        to: Drain = Drain(wo)
-        sh: SIMDRightShifter = SIMDRightShifter(wo, t[1])
-        sh.port_o.connect(to.port_i)
-        ti[0].port_o.connect(sh.ports_i[0])
-        ti[1].port_o.connect(sh.ports_i[1])
-        ti[2].port_o.connect(sh.port_s)
-        sh.port_o.add_probe(po)
-        sim: Simulator = Simulator(ti + [to, sh])
+    for t in test_data:
+        w: int = t[0][0]
+        s: int = t[0][1]
+        po: ChannelProbe = ChannelProbe('out', w)
+        ti: list[Source] = [Source(u, d) for u, d in zip([w, w, s], t[2])]
+        to: Drain = Drain(w)
+        dev: SIMDRightShifter = SIMDRightShifter(w, t[1])
+        dev.port_o.connect(to.port_i)
+        ti[0].port_o.connect(dev.ports_i[0])
+        ti[1].port_o.connect(dev.ports_i[1])
+        ti[2].port_o.connect(dev.port_s)
+        dev.port_o.add_probe(po)
+        sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[bytes | None, float]] = t[3]
         assert len(po.data) == len(r)
-        for io, o in enumerate(po.data):
-            assert o[0] == r[io][0]
-            assert abs(o[1] - r[io][1]) <= _EPS
+        for o, q in zip(po.data, r):
+            assert o[0] == q[0]
+            assert abs(o[1] - q[1]) <= _EPS
 
 
 def test_SIMDArithmeticRightShifter() -> None:
-    data: list[tuple[list[int], list[int], list[list[tuple[bytes | None, float]]], list[tuple[bytes | None, float]]]] = [
+    test_data: list[tuple[list[int], list[int], list[list[tuple[bytes | None, float]]], list[tuple[bytes | None, float]]]] = [
         (
             [32, 2],
             [4, 8, 16, 32],
@@ -403,29 +403,29 @@ def test_SIMDArithmeticRightShifter() -> None:
             ]
         )
     ]
-    for t in data:
-        wo: int = t[0][0]
-        ws: int = t[0][1]
-        po: ChannelProbe = ChannelProbe('out', wo)
-        ti: list[Source] = [Source(wo if i < 2 else ws, d) for i, d in enumerate(t[2])]
-        to: Drain = Drain(wo)
-        sh: SIMDArithmeticRightShifter = SIMDArithmeticRightShifter(wo, t[1])
-        sh.port_o.connect(to.port_i)
-        ti[0].port_o.connect(sh.ports_i[0])
-        ti[1].port_o.connect(sh.ports_i[1])
-        ti[2].port_o.connect(sh.port_s)
-        sh.port_o.add_probe(po)
-        sim: Simulator = Simulator(ti + [to, sh])
+    for t in test_data:
+        w: int = t[0][0]
+        s: int = t[0][1]
+        po: ChannelProbe = ChannelProbe('out', w)
+        ti: list[Source] = [Source(u, d) for u, d in zip([w, w, s], t[2])]
+        to: Drain = Drain(w)
+        dev: SIMDArithmeticRightShifter = SIMDArithmeticRightShifter(w, t[1])
+        dev.port_o.connect(to.port_i)
+        ti[0].port_o.connect(dev.ports_i[0])
+        ti[1].port_o.connect(dev.ports_i[1])
+        ti[2].port_o.connect(dev.port_s)
+        dev.port_o.add_probe(po)
+        sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[bytes | None, float]] = t[3]
         assert len(po.data) == len(r)
-        for io, o in enumerate(po.data):
-            assert o[0] == r[io][0]
-            assert abs(o[1] - r[io][1]) <= _EPS
+        for o, q in zip(po.data, r):
+            assert o[0] == q[0]
+            assert abs(o[1] - q[1]) <= _EPS
 
 
 def test_SIMDLeftRotator() -> None:
-    data: list[tuple[list[int], list[int], list[list[tuple[bytes | None, float]]], list[tuple[bytes | None, float]]]] = [
+    test_data: list[tuple[list[int], list[int], list[list[tuple[bytes | None, float]]], list[tuple[bytes | None, float]]]] = [
         (
             [32, 2],
             [4, 8, 16, 32],
@@ -446,29 +446,29 @@ def test_SIMDLeftRotator() -> None:
             ]
         )
     ]
-    for t in data:
-        wo: int = t[0][0]
-        ws: int = t[0][1]
-        po: ChannelProbe = ChannelProbe('out', wo)
-        ti: list[Source] = [Source(wo if i < 2 else ws, d) for i, d in enumerate(t[2])]
-        to: Drain = Drain(wo)
-        sh: SIMDLeftRotator = SIMDLeftRotator(wo, t[1])
-        sh.port_o.connect(to.port_i)
-        ti[0].port_o.connect(sh.ports_i[0])
-        ti[1].port_o.connect(sh.ports_i[1])
-        ti[2].port_o.connect(sh.port_s)
-        sh.port_o.add_probe(po)
-        sim: Simulator = Simulator(ti + [to, sh])
+    for t in test_data:
+        w: int = t[0][0]
+        s: int = t[0][1]
+        po: ChannelProbe = ChannelProbe('out', w)
+        ti: list[Source] = [Source(u, d) for u, d in zip([w, w, s], t[2])]
+        to: Drain = Drain(w)
+        dev: SIMDLeftRotator = SIMDLeftRotator(w, t[1])
+        dev.port_o.connect(to.port_i)
+        ti[0].port_o.connect(dev.ports_i[0])
+        ti[1].port_o.connect(dev.ports_i[1])
+        ti[2].port_o.connect(dev.port_s)
+        dev.port_o.add_probe(po)
+        sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[bytes | None, float]] = t[3]
         assert len(po.data) == len(r)
-        for io, o in enumerate(po.data):
-            assert o[0] == r[io][0]
-            assert abs(o[1] - r[io][1]) <= _EPS
+        for o, q in zip(po.data, r):
+            assert o[0] == q[0]
+            assert abs(o[1] - q[1]) <= _EPS
 
 
 def test_SIMDRightRotator() -> None:
-    data: list[tuple[list[int], list[int], list[list[tuple[bytes | None, float]]], list[tuple[bytes | None, float]]]] = [
+    test_data: list[tuple[list[int], list[int], list[list[tuple[bytes | None, float]]], list[tuple[bytes | None, float]]]] = [
         (
             [32, 2],
             [4, 8, 16, 32],
@@ -489,22 +489,22 @@ def test_SIMDRightRotator() -> None:
             ]
         )
     ]
-    for t in data:
-        wo: int = t[0][0]
-        ws: int = t[0][1]
-        po: ChannelProbe = ChannelProbe('out', wo)
-        ti: list[Source] = [Source(wo if i < 2 else ws, d) for i, d in enumerate(t[2])]
-        to: Drain = Drain(wo)
-        sh: SIMDRightRotator = SIMDRightRotator(wo, t[1])
-        sh.port_o.connect(to.port_i)
-        ti[0].port_o.connect(sh.ports_i[0])
-        ti[1].port_o.connect(sh.ports_i[1])
-        ti[2].port_o.connect(sh.port_s)
-        sh.port_o.add_probe(po)
-        sim: Simulator = Simulator(ti + [to, sh])
+    for t in test_data:
+        w: int = t[0][0]
+        s: int = t[0][1]
+        po: ChannelProbe = ChannelProbe('out', w)
+        ti: list[Source] = [Source(u, d) for u, d in zip([w, w, s], t[2])]
+        to: Drain = Drain(w)
+        dev: SIMDRightRotator = SIMDRightRotator(w, t[1])
+        dev.port_o.connect(to.port_i)
+        ti[0].port_o.connect(dev.ports_i[0])
+        ti[1].port_o.connect(dev.ports_i[1])
+        ti[2].port_o.connect(dev.port_s)
+        dev.port_o.add_probe(po)
+        sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[bytes | None, float]] = t[3]
         assert len(po.data) == len(r)
-        for io, o in enumerate(po.data):
-            assert o[0] == r[io][0]
-            assert abs(o[1] - r[io][1]) <= _EPS
+        for o, q in zip(po.data, r):
+            assert o[0] == q[0]
+            assert abs(o[1] - q[1]) <= _EPS

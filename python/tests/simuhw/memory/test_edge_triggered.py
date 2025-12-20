@@ -26,6 +26,8 @@ from simuhw import Source, Drain, ChannelProbe, MemoryProbe, Simulator
 from simuhw.memory import EdgeTriggeredMemory
 from simuhw.memory.model import MockMemorizingModel, RealMemorizingModel
 
+_EPS: float = 1e-18
+
 
 def test_EdgeTriggeredMemory_Mock() -> None:
     test_data: list[tuple[tuple[int, int, Callable[[bytes | None], bytes | None], bool, bytes], list[list[tuple[bytes | None, float]]]]] = [
@@ -69,26 +71,23 @@ def test_EdgeTriggeredMemory_Mock() -> None:
         a: int = t[0][1]
         po: ChannelProbe = ChannelProbe('out', w)
         pm: MemoryProbe = MemoryProbe('mem', w)
-        ti: list[Source] = [Source(1, t[1][0]), Source(1, t[1][1]), Source(a, t[1][2]), Source(w, t[1][3])]
+        ti: list[Source] = [Source(u, d) for u, d in zip([1, 1, a, w], t[1])]
         to: Drain = Drain(w)
-        mm: EdgeTriggeredMemory = EdgeTriggeredMemory(w, a, model=MockMemorizingModel(t[0][2]), neg_edged=t[0][3])
-        ti[0].port_o.connect(mm.port_c)
-        ti[1].port_o.connect(mm.port_e)
-        ti[2].port_o.connect(mm.port_a)
-        ti[3].port_o.connect(mm.port_i)
-        mm.port_o.connect(to.port_i)
-        mm.port_o.add_probe(po)
-        mm.add_probe(pm, t[0][4])
-        sim: Simulator = Simulator(ti + [to, mm])
+        dev: EdgeTriggeredMemory = EdgeTriggeredMemory(w, a, model=MockMemorizingModel(t[0][2]), neg_edged=t[0][3])
+        ti[0].port_o.connect(dev.port_c)
+        ti[1].port_o.connect(dev.port_e)
+        ti[2].port_o.connect(dev.port_a)
+        ti[3].port_o.connect(dev.port_i)
+        dev.port_o.connect(to.port_i)
+        dev.port_o.add_probe(po)
+        dev.add_probe(pm, t[0][4])
+        sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
-        assert len(po.data) == len(t[1][4])
-        for io, o in enumerate(po.data):
-            assert o[0] == t[1][4][io][0]
-            assert o[1] == t[1][4][io][1]
-        assert len(pm.data) == len(t[1][5])
-        for io, o in enumerate(pm.data):
-            assert o[0] == t[1][5][io][0]
-            assert o[1] == t[1][5][io][1]
+        for p, r in zip([po, pm], t[1][4:6]):
+            assert len(p.data) == len(r)
+            for o, q in zip(p.data, r):
+                assert o[0] == q[0]
+                assert abs(o[1] - q[1]) <= _EPS
 
 
 def test_EdgeTriggeredMemory_Real() -> None:
@@ -143,23 +142,20 @@ def test_EdgeTriggeredMemory_Real() -> None:
         a: int = t[0][1]
         po: ChannelProbe = ChannelProbe('out', w)
         pm: MemoryProbe = MemoryProbe('mem', w)
-        ti: list[Source] = [Source(1, t[1][0]), Source(1, t[1][1]), Source(a, t[1][2]), Source(w, t[1][3])]
+        ti: list[Source] = [Source(u, d) for u, d in zip([1, 1, a, w], t[1])]
         to: Drain = Drain(w)
-        mm: EdgeTriggeredMemory = EdgeTriggeredMemory(w, a, model=RealMemorizingModel(t[0][2]), neg_edged=t[0][3])
-        ti[0].port_o.connect(mm.port_c)
-        ti[1].port_o.connect(mm.port_e)
-        ti[2].port_o.connect(mm.port_a)
-        ti[3].port_o.connect(mm.port_i)
-        mm.port_o.connect(to.port_i)
-        mm.port_o.add_probe(po)
-        mm.add_probe(pm, t[0][4])
-        sim: Simulator = Simulator(ti + [to, mm])
+        dev: EdgeTriggeredMemory = EdgeTriggeredMemory(w, a, model=RealMemorizingModel(t[0][2]), neg_edged=t[0][3])
+        ti[0].port_o.connect(dev.port_c)
+        ti[1].port_o.connect(dev.port_e)
+        ti[2].port_o.connect(dev.port_a)
+        ti[3].port_o.connect(dev.port_i)
+        dev.port_o.connect(to.port_i)
+        dev.port_o.add_probe(po)
+        dev.add_probe(pm, t[0][4])
+        sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
-        assert len(po.data) == len(t[1][4])
-        for io, o in enumerate(po.data):
-            assert o[0] == t[1][4][io][0]
-            assert o[1] == t[1][4][io][1]
-        assert len(pm.data) == len(t[1][5])
-        for io, o in enumerate(pm.data):
-            assert o[0] == t[1][5][io][0]
-            assert o[1] == t[1][5][io][1]
+        for p, r in zip([po, pm], t[1][4:6]):
+            assert len(p.data) == len(r)
+            for o, q in zip(p.data, r):
+                assert o[0] == q[0]
+                assert abs(o[1] - q[1]) <= _EPS

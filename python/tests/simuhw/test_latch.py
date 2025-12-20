@@ -22,6 +22,8 @@
 
 from simuhw import Source, Drain, DLatch, ChannelProbe, Simulator
 
+_EPS: float = 1e-18
+
 
 def test_DLatch() -> None:
     test_data: list[tuple[tuple[int, bool], list[tuple[bytes | None, float]], list[tuple[bytes | None, float]], list[tuple[bytes | None, float]]]] = [
@@ -59,14 +61,15 @@ def test_DLatch() -> None:
         po: ChannelProbe = ChannelProbe('out', w)
         ti: list[Source] = [Source(1, t[1]), Source(w, t[2])]
         to: Drain = Drain(w)
-        lc: DLatch = DLatch(w, neg_leveled=t[0][1])
-        ti[0].port_o.connect(lc.port_g)
-        ti[1].port_o.connect(lc.port_i)
-        lc.port_o.connect(to.port_i)
-        lc.port_o.add_probe(po)
-        sim: Simulator = Simulator(ti + [to, lc])
+        dev: DLatch = DLatch(w, neg_leveled=t[0][1])
+        ti[0].port_o.connect(dev.port_g)
+        ti[1].port_o.connect(dev.port_i)
+        dev.port_o.connect(to.port_i)
+        dev.port_o.add_probe(po)
+        sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
-        assert len(po.data) == len(t[3])
-        for io, o in enumerate(po.data):
-            assert o[0] == t[3][io][0]
-            assert o[1] == t[3][io][1]
+        r: list[tuple[bytes | None, float]] = t[3]
+        assert len(po.data) == len(r)
+        for o, q in zip(po.data, r):
+            assert o[0] == q[0]
+            assert abs(o[1] - q[1]) <= _EPS

@@ -31,10 +31,10 @@ def test_Clock() -> None:
         w: int = 1
         po: ChannelProbe = ChannelProbe('out', w)
         to: Drain = Drain(w)
-        cl: Clock = Clock(period, phase=p)
-        cl.port_o.connect(to.port_i)
-        cl.port_o.add_probe(po)
-        sim: Simulator = Simulator([to, cl])
+        dev: Clock = Clock(period, phase=p)
+        dev.port_o.connect(to.port_i)
+        dev.port_o.add_probe(po)
+        sim: Simulator = Simulator([to, dev])
         sim.start(show_time=True, duration=duration)
         if p < period * 0.5:
             assert len(po.data) == (duration - p) // (period * 0.5) + 1

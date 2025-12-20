@@ -27,6 +27,8 @@ from simuhw import (
 )
 from simuhw.arbitrate.policy import IndexOrderArbitrationPolicy, TimeOrderArbitrationPolicy
 
+_EPS: float = 1e-18
+
 
 def test_DataCombiner() -> None:
     test_data: list[tuple[list[int], list[list[tuple[bytes | None, float]]], list[tuple[bytes | None, float]]]] = [
@@ -55,17 +57,18 @@ def test_DataCombiner() -> None:
         po: ChannelProbe = ChannelProbe('out', sum(t[0]))
         ti: list[Source] = [Source(t[0][i], t[1][i]) for i in range(len(t[0]))]
         to: Drain = Drain(sum(t[0]))
-        br: DataCombiner = DataCombiner(t[0])
-        br.port_o.connect(to.port_i)
+        dev: DataCombiner = DataCombiner(t[0])
+        dev.port_o.connect(to.port_i)
         for i in range(len(t[0])):
-            ti[i].port_o.connect(br.ports_i[i])
-        br.port_o.add_probe(po)
-        sim: Simulator = Simulator(ti + [to, br])
+            ti[i].port_o.connect(dev.ports_i[i])
+        dev.port_o.add_probe(po)
+        sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
-        assert len(po.data) == len(t[2])
-        for io, o in enumerate(po.data):
-            assert o[0] == t[2][io][0]
-            assert o[1] == t[2][io][1]
+        r: list[tuple[bytes | None, float]] = t[2]
+        assert len(po.data) == len(r)
+        for o, q in zip(po.data, r):
+            assert o[0] == q[0]
+            assert abs(o[1] - q[1]) <= _EPS
 
 
 def test_DataSplitter() -> None:
@@ -104,18 +107,18 @@ def test_DataSplitter() -> None:
         po: list[ChannelProbe] = [ChannelProbe(f'out{i}', t[0][i]) for i in range(len(t[0]))]
         ti: Source = Source(sum(t[0]), t[1])
         to: list[Drain] = [Drain(t[0][i]) for i in range(len(t[0]))]
-        br: DataSplitter = DataSplitter(t[0])
-        ti.port_o.connect(br.port_i)
+        dev: DataSplitter = DataSplitter(t[0])
+        ti.port_o.connect(dev.port_i)
         for i in range(len(t[0])):
-            br.ports_o[i].connect(to[i].port_i)
-            br.ports_o[i].add_probe(po[i])
-        sim: Simulator = Simulator(to + [ti, br])
+            dev.ports_o[i].connect(to[i].port_i)
+            dev.ports_o[i].add_probe(po[i])
+        sim: Simulator = Simulator([ti, *to, dev])
         sim.start(show_time=True)
-        for i in range(len(t[0])):
-            assert len(po[i].data) == len(t[2][i])
-            for io, o in enumerate(po[i].data):
-                assert o[0] == t[2][i][io][0]
-                assert o[1] == t[2][i][io][1]
+        for p, r in zip(po, t[2]):
+            assert len(p.data) == len(r)
+            for o, q in zip(p.data, r):
+                assert o[0] == q[0]
+                assert abs(o[1] - q[1]) <= _EPS
 
 
 def test_Arbitrator() -> None:
@@ -159,30 +162,25 @@ def test_Arbitrator() -> None:
         )
     ]
     for t in test_data:
-        po: ChannelProbe = ChannelProbe('out', t[0])
-        ps: ChannelProbe = ChannelProbe('sel', len(t[1]))
+        po: list[ChannelProbe] = [ChannelProbe('out', t[0]), ChannelProbe('sel', len(t[1]))]
         ti: list[Source] = [Source(t[0], t[1][i]) for i in range(len(t[1]))]
-        to: Drain = Drain(t[0])
-        ts: Drain = Drain(len(t[1]))
-        br: Arbitrator = Arbitrator(
+        to: list[Drain] = [Drain(t[0]), Drain(len(t[1]))]
+        dev: Arbitrator = Arbitrator(
             t[0], len(t[1]), policy=TimeOrderArbitrationPolicy(when_same=IndexOrderArbitrationPolicy(select_min=False))
         )
-        br.port_o.connect(to.port_i)
-        br.port_s.connect(ts.port_i)
+        dev.port_o.connect(to[0].port_i)
+        dev.port_s.connect(to[1].port_i)
         for i in range(len(t[1])):
-            ti[i].port_o.connect(br.ports_i[i])
-        br.port_o.add_probe(po)
-        br.port_s.add_probe(ps)
-        sim: Simulator = Simulator(ti + [to, ts, br])
+            ti[i].port_o.connect(dev.ports_i[i])
+        dev.port_o.add_probe(po[0])
+        dev.port_s.add_probe(po[1])
+        sim: Simulator = Simulator([*ti, *to, dev])
         sim.start(show_time=True)
-        assert len(po.data) == len(t[2])
-        for io, o in enumerate(po.data):
-            assert o[0] == t[2][io][0]
-            assert o[1] == t[2][io][1]
-        assert len(ps.data) == len(t[3])
-        for io, o in enumerate(ps.data):
-            assert o[0] == t[3][io][0]
-            assert o[1] == t[3][io][1]
+        for p, r in zip(po, t[2:4]):
+            assert len(p.data) == len(r)
+            for o, q in zip(p.data, r):
+                assert o[0] == q[0]
+                assert abs(o[1] - q[1]) <= _EPS
 
 
 def test_Multiplexer() -> None:
@@ -212,22 +210,24 @@ def test_Multiplexer() -> None:
         )
     ]
     for t in test_data:
-        po: ChannelProbe = ChannelProbe('out', t[0])
-        ti: list[Source] = [Source(t[0], t[1][i]) for i in range(len(t[1]))]
-        ts: Source = Source(len(t[1]), t[2])
-        to: Drain = Drain(t[0])
-        br: Multiplexer = Multiplexer(t[0], len(t[1]))
-        br.port_o.connect(to.port_i)
-        ts.port_o.connect(br.port_s)
-        for i in range(len(t[1])):
-            ti[i].port_o.connect(br.ports_i[i])
-        br.port_o.add_probe(po)
-        sim: Simulator = Simulator(ti + [to, ts, br])
+        w: int = t[0]
+        n: int = len(t[1])
+        po: ChannelProbe = ChannelProbe('out', w)
+        ti: list[Source] = [Source(u, d) for u, d in zip([*([w] * n), n], [*t[1], t[2]])]
+        to: Drain = Drain(w)
+        dev: Multiplexer = Multiplexer(w, n)
+        dev.port_o.connect(to.port_i)
+        for i in range(n):
+            ti[i].port_o.connect(dev.ports_i[i])
+        ti[n].port_o.connect(dev.port_s)
+        dev.port_o.add_probe(po)
+        sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
-        assert len(po.data) == len(t[3])
-        for io, o in enumerate(po.data):
-            assert o[0] == t[3][io][0]
-            assert o[1] == t[3][io][1]
+        r: list[tuple[bytes | None, float]] = t[3]
+        assert len(po.data) == len(r)
+        for o, q in zip(po.data, r):
+            assert o[0] == q[0]
+            assert abs(o[1] - q[1]) <= _EPS
 
 
 def test_Demultiplexer() -> None:
@@ -257,22 +257,21 @@ def test_Demultiplexer() -> None:
         d: bytes | None = t[0][1]
         n: int = len(t[3])
         po: list[ChannelProbe] = [ChannelProbe(f'out{i}', w) for i in range(n)]
-        ti: Source = Source(w, t[1])
-        ts: Source = Source(n, t[2])
+        ti: list[Source] = [Source(w, t[1]), Source(n, t[2])]
         to: list[Drain] = [Drain(w) for _ in range(n)]
-        br: Demultiplexer = Demultiplexer(w, n, deselected=d)
-        ti.port_o.connect(br.port_i)
-        ts.port_o.connect(br.port_s)
+        dev: Demultiplexer = Demultiplexer(w, n, deselected=d)
+        ti[0].port_o.connect(dev.port_i)
+        ti[1].port_o.connect(dev.port_s)
         for i in range(n):
-            br.ports_o[i].connect(to[i].port_i)
-            br.ports_o[i].add_probe(po[i])
-        sim: Simulator = Simulator(to + [ti, ts, br])
+            dev.ports_o[i].connect(to[i].port_i)
+            dev.ports_o[i].add_probe(po[i])
+        sim: Simulator = Simulator([*ti, *to, dev])
         sim.start(show_time=True)
-        for i in range(n):
-            assert len(po[i].data) == len(t[3][i])
-            for io, o in enumerate(po[i].data):
-                assert o[0] == t[3][i][io][0]
-                assert o[1] == t[3][i][io][1]
+        for p, r in zip(po, t[3]):
+            assert len(p.data) == len(r)
+            for o, q in zip(p.data, r):
+                assert o[0] == q[0]
+                assert abs(o[1] - q[1]) <= _EPS
 
 
 def test_DataRetainingDemultiplexer() -> None:
@@ -301,22 +300,21 @@ def test_DataRetainingDemultiplexer() -> None:
         w: int = t[0]
         n: int = len(t[3])
         po: list[ChannelProbe] = [ChannelProbe(f'out{i}', w) for i in range(n)]
-        ti: Source = Source(w, t[1])
-        ts: Source = Source(n, t[2])
+        ti: list[Source] = [Source(w, t[1]), Source(n, t[2])]
         to: list[Drain] = [Drain(w) for _ in range(n)]
-        br: DataRetainingDemultiplexer = DataRetainingDemultiplexer(w, n)
-        ti.port_o.connect(br.port_i)
-        ts.port_o.connect(br.port_s)
+        dev: DataRetainingDemultiplexer = DataRetainingDemultiplexer(w, n)
+        ti[0].port_o.connect(dev.port_i)
+        ti[1].port_o.connect(dev.port_s)
         for i in range(n):
-            br.ports_o[i].connect(to[i].port_i)
-            br.ports_o[i].add_probe(po[i])
-        sim: Simulator = Simulator(to + [ti, ts, br])
+            dev.ports_o[i].connect(to[i].port_i)
+            dev.ports_o[i].add_probe(po[i])
+        sim: Simulator = Simulator([*ti, *to, dev])
         sim.start(show_time=True)
-        for i in range(n):
-            assert len(po[i].data) == len(t[3][i])
-            for io, o in enumerate(po[i].data):
-                assert o[0] == t[3][i][io][0]
-                assert o[1] == t[3][i][io][1]
+        for p, r in zip(po, t[3]):
+            assert len(p.data) == len(r)
+            for o, q in zip(p.data, r):
+                assert o[0] == q[0]
+                assert abs(o[1] - q[1]) <= _EPS
 
 
 def test_Distributor() -> None:
@@ -346,15 +344,15 @@ def test_Distributor() -> None:
         po: list[ChannelProbe] = [ChannelProbe(f'out{i}', t[0]) for i in range(n)]
         ti: Source = Source(t[0], t[1])
         to: list[Drain] = [Drain(t[0]) for _ in range(n)]
-        br: Distributor = Distributor(t[0], n)
-        ti.port_o.connect(br.port_i)
+        dev: Distributor = Distributor(t[0], n)
+        ti.port_o.connect(dev.port_i)
         for i in range(n):
-            br.ports_o[i].connect(to[i].port_i)
-            br.ports_o[i].add_probe(po[i])
-        sim: Simulator = Simulator(to + [ti, br])
+            dev.ports_o[i].connect(to[i].port_i)
+            dev.ports_o[i].add_probe(po[i])
+        sim: Simulator = Simulator([ti, *to, dev])
         sim.start(show_time=True)
-        for i in range(n):
-            assert len(po[i].data) == len(t[2][i])
-            for io, o in enumerate(po[i].data):
-                assert o[0] == t[2][i][io][0]
-                assert o[1] == t[2][i][io][1]
+        for p, r in zip(po, t[2]):
+            assert len(p.data) == len(r)
+            for o, q in zip(p.data, r):
+                assert o[0] == q[0]
+                assert abs(o[1] - q[1]) <= _EPS

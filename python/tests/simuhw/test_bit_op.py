@@ -110,17 +110,17 @@ def test_PopulationCounter() -> None:
         po: ChannelProbe = ChannelProbe('out', w)
         ti: Source = Source(w, t[1])
         to: Drain = Drain(w)
-        op: PopulationCounter = PopulationCounter(w)
-        op.port_o.connect(to.port_i)
-        ti.port_o.connect(op.port_i)
-        op.port_o.add_probe(po)
-        sim: Simulator = Simulator([ti, to, op])
+        dev: PopulationCounter = PopulationCounter(w)
+        dev.port_o.connect(to.port_i)
+        ti.port_o.connect(dev.port_i)
+        dev.port_o.add_probe(po)
+        sim: Simulator = Simulator([ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[bytes | None, float]] = t[2][PopulationCounter]
         assert len(po.data) == len(r)
-        for io, o in enumerate(po.data):
-            assert o[0] == r[io][0]
-            assert abs(o[1] - r[io][1]) <= _EPS
+        for o, q in zip(po.data, r):
+            assert o[0] == q[0]
+            assert abs(o[1] - q[1]) <= _EPS
 
 
 def test_LeadingZeroCounter() -> None:
@@ -129,17 +129,17 @@ def test_LeadingZeroCounter() -> None:
         po: ChannelProbe = ChannelProbe('out', w)
         ti: Source = Source(w, t[1])
         to: Drain = Drain(w)
-        op: LeadingZeroCounter = LeadingZeroCounter(w)
-        op.port_o.connect(to.port_i)
-        ti.port_o.connect(op.port_i)
-        op.port_o.add_probe(po)
-        sim: Simulator = Simulator([ti, to, op])
+        dev: LeadingZeroCounter = LeadingZeroCounter(w)
+        dev.port_o.connect(to.port_i)
+        ti.port_o.connect(dev.port_i)
+        dev.port_o.add_probe(po)
+        sim: Simulator = Simulator([ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[bytes | None, float]] = t[2][LeadingZeroCounter]
         assert len(po.data) == len(r)
-        for io, o in enumerate(po.data):
-            assert o[0] == r[io][0]
-            assert abs(o[1] - r[io][1]) <= _EPS
+        for o, q in zip(po.data, r):
+            assert o[0] == q[0]
+            assert abs(o[1] - q[1]) <= _EPS
 
 
 def test_TrailingZeroCounter() -> None:
@@ -148,17 +148,17 @@ def test_TrailingZeroCounter() -> None:
         po: ChannelProbe = ChannelProbe('out', w)
         ti: Source = Source(w, t[1])
         to: Drain = Drain(w)
-        op: TrailingZeroCounter = TrailingZeroCounter(w)
-        op.port_o.connect(to.port_i)
-        ti.port_o.connect(op.port_i)
-        op.port_o.add_probe(po)
-        sim: Simulator = Simulator([ti, to, op])
+        dev: TrailingZeroCounter = TrailingZeroCounter(w)
+        dev.port_o.connect(to.port_i)
+        ti.port_o.connect(dev.port_i)
+        dev.port_o.add_probe(po)
+        sim: Simulator = Simulator([ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[bytes | None, float]] = t[2][TrailingZeroCounter]
         assert len(po.data) == len(r)
-        for io, o in enumerate(po.data):
-            assert o[0] == r[io][0]
-            assert abs(o[1] - r[io][1]) <= _EPS
+        for o, q in zip(po.data, r):
+            assert o[0] == q[0]
+            assert abs(o[1] - q[1]) <= _EPS
 
 
 def test_BitReverser() -> None:
@@ -167,21 +167,21 @@ def test_BitReverser() -> None:
         po: ChannelProbe = ChannelProbe('out', w)
         ti: Source = Source(w, t[1])
         to: Drain = Drain(w)
-        op: BitReverser = BitReverser(w)
-        op.port_o.connect(to.port_i)
-        ti.port_o.connect(op.port_i)
-        op.port_o.add_probe(po)
-        sim: Simulator = Simulator([ti, to, op])
+        dev: BitReverser = BitReverser(w)
+        dev.port_o.connect(to.port_i)
+        ti.port_o.connect(dev.port_i)
+        dev.port_o.add_probe(po)
+        sim: Simulator = Simulator([ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[bytes | None, float]] = t[2][BitReverser]
         assert len(po.data) == len(r)
-        for io, o in enumerate(po.data):
-            assert o[0] == r[io][0]
-            assert abs(o[1] - r[io][1]) <= _EPS
+        for o, q in zip(po.data, r):
+            assert o[0] == q[0]
+            assert abs(o[1] - q[1]) <= _EPS
 
 
 def test_SIMDPopulationCounter() -> None:
-    data: list[tuple[list[int], list[int], list[list[tuple[bytes | None, float]]], list[tuple[bytes | None, float]]]] = [
+    test_data: list[tuple[list[int], list[int], list[list[tuple[bytes | None, float]]], list[tuple[bytes | None, float]]]] = [
         (
             [32, 2],
             [4, 8, 16, 32],
@@ -198,28 +198,28 @@ def test_SIMDPopulationCounter() -> None:
             ]
         )
     ]
-    for t in data:
-        wo: int = t[0][0]
-        ws: int = t[0][1]
-        po: ChannelProbe = ChannelProbe('out', wo)
-        ti: list[Source] = [Source(wo if i < 1 else ws, d) for i, d in enumerate(t[2])]
-        to: Drain = Drain(wo)
-        op: SIMDPopulationCounter = SIMDPopulationCounter(wo, t[1])
-        op.port_o.connect(to.port_i)
-        ti[0].port_o.connect(op.port_i)
-        ti[1].port_o.connect(op.port_s)
-        op.port_o.add_probe(po)
-        sim: Simulator = Simulator(ti + [to, op])
+    for t in test_data:
+        w: int = t[0][0]
+        s: int = t[0][1]
+        po: ChannelProbe = ChannelProbe('out', w)
+        ti: list[Source] = [Source(u, d) for u, d in zip([w, s], t[2])]
+        to: Drain = Drain(w)
+        dev: SIMDPopulationCounter = SIMDPopulationCounter(w, t[1])
+        dev.port_o.connect(to.port_i)
+        ti[0].port_o.connect(dev.port_i)
+        ti[1].port_o.connect(dev.port_s)
+        dev.port_o.add_probe(po)
+        sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[bytes | None, float]] = t[3]
         assert len(po.data) == len(r)
-        for io, o in enumerate(po.data):
-            assert o[0] == r[io][0]
-            assert abs(o[1] - r[io][1]) <= _EPS
+        for o, q in zip(po.data, r):
+            assert o[0] == q[0]
+            assert abs(o[1] - q[1]) <= _EPS
 
 
 def test_SIMDLeadingZeroCounter() -> None:
-    data: list[tuple[list[int], list[int], list[list[tuple[bytes | None, float]]], list[tuple[bytes | None, float]]]] = [
+    test_data: list[tuple[list[int], list[int], list[list[tuple[bytes | None, float]]], list[tuple[bytes | None, float]]]] = [
         (
             [32, 2],
             [4, 8, 16, 32],
@@ -236,28 +236,28 @@ def test_SIMDLeadingZeroCounter() -> None:
             ]
         )
     ]
-    for t in data:
-        wo: int = t[0][0]
-        ws: int = t[0][1]
-        po: ChannelProbe = ChannelProbe('out', wo)
-        ti: list[Source] = [Source(wo if i < 1 else ws, d) for i, d in enumerate(t[2])]
-        to: Drain = Drain(wo)
-        op: SIMDLeadingZeroCounter = SIMDLeadingZeroCounter(wo, t[1])
-        op.port_o.connect(to.port_i)
-        ti[0].port_o.connect(op.port_i)
-        ti[1].port_o.connect(op.port_s)
-        op.port_o.add_probe(po)
-        sim: Simulator = Simulator(ti + [to, op])
+    for t in test_data:
+        w: int = t[0][0]
+        s: int = t[0][1]
+        po: ChannelProbe = ChannelProbe('out', w)
+        ti: list[Source] = [Source(u, d) for u, d in zip([w, s], t[2])]
+        to: Drain = Drain(w)
+        dev: SIMDLeadingZeroCounter = SIMDLeadingZeroCounter(w, t[1])
+        dev.port_o.connect(to.port_i)
+        ti[0].port_o.connect(dev.port_i)
+        ti[1].port_o.connect(dev.port_s)
+        dev.port_o.add_probe(po)
+        sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[bytes | None, float]] = t[3]
         assert len(po.data) == len(r)
-        for io, o in enumerate(po.data):
-            assert o[0] == r[io][0]
-            assert abs(o[1] - r[io][1]) <= _EPS
+        for o, q in zip(po.data, r):
+            assert o[0] == q[0]
+            assert abs(o[1] - q[1]) <= _EPS
 
 
 def test_SIMDTrailingZeroCounter() -> None:
-    data: list[tuple[list[int], list[int], list[list[tuple[bytes | None, float]]], list[tuple[bytes | None, float]]]] = [
+    test_data: list[tuple[list[int], list[int], list[list[tuple[bytes | None, float]]], list[tuple[bytes | None, float]]]] = [
         (
             [32, 2],
             [4, 8, 16, 32],
@@ -274,28 +274,28 @@ def test_SIMDTrailingZeroCounter() -> None:
             ]
         )
     ]
-    for t in data:
-        wo: int = t[0][0]
-        ws: int = t[0][1]
-        po: ChannelProbe = ChannelProbe('out', wo)
-        ti: list[Source] = [Source(wo if i < 1 else ws, d) for i, d in enumerate(t[2])]
-        to: Drain = Drain(wo)
-        op: SIMDTrailingZeroCounter = SIMDTrailingZeroCounter(wo, t[1])
-        op.port_o.connect(to.port_i)
-        ti[0].port_o.connect(op.port_i)
-        ti[1].port_o.connect(op.port_s)
-        op.port_o.add_probe(po)
-        sim: Simulator = Simulator(ti + [to, op])
+    for t in test_data:
+        w: int = t[0][0]
+        s: int = t[0][1]
+        po: ChannelProbe = ChannelProbe('out', w)
+        ti: list[Source] = [Source(u, d) for u, d in zip([w, s], t[2])]
+        to: Drain = Drain(w)
+        dev: SIMDTrailingZeroCounter = SIMDTrailingZeroCounter(w, t[1])
+        dev.port_o.connect(to.port_i)
+        ti[0].port_o.connect(dev.port_i)
+        ti[1].port_o.connect(dev.port_s)
+        dev.port_o.add_probe(po)
+        sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[bytes | None, float]] = t[3]
         assert len(po.data) == len(r)
-        for io, o in enumerate(po.data):
-            assert o[0] == r[io][0]
-            assert abs(o[1] - r[io][1]) <= _EPS
+        for o, q in zip(po.data, r):
+            assert o[0] == q[0]
+            assert abs(o[1] - q[1]) <= _EPS
 
 
 def test_SIMDBitReverser() -> None:
-    data: list[tuple[list[int], list[int], list[list[tuple[bytes | None, float]]], list[tuple[bytes | None, float]]]] = [
+    test_data: list[tuple[list[int], list[int], list[list[tuple[bytes | None, float]]], list[tuple[bytes | None, float]]]] = [
         (
             [32, 2],
             [4, 8, 16, 32],
@@ -312,21 +312,21 @@ def test_SIMDBitReverser() -> None:
             ]
         )
     ]
-    for t in data:
-        wo: int = t[0][0]
-        ws: int = t[0][1]
-        po: ChannelProbe = ChannelProbe('out', wo)
-        ti: list[Source] = [Source(wo if i < 1 else ws, d) for i, d in enumerate(t[2])]
-        to: Drain = Drain(wo)
-        op: SIMDBitReverser = SIMDBitReverser(wo, t[1])
-        op.port_o.connect(to.port_i)
-        ti[0].port_o.connect(op.port_i)
-        ti[1].port_o.connect(op.port_s)
-        op.port_o.add_probe(po)
-        sim: Simulator = Simulator(ti + [to, op])
+    for t in test_data:
+        w: int = t[0][0]
+        s: int = t[0][1]
+        po: ChannelProbe = ChannelProbe('out', w)
+        ti: list[Source] = [Source(u, d) for u, d in zip([w, s], t[2])]
+        to: Drain = Drain(w)
+        dev: SIMDBitReverser = SIMDBitReverser(w, t[1])
+        dev.port_o.connect(to.port_i)
+        ti[0].port_o.connect(dev.port_i)
+        ti[1].port_o.connect(dev.port_s)
+        dev.port_o.add_probe(po)
+        sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[bytes | None, float]] = t[3]
         assert len(po.data) == len(r)
-        for io, o in enumerate(po.data):
-            assert o[0] == r[io][0]
-            assert abs(o[1] - r[io][1]) <= _EPS
+        for o, q in zip(po.data, r):
+            assert o[0] == q[0]
+            assert abs(o[1] - q[1]) <= _EPS

@@ -43,16 +43,17 @@ def test_Channel() -> None:
         po: ChannelProbe = ChannelProbe('out', w)
         ti: Source = Source(w, t[1])
         to: Drain = Drain(w)
-        ch: Channel = Channel(w, latency=t[0][1], throughput=t[0][2])
-        ch.port_o.connect(to.port_i)
-        ti.port_o.connect(ch.port_i)
-        ch.port_o.add_probe(po)
-        sim: Simulator = Simulator([ti, to, ch])
+        dev: Channel = Channel(w, latency=t[0][1], throughput=t[0][2])
+        dev.port_o.connect(to.port_i)
+        ti.port_o.connect(dev.port_i)
+        dev.port_o.add_probe(po)
+        sim: Simulator = Simulator([ti, to, dev])
         sim.start(show_time=True)
-        assert len(po.data) == len(t[2])
-        for io, o in enumerate(po.data):
-            assert o[0] == t[2][io][0]
-            assert abs(o[1] - t[2][io][1]) <= _EPS
+        r: list[tuple[bytes | None, float]] = t[2]
+        assert len(po.data) == len(r)
+        for o, q in zip(po.data, r):
+            assert o[0] == q[0]
+            assert abs(o[1] - q[1]) <= _EPS
 
 
 def test_MultiplexChannel() -> None:
@@ -86,15 +87,15 @@ def test_MultiplexChannel() -> None:
         po: list[ChannelProbe] = [ChannelProbe(f'out{i}', w) for i in range(m)]
         ti: list[Source] = [Source(w, t[1][i]) for i in range(m)]
         to: list[Drain] = [Drain(w) for _ in range(m)]
-        ch: MultiplexChannel = MultiplexChannel(w, m, latency=t[0][2], throughput=t[0][3])
+        dev: MultiplexChannel = MultiplexChannel(w, m, latency=t[0][2], throughput=t[0][3])
         for i in range(m):
-            ch.ports_o[i].connect(to[i].port_i)
-            ti[i].port_o.connect(ch.ports_i[i])
-            ch.ports_o[i].add_probe(po[i])
-        sim: Simulator = Simulator(ti + to + [ch])
+            dev.ports_o[i].connect(to[i].port_i)
+            ti[i].port_o.connect(dev.ports_i[i])
+            dev.ports_o[i].add_probe(po[i])
+        sim: Simulator = Simulator([*ti, *to, dev])
         sim.start(show_time=True)
-        for i in range(m):
-            assert len(po[i].data) == len(t[2][i])
-            for io, o in enumerate(po[i].data):
-                assert o[0] == t[2][i][io][0]
-                assert abs(o[1] - t[2][i][io][1]) <= _EPS
+        for p, r in zip(po, t[2]):
+            assert len(p.data) == len(r)
+            for o, q in zip(p.data, r):
+                assert o[0] == q[0]
+                assert abs(o[1] - q[1]) <= _EPS

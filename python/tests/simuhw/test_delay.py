@@ -43,13 +43,14 @@ def test_Delay() -> None:
         po: ChannelProbe = ChannelProbe('out', w)
         ti: Source = Source(w, t[1])
         to: Drain = Drain(w)
-        ch: Delay = Delay(w, delay=t[0][1])
-        ch.port_o.connect(to.port_i)
-        ti.port_o.connect(ch.port_i)
-        ch.port_o.add_probe(po)
-        sim: Simulator = Simulator([ti, to, ch])
+        dev: Delay = Delay(w, delay=t[0][1])
+        dev.port_o.connect(to.port_i)
+        ti.port_o.connect(dev.port_i)
+        dev.port_o.add_probe(po)
+        sim: Simulator = Simulator([ti, to, dev])
         sim.start(show_time=True)
-        assert len(po.data) == len(t[2])
-        for io, o in enumerate(po.data):
-            assert o[0] == t[2][io][0]
-            assert abs(o[1] - t[2][io][1]) <= _EPS
+        r: list[tuple[bytes | None, float]] = t[2]
+        assert len(po.data) == len(r)
+        for o, q in zip(po.data, r):
+            assert o[0] == q[0]
+            assert abs(o[1] - q[1]) <= _EPS
