@@ -35,7 +35,9 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: python-package-distributions
-          path: dist/simuhw-*.whl
+          path: |
+            dist/simuhw-*.whl
+            dist/simuhw-*.tar.gz
           retention-days: 1
 
   testpypi:

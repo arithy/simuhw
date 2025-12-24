@@ -35,7 +35,9 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: python-package-distributions
-          path: dist/simuhw-*.whl
+          path: |
+            dist/simuhw-*.whl
+            dist/simuhw-*.tar.gz
           retention-days: 1
 
   pypi:
@@ -87,7 +89,9 @@ jobs:
       - name: Sign distribution with Sigstore
         uses: sigstore/gh-action-sigstore-python@v3.0.0
         with:
-          inputs: ./dist/*.whl
+          inputs: |
+            ./dist/simuhw-*.whl
+            ./dist/simuhw-*.tar.gz
 
       - name: Upload artifact signatures to GitHub Release
         env:
