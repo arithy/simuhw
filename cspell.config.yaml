@@ -37,6 +37,7 @@ words:
   - sigstore
   - Simu
   - simuhw
+  - softfloatpy
   - SOURCEDIR
   - SPHINXBUILD
   - SPHINXOPTS

@@ -1,4 +1,4 @@
-name: Jobs executed on release
+name: Release of packages
 
 on:
   release:
@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
+        with:
+          submodules: recursive
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -29,11 +31,12 @@ jobs:
         run: |
           python -m build
 
-      - name: Store distribution
+      - name: Store built wheel
         uses: actions/upload-artifact@v6
         with:
           name: python-package-distributions
-          path: dist/
+          path: dist/simuhw-*.whl
+          retention-days: 1
 
   pypi:
     name: Publish distribution
@@ -56,9 +59,12 @@ jobs:
         with:
           name: python-package-distributions
           path: dist/
+          merge-multiple: true
 
       - name: Publish distribution to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          verbose: true
 
   github-release:
     needs:
@@ -76,11 +82,12 @@ jobs:
         with:
           name: python-package-distributions
           path: dist/
+          merge-multiple: true
 
       - name: Sign distribution with Sigstore
         uses: sigstore/gh-action-sigstore-python@v3.0.0
         with:
-          inputs: ./dist/*.tar.gz ./dist/*.whl
+          inputs: ./dist/*.whl
 
       - name: Upload artifact signatures to GitHub Release
         env:

@@ -1,4 +1,4 @@
-name: Jobs executed manually for uploading to TestPyPI
+name: Upload of packages to TestPyPI
 
 on:
   workflow_dispatch:
@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
+        with:
+          submodules: recursive
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -29,11 +31,12 @@ jobs:
         run: |
           python -m build
 
-      - name: Store distribution
+      - name: Store built wheel
         uses: actions/upload-artifact@v6
         with:
           name: python-package-distributions
-          path: dist/
+          path: dist/simuhw-*.whl
+          retention-days: 1
 
   testpypi:
     name: Publish test distribution
@@ -56,8 +59,10 @@ jobs:
         with:
           name: python-package-distributions
           path: dist/
+          merge-multiple: true
 
       - name: Publish distribution to TestPyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           repository-url: https://test.pypi.org/legacy/
+          verbose: true
