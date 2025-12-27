@@ -248,7 +248,10 @@ class SIMD_PopulationCounter(SIMD_BitOperator):
         """
         ports_i: list[InputPort] = [*self._ports_i, self._port_s]
         if self._update_time_and_check_inputs(time, ports_i):
-            if self._ports_i[0].data[0] is None or self._port_s.data[0] is None:
+            if (
+                self._ports_i[0].data[0] is None or self._port_s.data[0] is None or
+                int.from_bytes(self._port_s.data[0]) >= len(self._dsize)
+            ):
                 self._port_o.post((None, self._time))
             else:
                 w: int = self._dsize[int.from_bytes(self._port_s.data[0])]
@@ -292,7 +295,10 @@ class SIMD_LeadingZeroCounter(SIMD_BitOperator):
         """
         ports_i: list[InputPort] = [*self._ports_i, self._port_s]
         if self._update_time_and_check_inputs(time, ports_i):
-            if self._ports_i[0].data[0] is None or self._port_s.data[0] is None:
+            if (
+                self._ports_i[0].data[0] is None or self._port_s.data[0] is None or
+                int.from_bytes(self._port_s.data[0]) >= len(self._dsize)
+            ):
                 self._port_o.post((None, self._time))
             else:
                 w: int = self._dsize[int.from_bytes(self._port_s.data[0])]
@@ -336,7 +342,10 @@ class SIMD_TrailingZeroCounter(SIMD_BitOperator):
         """
         ports_i: list[InputPort] = [*self._ports_i, self._port_s]
         if self._update_time_and_check_inputs(time, ports_i):
-            if self._ports_i[0].data[0] is None or self._port_s.data[0] is None:
+            if (
+                self._ports_i[0].data[0] is None or self._port_s.data[0] is None or
+                int.from_bytes(self._port_s.data[0]) >= len(self._dsize)
+            ):
                 self._port_o.post((None, self._time))
             else:
                 w: int = self._dsize[int.from_bytes(self._port_s.data[0])]
@@ -380,7 +389,10 @@ class SIMD_BitReverser(SIMD_BitOperator):
         """
         ports_i: list[InputPort] = [*self._ports_i, self._port_s]
         if self._update_time_and_check_inputs(time, ports_i):
-            if self._ports_i[0].data[0] is None or self._port_s.data[0] is None:
+            if (
+                self._ports_i[0].data[0] is None or self._port_s.data[0] is None or
+                int.from_bytes(self._port_s.data[0]) >= len(self._dsize)
+            ):
                 self._port_o.post((None, self._time))
             else:
                 w: int = self._dsize[int.from_bytes(self._port_s.data[0])]
