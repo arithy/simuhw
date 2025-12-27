@@ -38,6 +38,7 @@ __all__ = [
     'SIMD_Shifter', 'SIMD_LeftShifter', 'SIMD_RightShifter', 'SIMD_ArithmeticRightShifter', 'SIMD_LeftRotator', 'SIMD_RightRotator',
     'BitOperator', 'PopulationCounter', 'LeadingZeroCounter', 'TrailingZeroCounter', 'BitReverser',
     'SIMD_BitOperator', 'SIMD_PopulationCounter', 'SIMD_LeadingZeroCounter', 'SIMD_TrailingZeroCounter', 'SIMD_BitReverser',
+    'Negator', 'SIMD_Negator',
     'Adder', 'HalfAdder', 'FullAdder', 'SIMD_Adder',
     'Subtractor', 'HalfSubtractor', 'FullSubtractor', 'SIMD_Subtractor',
     'Multiplier', 'SignedMultiplier', 'SIMD_Multiplier', 'SIMD_SignedMultiplier',
@@ -66,8 +67,10 @@ from ._bit_op import (
     BitOperator, PopulationCounter, LeadingZeroCounter, TrailingZeroCounter, BitReverser,
     SIMD_BitOperator, SIMD_PopulationCounter, SIMD_LeadingZeroCounter, SIMD_TrailingZeroCounter, SIMD_BitReverser
 )
+from ._negator import Negator, SIMD_Negator
 from ._adder import Adder, HalfAdder, FullAdder, SIMD_Adder
 from ._subtractor import Subtractor, HalfSubtractor, FullSubtractor, SIMD_Subtractor
 from ._multiplier import Multiplier, SignedMultiplier, SIMD_Multiplier, SIMD_SignedMultiplier
 from ._divider import Divider, SignedDivider, SIMD_Divider, SIMD_SignedDivider
 from ._remainder import Remainder, SignedRemainder, SIMD_Remainder, SIMD_SignedRemainder
+from ._comparator import Comparator, SignedComparator, SIMD_Comparator, SIMD_SignedComparator

@@ -1,0 +1,113 @@
+# SimuHW: A behavioral hardware simulator provided as a Python module.
+#
+# Copyright (c) 2024-2025 Arihiro Yoshida. All rights reserved.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+from collections.abc import Iterable
+
+from ._base import InputPort
+from ._bit_op import BitOperator, SIMD_BitOperator
+
+
+class Negator(BitOperator):
+    """A negator.
+
+    This device negates the sign of a binary integer.
+
+    """
+
+    def __init__(self, width: int) -> None:
+        """Creates a negator.
+
+        Args:
+            width: The data word width in bits.
+
+        """
+        super().__init__(width)
+
+    def work(self, time: float | None) -> tuple[list[InputPort], float | None]:
+        """Makes the device work.
+
+        Args:
+            time: The current time in seconds. `None` when starting to make the device work.
+
+        Returns:
+            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            The next resuming time can be `None` if resumable anytime.
+
+        """
+        if self._update_time_and_check_inputs(time, self._ports_i):
+            if self._ports_i[0].data[0] is None:
+                self._port_o.post((None, self._time))
+            else:
+                o: int = -int.from_bytes(self._ports_i[0].data[0])
+                self._port_o.post(((o & self._mask).to_bytes(self._nbytes), self._time))
+            self._set_inputs_unchanged(self._ports_i)
+        return (list(self._ports_i), None)
+
+
+class SIMD_Negator(SIMD_BitOperator):
+    """A SIMD negator.
+
+    This device negates the respective sign of multiple binary integers simultaneously.
+
+    """
+
+    def __init__(self, width: int, dsize: int | Iterable[int]) -> None:
+        """Creates a SIMD negator.
+
+        Args:
+            width: The total width of data words in bits.
+            dsize: The selectable data word width or widths in bits.
+
+        Raises:
+            ValueError: If `width` is not divisible by any of `dsize`.
+
+        """
+        super().__init__(width, dsize)
+
+    def work(self, time: float | None) -> tuple[list[InputPort], float | None]:
+        """Makes the device work.
+
+        Args:
+            time: The current time in seconds. `None` when starting to make the device work.
+
+        Returns:
+            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            The next resuming time can be `None` if resumable anytime.
+
+        """
+        ports_i: list[InputPort] = [*self._ports_i, self._port_s]
+        if self._update_time_and_check_inputs(time, ports_i):
+            if (
+                self._ports_i[0].data[0] is None or self._port_s.data[0] is None or
+                int.from_bytes(self._port_s.data[0]) >= len(self._dsize)
+            ):
+                self._port_o.post((None, self._time))
+            else:
+                w: int = self._dsize[int.from_bytes(self._port_s.data[0])]
+                m: int = (1 << w) - 1
+                v: int = int.from_bytes(self._ports_i[0].data[0])
+                o: int = 0
+                for i in range(0, self._width, w):
+                    o |= (-(v >> i) & m) << i
+                self._port_o.post((o.to_bytes(self._nbytes), self._time))
+            self._set_inputs_unchanged(ports_i)
+        return (ports_i, None)
