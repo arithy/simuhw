@@ -43,7 +43,8 @@ __all__ = [
     'Subtractor', 'HalfSubtractor', 'FullSubtractor', 'SIMD_Subtractor',
     'Multiplier', 'SignedMultiplier', 'SIMD_Multiplier', 'SIMD_SignedMultiplier',
     'Divider', 'SignedDivider', 'SIMD_Divider', 'SIMD_SignedDivider',
-    'Remainder', 'SignedRemainder', 'SIMD_Remainder', 'SIMD_SignedRemainder'
+    'Remainder', 'SignedRemainder', 'SIMD_Remainder', 'SIMD_SignedRemainder',
+    'Comparator', 'SignedComparator', 'SIMD_Comparator', 'SIMD_SignedComparator'
 ]
 
 from ._version import __version__  # noqa:F401
