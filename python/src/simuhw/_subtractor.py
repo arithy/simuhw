@@ -21,13 +21,12 @@
 # SOFTWARE.
 
 from collections.abc import Iterable
-import math
 
 from ._base import InputPort, OutputPort
-from ._gate import BinaryGate
+from ._operator import BinaryOperator, SIMD_BinaryOperator
 
 
-class Subtractor(BinaryGate):
+class Subtractor(BinaryOperator):
     """A subtractor.
 
     This device calculates a subtraction of two binary integers.
@@ -43,10 +42,6 @@ class Subtractor(BinaryGate):
 
         """
         super().__init__(width)
-
-    def reset(self) -> None:
-        """Resets the states."""
-        super().reset()
 
     def work(self, time: float | None) -> tuple[list[InputPort], float | None]:
         """Makes the device work.
@@ -180,7 +175,7 @@ class FullSubtractor(HalfSubtractor):
         return (ports_i, None)
 
 
-class SIMD_Subtractor(BinaryGate):
+class SIMD_Subtractor(SIMD_BinaryOperator):
     """A SIMD subtractor.
 
     This device calculates respective subtractions of multiple pairs of binary integers simultaneously.
@@ -198,28 +193,7 @@ class SIMD_Subtractor(BinaryGate):
             ValueError: If `width` is not divisible by any of `dsize`.
 
         """
-        super().__init__(width)
-        self._dsize: tuple[int, ...] = tuple(dsize) if isinstance(dsize, Iterable) else (dsize,)
-        """The selectable data word widths in bits."""
-        if len(self._dsize) == 0 or any((w <= 0 or width % w != 0 for w in self._dsize)):
-            raise ValueError('inconsistent data word widths')
-        self._port_s: InputPort = InputPort(math.ceil(math.log2(len(self._dsize))))
-        """The input port to select the data word width."""
-
-    @property
-    def dsize(self) -> tuple[int, ...]:
-        """The selectable data word widths in bits."""
-        return self._dsize
-
-    @property
-    def port_s(self) -> InputPort:
-        """The input port to select the data word width."""
-        return self._port_s
-
-    def reset(self) -> None:
-        """Resets the states."""
-        super().reset()
-        self._port_s.reset()
+        super().__init__(width, dsize)
 
     def work(self, time: float | None) -> tuple[list[InputPort], float | None]:
         """Makes the device work.

@@ -29,9 +29,11 @@ __all__ = [
     'Group',
     'Delay',
     'Clock',
-    'Gate', 'UnaryGate', 'BinaryGate', 'BufferGate', 'NOTGate', 'ANDGate', 'ORGate', 'XORGate', 'NANDGate', 'NORGate', 'XNORGate',
     'DataCombiner', 'DataSplitter', 'Arbitrator', 'Multiplexer', 'Demultiplexer', 'DataRetainingDemultiplexer', 'Distributor',
     'Channel', 'MultiplexChannel',
+    'Operator', 'UnaryOperator', 'BinaryOperator', 'TernaryOperator',
+    'SIMD_Operator', 'SIMD_UnaryOperator', 'SIMD_BinaryOperator', 'SIMD_TernaryOperator',
+    'BufferGate', 'NOTGate', 'ANDGate', 'ORGate', 'XORGate', 'NANDGate', 'NORGate', 'XNORGate',
     'DLatch',
     'DFlipFlop',
     'Shifter', 'LeftShifter', 'RightShifter', 'ArithmeticRightShifter', 'LeftRotator', 'RightRotator',
@@ -55,9 +57,13 @@ from ._base import InputPort, OutputPort, Device, Source, LogicLowSource, LogicH
 from ._group import Group
 from ._delay import Delay
 from ._clock import Clock
-from ._gate import Gate, UnaryGate, BinaryGate, BufferGate, NOTGate, ANDGate, ORGate, XORGate, NANDGate, NORGate, XNORGate
 from ._branch import DataCombiner, DataSplitter, Arbitrator, Multiplexer, Demultiplexer, DataRetainingDemultiplexer, Distributor
 from ._channel import Channel, MultiplexChannel
+from ._operator import (
+    Operator, UnaryOperator, BinaryOperator, TernaryOperator,
+    SIMD_Operator, SIMD_UnaryOperator, SIMD_BinaryOperator, SIMD_TernaryOperator
+)
+from ._gate import BufferGate, NOTGate, ANDGate, ORGate, XORGate, NANDGate, NORGate, XNORGate
 from ._latch import DLatch
 from ._flipflop import DFlipFlop
 from ._shifter import (

@@ -20,90 +20,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from abc import ABCMeta
 from functools import reduce
 
-from ._base import InputPort, OutputPort, Device
+from ._base import InputPort
+from ._operator import Operator, UnaryOperator
 
 
-class Gate(Device, metaclass=ABCMeta):
-    """The super class for all gates."""
-
-    def __init__(self, width: int, *, ninputs: int) -> None:
-        """Creates a gate.
-
-        Args:
-            width: The data word width in bits.
-            ninputs: The number of the input ports.
-
-        """
-        super().__init__()
-        self._width: int = width
-        """The data word width in bits."""
-        self._nbytes: int = (width + 7) >> 3
-        """The number of bytes required to represent the output."""
-        self._mask: int = (1 << width) - 1
-        """The mask."""
-        self._ports_i: tuple[InputPort, ...] = tuple(InputPort(width) for _ in range(ninputs))
-        """The input ports."""
-        self._port_o: OutputPort = OutputPort(width)
-        """The output port."""
-
-    @property
-    def width(self) -> int:
-        """The data word width in bits."""
-        return self._width
-
-    @property
-    def ports_i(self) -> tuple[InputPort, ...]:
-        """The input ports."""
-        return self._ports_i
-
-    @property
-    def port_o(self) -> OutputPort:
-        """The output port."""
-        return self._port_o
-
-    def reset(self) -> None:
-        """Resets the states."""
-        super().reset()
-        for p in self._ports_i:
-            p.reset()
-        self._port_o.reset()
-
-
-class UnaryGate(Gate, metaclass=ABCMeta):
-    """The super class for all 1-input gates."""
-
-    def __init__(self, width: int) -> None:
-        """Creates a 1-input gate.
-
-        Args:
-            width: The data word width in bits.
-
-        """
-        super().__init__(width, ninputs=1)
-
-    @property
-    def port_i(self) -> InputPort:
-        """The input port."""
-        return self._ports_i[0]
-
-
-class BinaryGate(Gate, metaclass=ABCMeta):
-    """The super class for all 2-input gates."""
-
-    def __init__(self, width: int) -> None:
-        """Creates a 2-input gate.
-
-        Args:
-            width: The data word width in bits.
-
-        """
-        super().__init__(width, ninputs=2)
-
-
-class BufferGate(UnaryGate):
+class BufferGate(UnaryOperator):
     """A buffer gate."""
 
     def __init__(self, width: int) -> None:
@@ -135,7 +58,7 @@ class BufferGate(UnaryGate):
         return (list(self._ports_i), None)
 
 
-class NOTGate(UnaryGate):
+class NOTGate(UnaryOperator):
     """A NOT gate."""
 
     def __init__(self, width: int) -> None:
@@ -169,7 +92,7 @@ class NOTGate(UnaryGate):
         return (list(self._ports_i), None)
 
 
-class ANDGate(Gate):
+class ANDGate(Operator):
     """An AND gate."""
 
     def __init__(self, width: int, *, ninputs: int = 2) -> None:
@@ -204,7 +127,7 @@ class ANDGate(Gate):
         return (list(self._ports_i), None)
 
 
-class ORGate(Gate):
+class ORGate(Operator):
     """An OR gate."""
 
     def __init__(self, width: int, *, ninputs: int = 2) -> None:
@@ -239,7 +162,7 @@ class ORGate(Gate):
         return (list(self._ports_i), None)
 
 
-class XORGate(Gate):
+class XORGate(Operator):
     """An XOR gate."""
 
     def __init__(self, width: int, *, ninputs: int = 2) -> None:
@@ -274,7 +197,7 @@ class XORGate(Gate):
         return (list(self._ports_i), None)
 
 
-class NANDGate(Gate):
+class NANDGate(Operator):
     """A NAND gate."""
 
     def __init__(self, width: int, *, ninputs: int = 2) -> None:
@@ -309,7 +232,7 @@ class NANDGate(Gate):
         return (list(self._ports_i), None)
 
 
-class NORGate(Gate):
+class NORGate(Operator):
     """A NOR gate."""
 
     def __init__(self, width: int, *, ninputs: int = 2) -> None:
@@ -344,7 +267,7 @@ class NORGate(Gate):
         return (list(self._ports_i), None)
 
 
-class XNORGate(Gate):
+class XNORGate(Operator):
     """An XNOR gate."""
 
     def __init__(self, width: int, *, ninputs: int = 2) -> None:

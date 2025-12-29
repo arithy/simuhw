@@ -22,13 +22,12 @@
 
 from abc import ABCMeta
 from collections.abc import Iterable
-import math
 
 from ._base import InputPort, to_signed_int
-from ._gate import BinaryGate
+from ._operator import BinaryOperator, SIMD_BinaryOperator
 
 
-class Shifter(BinaryGate, metaclass=ABCMeta):
+class Shifter(BinaryOperator, metaclass=ABCMeta):
     """The super class for all barrel shifters."""
 
     def __init__(self, width: int) -> None:
@@ -221,7 +220,7 @@ class RightRotator(Shifter):
         return (ports_i, None)
 
 
-class SIMD_Shifter(BinaryGate, metaclass=ABCMeta):
+class SIMD_Shifter(SIMD_BinaryOperator, metaclass=ABCMeta):
     """The super class for all SIMD barrel shifters."""
 
     def __init__(self, width: int, dsize: int | Iterable[int]) -> None:
@@ -235,28 +234,7 @@ class SIMD_Shifter(BinaryGate, metaclass=ABCMeta):
             ValueError: If `width` is not divisible by any of `dsize`.
 
         """
-        super().__init__(width)
-        self._dsize: tuple[int, ...] = tuple(dsize) if isinstance(dsize, Iterable) else (dsize,)
-        """The selectable data word widths in bits."""
-        if len(self._dsize) == 0 or any((w <= 0 or width % w != 0 for w in self._dsize)):
-            raise ValueError('inconsistent data word widths')
-        self._port_s: InputPort = InputPort(math.ceil(math.log2(len(self._dsize))))
-        """The input port to select the data word width."""
-
-    @property
-    def dsize(self) -> tuple[int, ...]:
-        """The selectable data word widths in bits."""
-        return self._dsize
-
-    @property
-    def port_s(self) -> InputPort:
-        """The input port to select the data word width."""
-        return self._port_s
-
-    def reset(self) -> None:
-        """Resets the states."""
-        super().reset()
-        self._port_s.reset()
+        super().__init__(width, dsize)
 
 
 class SIMD_LeftShifter(SIMD_Shifter):

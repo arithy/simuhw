@@ -23,10 +23,10 @@
 from collections.abc import Iterable
 
 from ._base import InputPort
-from ._bit_op import BitOperator, SIMD_BitOperator
+from ._operator import UnaryOperator, SIMD_UnaryOperator
 
 
-class Negator(BitOperator):
+class Negator(UnaryOperator):
     """A negator.
 
     This device negates the sign of a binary integer.
@@ -63,7 +63,7 @@ class Negator(BitOperator):
         return (list(self._ports_i), None)
 
 
-class SIMD_Negator(SIMD_BitOperator):
+class SIMD_Negator(SIMD_UnaryOperator):
     """A SIMD negator.
 
     This device negates the respective sign of multiple binary integers simultaneously.

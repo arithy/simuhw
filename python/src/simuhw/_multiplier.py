@@ -21,13 +21,12 @@
 # SOFTWARE.
 
 from collections.abc import Iterable
-import math
 
 from ._base import InputPort, OutputPort, to_signed_int
-from ._gate import BinaryGate
+from ._operator import BinaryOperator, SIMD_BinaryOperator
 
 
-class Multiplier(BinaryGate):
+class Multiplier(BinaryOperator):
     """A multiplier.
 
     This device calculates a multiplication of two unsigned binary integers.
@@ -95,10 +94,6 @@ class SignedMultiplier(Multiplier):
         """
         super().__init__(width)
 
-    def reset(self) -> None:
-        """Resets the states."""
-        super().reset()
-
     def work(self, time: float | None) -> tuple[list[InputPort], float | None]:
         """Makes the device work.
 
@@ -126,7 +121,7 @@ class SignedMultiplier(Multiplier):
         return (ports_i, None)
 
 
-class SIMD_Multiplier(BinaryGate):
+class SIMD_Multiplier(SIMD_BinaryOperator):
     """A SIMD multiplier.
 
     This device calculates respective multiplications of multiple pairs of unsigned binary integers simultaneously.
@@ -144,27 +139,11 @@ class SIMD_Multiplier(BinaryGate):
             ValueError: If `width` is not divisible by any of `dsize`.
 
         """
-        super().__init__(width)
-        self._dsize: tuple[int, ...] = tuple(dsize) if isinstance(dsize, Iterable) else (dsize,)
-        """The selectable data word widths in bits."""
-        if len(self._dsize) == 0 or any((w <= 0 or width % w != 0 for w in self._dsize)):
-            raise ValueError('inconsistent data word widths')
-        self._port_s: InputPort = InputPort(math.ceil(math.log2(len(self._dsize))))
-        """The input port to select the data word width."""
+        super().__init__(width, dsize)
         self._port_e: OutputPort = OutputPort(width // min(self._dsize))
         """The output port to emit overflow exception."""
         self._nbytes_e: int = (self._port_e.width + 7) >> 3
         """The number of bytes required to represent the overflow exceptions."""
-
-    @property
-    def dsize(self) -> tuple[int, ...]:
-        """The selectable data word widths in bits."""
-        return self._dsize
-
-    @property
-    def port_s(self) -> InputPort:
-        """The input port to select the data word width."""
-        return self._port_s
 
     @property
     def port_e(self) -> OutputPort:
@@ -174,7 +153,6 @@ class SIMD_Multiplier(BinaryGate):
     def reset(self) -> None:
         """Resets the states."""
         super().reset()
-        self._port_s.reset()
         self._port_e.reset()
 
     def work(self, time: float | None) -> tuple[list[InputPort], float | None]:
@@ -232,10 +210,6 @@ class SIMD_SignedMultiplier(SIMD_Multiplier):
 
         """
         super().__init__(width, dsize)
-
-    def reset(self) -> None:
-        """Resets the states."""
-        super().reset()
 
     def work(self, time: float | None) -> tuple[list[InputPort], float | None]:
         """Makes the device work.
