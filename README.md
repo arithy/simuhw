@@ -23,6 +23,7 @@ You can install the development version by the following commands.
 ```sh
 $ cd simuhw   # the repository root directory
 $ make req
+$ make clean
 $ make dist
 $ python -m pip install --no-index --find-links=./dist simuhw
 ```
