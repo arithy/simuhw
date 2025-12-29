@@ -56,4 +56,4 @@ jobs:
 
       - name: Test code with pytest
         run: |
-          python -m pytest ./python --doctest-modules
+          python -m pytest ./python/tests --doctest-modules

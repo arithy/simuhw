@@ -20,7 +20,7 @@ type:
 	$(PYTHON) -m mypy --strict $(PYROOTDIR)
 
 test:
-	$(PYTHON) -m pytest $(PYROOTDIR) -vv --doctest-modules
+	$(PYTHON) -m pytest $(PYROOTDIR)/tests -vv --doctest-modules
 
 dist:
 	$(PYTHON) -m build
@@ -30,4 +30,4 @@ doc:
 	$(SPHINX_BUILD) -b html $(PYDOCSRCDIR) $(PYDOCOUTDIR)/html
 
 clean:
-	rm -rf $(PYDOCOUTDIR) $(PYROOTDIR)/src/simuhw.egg-info ./dist
+	rm -rf $(PYDOCOUTDIR) $(PYROOTDIR)/src/simuhw.egg-info ./dist $(find . -name '__pycache__')
