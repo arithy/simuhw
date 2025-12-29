@@ -8,3 +8,4 @@ SimuHW Documentation
 
    readme
    apidoc/simuhw
+   genindex

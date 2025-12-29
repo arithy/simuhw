@@ -13,6 +13,7 @@ words:
   - doctests
   - dumpvars
   - errorlevel
+  - genindex
   - hcycle
   - includehidden
   - mypy

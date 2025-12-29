@@ -16,7 +16,7 @@ import simuhw  # noqa: E402
 project = 'SimuHW'
 author = 'Arihiro Yoshida'
 copyright = '2024-%Y ' + author
-version = simuhw._version.__version__
+version = simuhw.__version__
 release = version
 
 # -- General configuration ---------------------------------------------------
