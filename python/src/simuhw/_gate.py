@@ -1,6 +1,6 @@
 # SimuHW: A behavioral hardware simulator provided as a Python module.
 #
-# Copyright (c) 2024-2025 Arihiro Yoshida. All rights reserved.
+# Copyright (c) 2024-2026 Arihiro Yoshida. All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -103,7 +103,7 @@ class ANDGate(Operator):
             ninputs: The number of the input ports.
 
         """
-        super().__init__(width, ninputs=ninputs)
+        super().__init__(width, width, ninputs=ninputs)
 
     def work(self, time: float | None) -> tuple[list[InputPort], float | None]:
         """Makes the device work.
@@ -138,7 +138,7 @@ class ORGate(Operator):
             ninputs: The number of the input ports.
 
         """
-        super().__init__(width, ninputs=ninputs)
+        super().__init__(width, width, ninputs=ninputs)
 
     def work(self, time: float | None) -> tuple[list[InputPort], float | None]:
         """Makes the device work.
@@ -173,7 +173,7 @@ class XORGate(Operator):
             ninputs: The number of the input ports.
 
         """
-        super().__init__(width, ninputs=ninputs)
+        super().__init__(width, width, ninputs=ninputs)
 
     def work(self, time: float | None) -> tuple[list[InputPort], float | None]:
         """Makes the device work.
@@ -208,7 +208,7 @@ class NANDGate(Operator):
             ninputs: The number of the input ports.
 
         """
-        super().__init__(width, ninputs=ninputs)
+        super().__init__(width, width, ninputs=ninputs)
 
     def work(self, time: float | None) -> tuple[list[InputPort], float | None]:
         """Makes the device work.
@@ -243,7 +243,7 @@ class NORGate(Operator):
             ninputs: The number of the input ports.
 
         """
-        super().__init__(width, ninputs=ninputs)
+        super().__init__(width, width, ninputs=ninputs)
 
     def work(self, time: float | None) -> tuple[list[InputPort], float | None]:
         """Makes the device work.
@@ -278,7 +278,7 @@ class XNORGate(Operator):
             ninputs: The number of the input ports.
 
         """
-        super().__init__(width, ninputs=ninputs)
+        super().__init__(width, width, ninputs=ninputs)
 
     def work(self, time: float | None) -> tuple[list[InputPort], float | None]:
         """Makes the device work.

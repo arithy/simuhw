@@ -1,6 +1,6 @@
 # SimuHW: A behavioral hardware simulator provided as a Python module.
 #
-# Copyright (c) 2024-2025 Arihiro Yoshida. All rights reserved.
+# Copyright (c) 2024-2026 Arihiro Yoshida. All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -30,30 +30,40 @@ from ._base import InputPort, OutputPort, Device
 class Operator(Device, metaclass=ABCMeta):
     """The super class for all operators."""
 
-    def __init__(self, width: int, *, ninputs: int) -> None:
+    def __init__(self, width_i: int, width_o: int, *, ninputs: int) -> None:
         """Creates an operator.
 
         Args:
-            width: The data word width in bits.
+            width_i: The input data word width in bits.
+            width_o: The output data word width in bits.
             ninputs: The number of the input ports.
 
         """
         super().__init__()
-        self._width: int = width
-        """The data word width in bits."""
-        self._nbytes: int = (width + 7) >> 3
+        self._width_i: int = width_i
+        """The input data word width in bits."""
+        self._width_o: int = width_o
+        """The output data word width in bits."""
+        self._width: int = width_i if width_i == width_o else 0
+        """The data word width in bits if the input and output data word widths are the same, 0 otherwise."""
+        self._nbytes: int = (width_o + 7) >> 3
         """The number of bytes required to represent the output."""
-        self._mask: int = (1 << width) - 1
-        """The mask."""
-        self._ports_i: tuple[InputPort, ...] = tuple(InputPort(width) for _ in range(ninputs))
+        self._mask: int = (1 << width_o) - 1
+        """The bit mask for the output."""
+        self._ports_i: tuple[InputPort, ...] = tuple(InputPort(width_i) for _ in range(ninputs))
         """The input ports."""
-        self._port_o: OutputPort = OutputPort(width)
+        self._port_o: OutputPort = OutputPort(width_o)
         """The output port."""
 
     @property
-    def width(self) -> int:
-        """The data word width in bits."""
-        return self._width
+    def width_i(self) -> int:
+        """The input data word width in bits."""
+        return self._width_i
+
+    @property
+    def width_o(self) -> int:
+        """The output data word width in bits."""
+        return self._width_o
 
     @property
     def ports_i(self) -> tuple[InputPort, ...]:
@@ -76,14 +86,16 @@ class Operator(Device, metaclass=ABCMeta):
 class UnaryOperator(Operator, metaclass=ABCMeta):
     """The super class for all unary operators."""
 
-    def __init__(self, width: int) -> None:
+    def __init__(self, width_i: int, width_o: int = -1) -> None:
         """Creates a unary operators.
 
         Args:
-            width: The data word width in bits.
+            width_i: The input data word width in bits.
+            width_o: The output data word width in bits.
+                     If a negative value is specified, ``width_i`` is used instead.
 
         """
-        super().__init__(width, ninputs=1)
+        super().__init__(width_i, width_o if width_o >= 0 else width_i, ninputs=1)
 
     @property
     def port_i(self) -> InputPort:
@@ -94,14 +106,16 @@ class UnaryOperator(Operator, metaclass=ABCMeta):
 class BinaryOperator(Operator, metaclass=ABCMeta):
     """The super class for all binary operators."""
 
-    def __init__(self, width: int) -> None:
+    def __init__(self, width_i: int, width_o: int = -1) -> None:
         """Creates a binary operators.
 
         Args:
-            width: The data word width in bits.
+            width_i: The input data word width in bits.
+            width_o: The output data word width in bits.
+                     If a negative value is specified, ``width_i`` is used instead.
 
         """
-        super().__init__(width, ninputs=2)
+        super().__init__(width_i, width_o if width_o >= 0 else width_i, ninputs=2)
 
     @property
     def port_i0(self) -> InputPort:
@@ -117,14 +131,16 @@ class BinaryOperator(Operator, metaclass=ABCMeta):
 class TernaryOperator(Operator, metaclass=ABCMeta):
     """The super class for all binary operators."""
 
-    def __init__(self, width: int) -> None:
+    def __init__(self, width_i: int, width_o: int = -1) -> None:
         """Creates a binary operators.
 
         Args:
-            width: The data word width in bits.
+            width_i: The input data word width in bits.
+            width_o: The output data word width in bits.
+                     If a negative value is specified, ``width_i`` is used instead.
 
         """
-        super().__init__(width, ninputs=3)
+        super().__init__(width_i, width_o if width_o >= 0 else width_i, ninputs=3)
 
     @property
     def port_i0(self) -> InputPort:
@@ -145,34 +161,53 @@ class TernaryOperator(Operator, metaclass=ABCMeta):
 class SIMD_Operator(Operator, metaclass=ABCMeta):
     """The super class for all SIMD operators."""
 
-    def __init__(self, width: int, dsize: int | Iterable[int], *, ninputs: int) -> None:
+    def __init__(self, width_i: int, dsize_i: int | Iterable[int], width_o: int, *, ninputs: int) -> None:
         """Creates a SIMD operator.
 
         Args:
-            width: The data word width in bits.
-            dsize: The selectable data word width or widths in bits.
+            width_i: The total width of input data words in bits.
+            width_o: The total width of output data words in bits.
+            dsize_i: The selectable input data word width or widths in bits.
             ninputs: The number of the input ports.
 
         Raises:
-            ValueError: If `width` is not divisible by any of `dsize`.
+            ValueError: If `width_i` is not divisible by any of `dsize_i`, or if `width_o` is inconsistent with them.
 
         """
-        super().__init__(width, ninputs=ninputs)
-        self._dsize: tuple[int, ...] = tuple(dsize) if isinstance(dsize, Iterable) else (dsize,)
-        """The selectable data word widths in bits."""
-        if len(self._dsize) == 0 or any((w <= 0 or width % w != 0 for w in self._dsize)):
-            raise ValueError('inconsistent data word widths')
-        self._port_s: InputPort = InputPort(math.ceil(math.log2(len(self._dsize))))
-        """The input port to select the data word width."""
+        super().__init__(width_i, width_o, ninputs=ninputs)
+        self._dsize_i: tuple[int, ...] = tuple(dsize_i) if isinstance(dsize_i, Iterable) else (dsize_i,)
+        """The selectable input data word widths in bits."""
+        if len(self._dsize_i) == 0 or any((w <= 0 or width_i % w != 0 for w in self._dsize_i)):
+            raise ValueError('inconsistent input data word widths')
+        self._multi: tuple[int, ...] = tuple(width_i // w for w in self._dsize_i)
+        """The selectable operation multiplicities."""
+        if any((width_o % m != 0 for m in self._multi)):
+            raise ValueError('inconsistent input data word widths')
+        self._dsize_o: tuple[int, ...] = tuple(width_o // m for m in self._multi)
+        """The selectable output data word widths in bits."""
+        self._dsize: tuple[int, ...] = self._dsize_i if width_i == width_o else ()
+        """The selectable data word widths in bits if the input and output data word widths are the same, empty otherwise."""
+        self._port_s: InputPort = InputPort(math.ceil(math.log2(len(self._dsize_i))))
+        """The input port to select the input data word width."""
 
     @property
-    def dsize(self) -> tuple[int, ...]:
-        """The selectable data word widths in bits."""
-        return self._dsize
+    def multi(self) -> tuple[int, ...]:
+        """The selectable operation multiplicities."""
+        return self._multi
+
+    @property
+    def dsize_i(self) -> tuple[int, ...]:
+        """The selectable input data word widths in bits."""
+        return self._dsize_i
+
+    @property
+    def dsize_o(self) -> tuple[int, ...]:
+        """The selectable output data word widths in bits."""
+        return self._dsize_o
 
     @property
     def port_s(self) -> InputPort:
-        """The input port to select the data word width."""
+        """The input port to select the input data word width."""
         return self._port_s
 
     def reset(self) -> None:
@@ -184,18 +219,20 @@ class SIMD_Operator(Operator, metaclass=ABCMeta):
 class SIMD_UnaryOperator(SIMD_Operator, metaclass=ABCMeta):
     """The super class for all SIMD unary operators."""
 
-    def __init__(self, width: int, dsize: int | Iterable[int]) -> None:
+    def __init__(self, width_i: int, dsize_i: int | Iterable[int], width_o: int = -1) -> None:
         """Creates a SIMD unary operator.
 
         Args:
-            width: The total width of data words in bits.
-            dsize: The selectable data word width or widths in bits.
+            width_i: The total width of input data words in bits.
+            width_o: The total width of output data words in bits.
+                     If a negative value is specified, ``width_i`` is used instead.
+            dsize_i: The selectable input data word width or widths in bits.
 
         Raises:
-            ValueError: If `width` is not divisible by any of `dsize`.
+            ValueError: If `width_i` is not divisible by any of `dsize_i`, or if `width_o` is inconsistent with them.
 
         """
-        super().__init__(width, dsize, ninputs=1)
+        super().__init__(width_i, dsize_i, width_o if width_o >= 0 else width_i, ninputs=1)
 
     @property
     def port_i(self) -> InputPort:
@@ -206,18 +243,20 @@ class SIMD_UnaryOperator(SIMD_Operator, metaclass=ABCMeta):
 class SIMD_BinaryOperator(SIMD_Operator, metaclass=ABCMeta):
     """The super class for all SIMD binary operators."""
 
-    def __init__(self, width: int, dsize: int | Iterable[int]) -> None:
+    def __init__(self, width_i: int, dsize_i: int | Iterable[int], width_o: int = -1) -> None:
         """Creates a SIMD binary operator.
 
         Args:
-            width: The total width of data words in bits.
-            dsize: The selectable data word width or widths in bits.
+            width_i: The total width of input data words in bits.
+            width_o: The total width of output data words in bits.
+                     If a negative value is specified, ``width_i`` is used instead.
+            dsize_i: The selectable input data word width or widths in bits.
 
         Raises:
-            ValueError: If `width` is not divisible by any of `dsize`.
+            ValueError: If `width_i` is not divisible by any of `dsize_i`, or if `width_o` is inconsistent with them.
 
         """
-        super().__init__(width, dsize, ninputs=2)
+        super().__init__(width_i, dsize_i, width_o if width_o >= 0 else width_i, ninputs=2)
 
     @property
     def port_i0(self) -> InputPort:
@@ -233,18 +272,20 @@ class SIMD_BinaryOperator(SIMD_Operator, metaclass=ABCMeta):
 class SIMD_TernaryOperator(SIMD_Operator, metaclass=ABCMeta):
     """The super class for all SIMD ternary operators."""
 
-    def __init__(self, width: int, dsize: int | Iterable[int]) -> None:
+    def __init__(self, width_i: int, dsize_i: int | Iterable[int], width_o: int = -1) -> None:
         """Creates a SIMD ternary operator.
 
         Args:
-            width: The total width of data words in bits.
-            dsize: The selectable data word width or widths in bits.
+            width_i: The total width of input data words in bits.
+            width_o: The total width of output data words in bits.
+                     If a negative value is specified, ``width_i`` is used instead.
+            dsize_i: The selectable input data word width or widths in bits.
 
         Raises:
-            ValueError: If `width` is not divisible by any of `dsize`.
+            ValueError: If `width_i` is not divisible by any of `dsize_i`, or if `width_o` is inconsistent with them.
 
         """
-        super().__init__(width, dsize, ninputs=3)
+        super().__init__(width_i, dsize_i, width_o if width_o >= 0 else width_i, ninputs=3)
 
     @property
     def port_i0(self) -> InputPort:
