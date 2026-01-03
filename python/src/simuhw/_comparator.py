@@ -30,7 +30,8 @@ class Comparator(BinaryOperator):
     """A comparator.
 
     This device compares two unsigned binary integers.
-    It outputs -1 ('less than'), 1 ('greater than'), or 0 ('equal to').
+    It outputs -1 ('less than'), 1 ('greater than'), or 0 ('equal to')
+    as a signed binary integer with the same number of bits.
 
     """
 
@@ -69,7 +70,8 @@ class SignedComparator(Comparator):
     """A signed comparator.
 
     This device compares two signed binary integers.
-    It outputs -1 ('less than'), 1 ('greater than'), or 0 ('equal to').
+    It outputs -1 ('less than'), 1 ('greater than'), or 0 ('equal to')
+    as a signed binary integer with the same number of bits.
 
     """
 
@@ -111,7 +113,8 @@ class SIMD_Comparator(SIMD_BinaryOperator):
     """A SIMD comparator.
 
     This device makes respective comparisons of multiple pairs of unsigned binary integers simultaneously.
-    Each output element is to have -1 ('less than'), 1 ('greater than'), or 0 ('equal to').
+    Each output element is to have -1 ('less than'), 1 ('greater than'), or 0 ('equal to')
+    as a signed binary integer with the same number of bits.
 
     """
 
@@ -164,7 +167,8 @@ class SIMD_SignedComparator(SIMD_Comparator):
     """A SIMD signed comparator.
 
     This device makes respective comparisons of multiple pairs of signed binary integers simultaneously.
-    Each output element is to have -1 ('less than'), 1 ('greater than'), or 0 ('equal to').
+    Each output element is to have -1 ('less than'), 1 ('greater than'), or 0 ('equal to')
+    as a signed binary integer with the same number of bits.
 
     """
 
