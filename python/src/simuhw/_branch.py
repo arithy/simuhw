@@ -70,11 +70,11 @@ class DataCombiner(Device):
         """Makes the device work.
 
         Args:
-            time: The current time in seconds. `None` when starting to make the device work.
+            time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
             A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
-            The next resuming time can be `None` if resumable anytime.
+            The next resuming time can be ``None`` if resumable anytime.
 
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
@@ -131,11 +131,11 @@ class DataSplitter(Device):
         """Makes the device work.
 
         Args:
-            time: The current time in seconds. `None` when starting to make the device work.
+            time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
             A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
-            The next resuming time can be `None` if resumable anytime.
+            The next resuming time can be ``None`` if resumable anytime.
 
         """
         ports_i: list[InputPort] = [self._port_i]
@@ -219,11 +219,11 @@ class Arbitrator(Device):
         """Makes the device work.
 
         Args:
-            time: The current time in seconds. `None` when starting to make the device work.
+            time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
             A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
-            The next resuming time can be `None` if resumable anytime.
+            The next resuming time can be ``None`` if resumable anytime.
 
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
@@ -290,11 +290,11 @@ class Multiplexer(Device):
         """Makes the device work.
 
         Args:
-            time: The current time in seconds. `None` when starting to make the device work.
+            time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
             A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
-            The next resuming time can be `None` if resumable anytime.
+            The next resuming time can be ``None`` if resumable anytime.
 
         """
         ports_i: list[InputPort] = [*self._ports_i, self._port_s]
@@ -366,11 +366,11 @@ class Demultiplexer(Device):
         """Makes the device work.
 
         Args:
-            time: The current time in seconds. `None` when starting to make the device work.
+            time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
             A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
-            The next resuming time can be `None` if resumable anytime.
+            The next resuming time can be ``None`` if resumable anytime.
 
         """
         ports_i: list[InputPort] = [self._port_i, self._port_s]
@@ -406,11 +406,11 @@ class DataRetainingDemultiplexer(Demultiplexer):
         """Makes the device work.
 
         Args:
-            time: The current time in seconds. `None` when starting to make the device work.
+            time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
             A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
-            The next resuming time can be `None` if resumable anytime.
+            The next resuming time can be ``None`` if resumable anytime.
 
         """
         ports_i: list[InputPort] = [self._port_i, self._port_s]
@@ -472,11 +472,11 @@ class Distributor(Device):
         """Makes the device work.
 
         Args:
-            time: The current time in seconds. `None` when starting to make the device work.
+            time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
             A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
-            The next resuming time can be `None` if resumable anytime.
+            The next resuming time can be ``None`` if resumable anytime.
 
         """
         ports_i: list[InputPort] = [self._port_i]

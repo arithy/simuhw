@@ -30,9 +30,9 @@ def combine_bits(nbits0: int, bits0: bytes, nbits1: int, bits1: bytes) -> bytes:
     """Returns the bit sequence obtained by combining the specified bit sequences.
 
     Args:
-        nbits0: The number of bits in the bit sequence `bits0`.
+        nbits0: The number of bits in the bit sequence ``bits0``.
         bits0: The bit sequence to be the left bits in the combined bit sequence.
-        nbits1: The number of bits in the bit sequence `bits1`.
+        nbits1: The number of bits in the bit sequence ``bits1``.
         bits1: The bit sequence to be the right bits in the combined bit sequence.
 
     Returns:
@@ -48,9 +48,9 @@ def extract_bits(nbits: int, bits: bytes, start: int, length: int) -> bytes:
     """Returns the new bit sequence extracted from the specified bit sequence.
 
     Args:
-        nbits: The number of bits in the bit sequence `bits`.
+        nbits: The number of bits in the bit sequence ``bits``.
         bits: The bit sequence from which the bit sequence is to be extracted.
-        start: The start bit position in the bit sequence `bits` from which the new bit sequence is to be extracted.
+        start: The start bit position in the bit sequence ``bits`` from which the new bit sequence is to be extracted.
         length: The length in bits of the new bit sequence.
 
     Returns:
@@ -112,7 +112,7 @@ class Port(metaclass=ABCMeta):
             probe: The channel probe to be added.
 
         Raises:
-            ValueError: If a channel probe with a different data word width is specified in `probe`.
+            ValueError: If a channel probe with a different data word width is specified in ``probe``.
 
         """
         if self._width != probe.width:
@@ -127,7 +127,7 @@ class Port(metaclass=ABCMeta):
             probe: The channel probe to be removed.
 
         Raises:
-            ValueError: If a channel probe not yet added is specified in `probe`.
+            ValueError: If a channel probe not yet added is specified in ``probe``.
 
         """
         if probe not in self._probes:
@@ -151,13 +151,13 @@ class InputPort(Port):
         """
         super().__init__(width)
         self._connected: bool = False
-        """`True` if connected to an output port, `False` otherwise."""
+        """``True`` if connected to an output port, ``False`` otherwise."""
         self._changed: bool = False
-        """`True` if the data has been changed, `False` otherwise."""
+        """``True`` if the data has been changed, ``False`` otherwise."""
 
     @property
     def connected(self) -> bool:
-        """`True` if connected to an output port, `False` otherwise."""
+        """``True`` if connected to an output port, ``False`` otherwise."""
         return self._connected
 
     def mark_as_connected(self) -> None:
@@ -170,7 +170,7 @@ class InputPort(Port):
 
     @property
     def changed(self) -> bool:
-        """`True` if the data has been changed, `False` otherwise."""
+        """``True`` if the data has been changed, ``False`` otherwise."""
         return self._changed
 
     def mark_as_changed(self) -> None:
@@ -207,26 +207,26 @@ class OutputPort(Port):
         """
         super().__init__(width)
         self._peer: InputPort | None = None
-        """The input port. `None` if no connected input port."""
+        """The input port. ``None`` if no connected input port."""
 
     @property
     def peer(self) -> InputPort | None:
-        """The input port. `None` if no connected input port."""
+        """The input port. ``None`` if no connected input port."""
         return self._peer
 
     @property
     def connected(self) -> bool:
-        """`True` if connected to an input port, `False` otherwise."""
+        """``True`` if connected to an input port, ``False`` otherwise."""
         return self._peer is not None
 
     def connect(self, peer: InputPort | None) -> None:
         """Connects to an input port, or disconnect.
 
         Args:
-            peer: The input port. The connected input port is disconnected if `None`.
+            peer: The input port. The connected input port is disconnected if ``None``.
 
         Raises:
-            ValueError: If an input port with a different data word width is specified in `peer`.
+            ValueError: If an input port with a different data word width is specified in ``peer``.
 
         """
         if self._peer is not None and self._peer is not peer:
@@ -286,11 +286,11 @@ class Device(metaclass=ABCMeta):
         """Makes the device work.
 
         Args:
-            time: The current time in seconds. `None` when starting to make the device work.
+            time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
             A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
-            The next resuming time can be `None` if resumable anytime.
+            The next resuming time can be ``None`` if resumable anytime.
 
         """
         pass
@@ -337,11 +337,11 @@ class Source(Device):
         """Makes the device work.
 
         Args:
-            time: The current time in seconds. `None` when starting to make the device work.
+            time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
             A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
-            The next resuming time can be `None` if resumable anytime.
+            The next resuming time can be ``None`` if resumable anytime.
 
         """
         if time is None:
@@ -430,11 +430,11 @@ class Drain(Device):
         """Makes the device work.
 
         Args:
-            time: The current time in seconds. `None` when starting to make the device work.
+            time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
             A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
-            The next resuming time can be `None` if resumable anytime.
+            The next resuming time can be ``None`` if resumable anytime.
 
         """
         ports_i: list[InputPort] = [self._port_i]

@@ -32,16 +32,16 @@ class IndexOrderArbitrationPolicy(ArbitrationPolicy):
         """Creates an index order arbitration policy.
 
         Args:
-            select_min: `True` if the target with the minimum index is to be selected.
-                        `False` if the target with the maximum index is to be selected.
+            select_min: ``True`` if the target with the minimum index is to be selected.
+                        ``False`` if the target with the maximum index is to be selected.
 
         """
         self._select_min: bool = select_min
-        """`True` if the target with the minimum index is to be selected."""
+        """``True`` if the target with the minimum index is to be selected."""
 
     @property
     def select_min(self) -> bool:
-        """`True` if the target with the minimum index is to be selected."""
+        """``True`` if the target with the minimum index is to be selected."""
         return self._select_min
 
     def select(self, targets: Sequence[tuple[bytes | None, float]]) -> int:

@@ -171,7 +171,7 @@ class SIMD_Operator(Operator, metaclass=ABCMeta):
             ninputs: The number of the input ports.
 
         Raises:
-            ValueError: If `width_i` is not divisible by any of `dsize_i`, or if `width_o` is inconsistent with them.
+            ValueError: If ``width_i`` is not divisible by any of ``dsize_i``, or if ``width_o`` is inconsistent with them.
 
         """
         super().__init__(width_i, width_o, ninputs=ninputs)
@@ -229,7 +229,7 @@ class SIMD_UnaryOperator(SIMD_Operator, metaclass=ABCMeta):
             dsize_i: The selectable input data word width or widths in bits.
 
         Raises:
-            ValueError: If `width_i` is not divisible by any of `dsize_i`, or if `width_o` is inconsistent with them.
+            ValueError: If ``width_i`` is not divisible by any of ``dsize_i``, or if ``width_o`` is inconsistent with them.
 
         """
         super().__init__(width_i, dsize_i, width_o if width_o >= 0 else width_i, ninputs=1)
@@ -253,7 +253,7 @@ class SIMD_BinaryOperator(SIMD_Operator, metaclass=ABCMeta):
             dsize_i: The selectable input data word width or widths in bits.
 
         Raises:
-            ValueError: If `width_i` is not divisible by any of `dsize_i`, or if `width_o` is inconsistent with them.
+            ValueError: If ``width_i`` is not divisible by any of ``dsize_i``, or if ``width_o`` is inconsistent with them.
 
         """
         super().__init__(width_i, dsize_i, width_o if width_o >= 0 else width_i, ninputs=2)
@@ -282,7 +282,7 @@ class SIMD_TernaryOperator(SIMD_Operator, metaclass=ABCMeta):
             dsize_i: The selectable input data word width or widths in bits.
 
         Raises:
-            ValueError: If `width_i` is not divisible by any of `dsize_i`, or if `width_o` is inconsistent with them.
+            ValueError: If ``width_i`` is not divisible by any of ``dsize_i``, or if ``width_o`` is inconsistent with them.
 
         """
         super().__init__(width_i, dsize_i, width_o if width_o >= 0 else width_i, ninputs=3)

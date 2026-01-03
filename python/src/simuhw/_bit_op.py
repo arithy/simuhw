@@ -64,11 +64,11 @@ class PopulationCounter(BitOperator):
         """Makes the device work.
 
         Args:
-            time: The current time in seconds. `None` when starting to make the device work.
+            time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
             A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
-            The next resuming time can be `None` if resumable anytime.
+            The next resuming time can be ``None`` if resumable anytime.
 
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
@@ -97,11 +97,11 @@ class LeadingZeroCounter(BitOperator):
         """Makes the device work.
 
         Args:
-            time: The current time in seconds. `None` when starting to make the device work.
+            time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
             A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
-            The next resuming time can be `None` if resumable anytime.
+            The next resuming time can be ``None`` if resumable anytime.
 
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
@@ -130,11 +130,11 @@ class TrailingZeroCounter(BitOperator):
         """Makes the device work.
 
         Args:
-            time: The current time in seconds. `None` when starting to make the device work.
+            time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
             A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
-            The next resuming time can be `None` if resumable anytime.
+            The next resuming time can be ``None`` if resumable anytime.
 
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
@@ -163,11 +163,11 @@ class BitReverser(BitOperator):
         """Makes the device work.
 
         Args:
-            time: The current time in seconds. `None` when starting to make the device work.
+            time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
             A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
-            The next resuming time can be `None` if resumable anytime.
+            The next resuming time can be ``None`` if resumable anytime.
 
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
@@ -191,7 +191,7 @@ class SIMD_BitOperator(SIMD_UnaryOperator, metaclass=ABCMeta):
             dsize: The selectable data word width or widths in bits.
 
         Raises:
-            ValueError: If `width` is not divisible by any of `dsize`.
+            ValueError: If ``width`` is not divisible by any of ``dsize``.
 
         """
         super().__init__(width, dsize)
@@ -208,7 +208,7 @@ class SIMD_PopulationCounter(SIMD_BitOperator):
             dsize: The selectable data word width or widths in bits.
 
         Raises:
-            ValueError: If `width` is not divisible by any of `dsize`.
+            ValueError: If ``width`` is not divisible by any of ``dsize``.
 
         """
         super().__init__(width, dsize)
@@ -217,11 +217,11 @@ class SIMD_PopulationCounter(SIMD_BitOperator):
         """Makes the device work.
 
         Args:
-            time: The current time in seconds. `None` when starting to make the device work.
+            time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
             A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
-            The next resuming time can be `None` if resumable anytime.
+            The next resuming time can be ``None`` if resumable anytime.
 
         """
         ports_i: list[InputPort] = [*self._ports_i, self._port_s]
@@ -255,7 +255,7 @@ class SIMD_LeadingZeroCounter(SIMD_BitOperator):
             dsize: The selectable data word width or widths in bits.
 
         Raises:
-            ValueError: If `width` is not divisible by any of `dsize`.
+            ValueError: If ``width`` is not divisible by any of ``dsize``.
 
         """
         super().__init__(width, dsize)
@@ -264,11 +264,11 @@ class SIMD_LeadingZeroCounter(SIMD_BitOperator):
         """Makes the device work.
 
         Args:
-            time: The current time in seconds. `None` when starting to make the device work.
+            time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
             A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
-            The next resuming time can be `None` if resumable anytime.
+            The next resuming time can be ``None`` if resumable anytime.
 
         """
         ports_i: list[InputPort] = [*self._ports_i, self._port_s]
@@ -302,7 +302,7 @@ class SIMD_TrailingZeroCounter(SIMD_BitOperator):
             dsize: The selectable data word width or widths in bits.
 
         Raises:
-            ValueError: If `width` is not divisible by any of `dsize`.
+            ValueError: If ``width`` is not divisible by any of ``dsize``.
 
         """
         super().__init__(width, dsize)
@@ -311,11 +311,11 @@ class SIMD_TrailingZeroCounter(SIMD_BitOperator):
         """Makes the device work.
 
         Args:
-            time: The current time in seconds. `None` when starting to make the device work.
+            time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
             A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
-            The next resuming time can be `None` if resumable anytime.
+            The next resuming time can be ``None`` if resumable anytime.
 
         """
         ports_i: list[InputPort] = [*self._ports_i, self._port_s]
@@ -349,7 +349,7 @@ class SIMD_BitReverser(SIMD_BitOperator):
             dsize: The selectable data word width or widths in bits.
 
         Raises:
-            ValueError: If `width` is not divisible by any of `dsize`.
+            ValueError: If ``width`` is not divisible by any of ``dsize``.
 
         """
         super().__init__(width, dsize)
@@ -358,11 +358,11 @@ class SIMD_BitReverser(SIMD_BitOperator):
         """Makes the device work.
 
         Args:
-            time: The current time in seconds. `None` when starting to make the device work.
+            time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
             A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
-            The next resuming time can be `None` if resumable anytime.
+            The next resuming time can be ``None`` if resumable anytime.
 
         """
         ports_i: list[InputPort] = [*self._ports_i, self._port_s]

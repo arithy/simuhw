@@ -87,12 +87,12 @@ class SynchronousCounter(Counter, metaclass=ABCMeta):
 
         Args:
             width: The data word width in bits.
-            neg_edged: `True` if negative-edged, `False` otherwise.
+            neg_edged: ``True`` if negative-edged, ``False`` otherwise.
 
         """
         super().__init__(width)
         self._neg_edged = neg_edged
-        """`True` if negative-edged, `False` otherwise."""
+        """``True`` if negative-edged, ``False`` otherwise."""
         self._port_ck: InputPort = InputPort(1)
         """The clock port."""
         self._prev_ck: bytes | None = None
@@ -100,7 +100,7 @@ class SynchronousCounter(Counter, metaclass=ABCMeta):
 
     @property
     def negative_edged(self) -> bool:
-        """`True` if negative-edged, `False` otherwise."""
+        """``True`` if negative-edged, ``False`` otherwise."""
         return self._neg_edged
 
     @property
@@ -122,7 +122,7 @@ class SynchronousBinaryCounter(SynchronousCounter, metaclass=ABCMeta):
 
         Args:
             width: The data word width in bits.
-            neg_edged: `True` if negative-edged, `False` otherwise.
+            neg_edged: ``True`` if negative-edged, ``False`` otherwise.
 
         """
         super().__init__(width, neg_edged=neg_edged)

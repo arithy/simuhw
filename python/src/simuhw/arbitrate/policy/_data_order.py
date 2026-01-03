@@ -37,27 +37,27 @@ class DataOrderArbitrationPolicy(ArbitrationPolicy):
         """Creates a data word order arbitration policy.
 
         Args:
-            select_min: `True` if the target with the minimum data word is to be selected.
-                        `False` if the target with the maximum data word is to be selected.
-            prioritize_none: `True` if the target with `None` data word is prioritized; `False` otherwise.
+            select_min: ``True`` if the target with the minimum data word is to be selected.
+                        ``False`` if the target with the maximum data word is to be selected.
+            prioritize_none: ``True`` if the target with ``None`` data word is prioritized; ``False`` otherwise.
             when_same: The arbitration policy applied when there are multiple targets with the same data word.
 
         """
         self._select_min: bool = select_min
-        """`True` if the target with the minimum data word is to be selected."""
+        """``True`` if the target with the minimum data word is to be selected."""
         self._prioritize_none: bool = prioritize_none
-        """`True` if the target with `None` data word is prioritized."""
+        """``True`` if the target with ``None`` data word is prioritized."""
         self._when_same: ArbitrationPolicy = when_same
         """The arbitration policy applied when there are multiple targets with the same data word."""
 
     @property
     def select_min(self) -> bool:
-        """`True` if the target with the minimum data word is to be selected."""
+        """``True`` if the target with the minimum data word is to be selected."""
         return self._select_min
 
     @property
     def prioritize_none(self) -> bool:
-        """`True` if the target with `None` data word is prioritized."""
+        """``True`` if the target with ``None`` data word is prioritized."""
         return self._prioritize_none
 
     @property

@@ -96,7 +96,7 @@ class Memory(Device, metaclass=ABCMeta):
             address: The probe address.
 
         Raises:
-            ValueError: If a memory probe with a different data word width is specified in `probe`.
+            ValueError: If a memory probe with a different data word width is specified in ``probe``.
 
         """
         if self._width != probe.width:
@@ -110,7 +110,7 @@ class Memory(Device, metaclass=ABCMeta):
             probe: The memory probe to be removed.
 
         Raises:
-            ValueError: If a memory probe not yet added is specified in `probe`.
+            ValueError: If a memory probe not yet added is specified in ``probe``.
 
         """
         if probe not in self._probes:

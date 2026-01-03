@@ -40,18 +40,18 @@ class LevelTriggeredMemory(Memory):
             width: The data word width in bits.
             width_a: The address word width in bits.
             model: The memorizing model.
-            neg_leveled: `True` if negative-leveled, `False` otherwise.
+            neg_leveled: ``True`` if negative-leveled, ``False`` otherwise.
 
         """
         super().__init__(width, width_a, model)
         self._neg_leveled: bool = neg_leveled
-        """`True` if negative-leveled, `False` otherwise."""
+        """``True`` if negative-leveled, ``False`` otherwise."""
         self._port_g: InputPort = InputPort(1)
         """The gate port."""
 
     @property
     def negative_leveled(self) -> bool:
-        """`True` if negative-leveled, `False` otherwise."""
+        """``True`` if negative-leveled, ``False`` otherwise."""
         return self._neg_leveled
 
     @property
@@ -68,11 +68,11 @@ class LevelTriggeredMemory(Memory):
         """Makes the device work.
 
         Args:
-            time: The current time in seconds. `None` when starting to make the device work.
+            time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
             A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
-            The next resuming time can be `None` if resumable anytime.
+            The next resuming time can be ``None`` if resumable anytime.
 
         """
         ports_i: list[InputPort] = [self._port_g, self._port_a, self._port_i]

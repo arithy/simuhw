@@ -132,7 +132,7 @@ class LogicAnalyzer:
             probe: The probe to be removed.
 
         Raises:
-            ValueError: If a probe not yet added is specified in `probe`.
+            ValueError: If a probe not yet added is specified in ``probe``.
 
         """
         if probe not in self._probe:

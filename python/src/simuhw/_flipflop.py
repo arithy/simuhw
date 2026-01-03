@@ -31,14 +31,14 @@ class DFlipFlop(Device):
 
         Args:
             width: The data word width in bits.
-            neg_edged: `True` if negative-edged, `False` otherwise.
+            neg_edged: ``True`` if negative-edged, ``False`` otherwise.
 
         """
         super().__init__()
         self._width: int = width
         """The data word width in bits."""
         self._neg_edged = neg_edged
-        """`True` if negative-edged, `False` otherwise."""
+        """``True`` if negative-edged, ``False`` otherwise."""
         self._port_c: InputPort = InputPort(1)
         """The clock port."""
         self._port_i: InputPort = InputPort(width)
@@ -55,7 +55,7 @@ class DFlipFlop(Device):
 
     @property
     def negative_edged(self) -> bool:
-        """`True` if negative-edged, `False` otherwise."""
+        """``True`` if negative-edged, ``False`` otherwise."""
         return self._neg_edged
 
     @property
@@ -84,11 +84,11 @@ class DFlipFlop(Device):
         """Makes the device work.
 
         Args:
-            time: The current time in seconds. `None` when starting to make the device work.
+            time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
             A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
-            The next resuming time can be `None` if resumable anytime.
+            The next resuming time can be ``None`` if resumable anytime.
 
         """
         ports_i: list[InputPort] = [self._port_c, self._port_i]

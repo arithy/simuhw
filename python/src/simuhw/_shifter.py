@@ -56,11 +56,11 @@ class LeftShifter(Shifter):
         """Makes the device work.
 
         Args:
-            time: The current time in seconds. `None` when starting to make the device work.
+            time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
             A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
-            The next resuming time can be `None` if resumable anytime.
+            The next resuming time can be ``None`` if resumable anytime.
 
         """
         ports_i: list[InputPort] = [*self._ports_i]
@@ -92,11 +92,11 @@ class RightShifter(Shifter):
         """Makes the device work.
 
         Args:
-            time: The current time in seconds. `None` when starting to make the device work.
+            time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
             A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
-            The next resuming time can be `None` if resumable anytime.
+            The next resuming time can be ``None`` if resumable anytime.
 
         """
         ports_i: list[InputPort] = [*self._ports_i]
@@ -128,11 +128,11 @@ class ArithmeticRightShifter(Shifter):
         """Makes the device work.
 
         Args:
-            time: The current time in seconds. `None` when starting to make the device work.
+            time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
             A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
-            The next resuming time can be `None` if resumable anytime.
+            The next resuming time can be ``None`` if resumable anytime.
 
         """
         ports_i: list[InputPort] = [*self._ports_i]
@@ -164,11 +164,11 @@ class LeftRotator(Shifter):
         """Makes the device work.
 
         Args:
-            time: The current time in seconds. `None` when starting to make the device work.
+            time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
             A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
-            The next resuming time can be `None` if resumable anytime.
+            The next resuming time can be ``None`` if resumable anytime.
 
         """
         ports_i: list[InputPort] = [*self._ports_i]
@@ -200,11 +200,11 @@ class RightRotator(Shifter):
         """Makes the device work.
 
         Args:
-            time: The current time in seconds. `None` when starting to make the device work.
+            time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
             A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
-            The next resuming time can be `None` if resumable anytime.
+            The next resuming time can be ``None`` if resumable anytime.
 
         """
         ports_i: list[InputPort] = [*self._ports_i]
@@ -231,7 +231,7 @@ class SIMD_Shifter(SIMD_BinaryOperator, metaclass=ABCMeta):
             dsize: The selectable data word width or widths in bits.
 
         Raises:
-            ValueError: If `width` is not divisible by any of `dsize`.
+            ValueError: If ``width`` is not divisible by any of ``dsize``.
 
         """
         super().__init__(width, dsize)
@@ -248,7 +248,7 @@ class SIMD_LeftShifter(SIMD_Shifter):
             dsize: The selectable data word width or widths in bits.
 
         Raises:
-            ValueError: If `width` is not divisible by any of `dsize`.
+            ValueError: If ``width`` is not divisible by any of ``dsize``.
 
         """
         super().__init__(width, dsize)
@@ -257,11 +257,11 @@ class SIMD_LeftShifter(SIMD_Shifter):
         """Makes the device work.
 
         Args:
-            time: The current time in seconds. `None` when starting to make the device work.
+            time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
             A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
-            The next resuming time can be `None` if resumable anytime.
+            The next resuming time can be ``None`` if resumable anytime.
 
         """
         ports_i: list[InputPort] = [*self._ports_i, self._port_s]
@@ -296,7 +296,7 @@ class SIMD_RightShifter(SIMD_Shifter):
             dsize: The selectable data word width or widths in bits.
 
         Raises:
-            ValueError: If `width` is not divisible by any of `dsize`.
+            ValueError: If ``width`` is not divisible by any of ``dsize``.
 
         """
         super().__init__(width, dsize)
@@ -305,11 +305,11 @@ class SIMD_RightShifter(SIMD_Shifter):
         """Makes the device work.
 
         Args:
-            time: The current time in seconds. `None` when starting to make the device work.
+            time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
             A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
-            The next resuming time can be `None` if resumable anytime.
+            The next resuming time can be ``None`` if resumable anytime.
 
         """
         ports_i: list[InputPort] = [*self._ports_i, self._port_s]
@@ -344,7 +344,7 @@ class SIMD_ArithmeticRightShifter(SIMD_Shifter):
             dsize: The selectable data word width or widths in bits.
 
         Raises:
-            ValueError: If `width` is not divisible by any of `dsize`.
+            ValueError: If ``width`` is not divisible by any of ``dsize``.
 
         """
         super().__init__(width, dsize)
@@ -353,11 +353,11 @@ class SIMD_ArithmeticRightShifter(SIMD_Shifter):
         """Makes the device work.
 
         Args:
-            time: The current time in seconds. `None` when starting to make the device work.
+            time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
             A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
-            The next resuming time can be `None` if resumable anytime.
+            The next resuming time can be ``None`` if resumable anytime.
 
         """
         ports_i: list[InputPort] = [*self._ports_i, self._port_s]
@@ -393,7 +393,7 @@ class SIMD_LeftRotator(SIMD_Shifter):
             dsize: The selectable data word width or widths in bits.
 
         Raises:
-            ValueError: If `width` is not divisible by any of `dsize`.
+            ValueError: If ``width`` is not divisible by any of ``dsize``.
 
         """
         super().__init__(width, dsize)
@@ -402,11 +402,11 @@ class SIMD_LeftRotator(SIMD_Shifter):
         """Makes the device work.
 
         Args:
-            time: The current time in seconds. `None` when starting to make the device work.
+            time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
             A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
-            The next resuming time can be `None` if resumable anytime.
+            The next resuming time can be ``None`` if resumable anytime.
 
         """
         ports_i: list[InputPort] = [*self._ports_i, self._port_s]
@@ -442,7 +442,7 @@ class SIMD_RightRotator(SIMD_Shifter):
             dsize: The selectable data word width or widths in bits.
 
         Raises:
-            ValueError: If `width` is not divisible by any of `dsize`.
+            ValueError: If ``width`` is not divisible by any of ``dsize``.
 
         """
         super().__init__(width, dsize)
@@ -451,11 +451,11 @@ class SIMD_RightRotator(SIMD_Shifter):
         """Makes the device work.
 
         Args:
-            time: The current time in seconds. `None` when starting to make the device work.
+            time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
             A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
-            The next resuming time can be `None` if resumable anytime.
+            The next resuming time can be ``None`` if resumable anytime.
 
         """
         ports_i: list[InputPort] = [*self._ports_i, self._port_s]

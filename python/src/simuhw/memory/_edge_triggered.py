@@ -40,15 +40,15 @@ class EdgeTriggeredMemory(Memory):
             width: The data word width in bits.
             width_a: The address word width in bits.
             model: The memorizing model.
-            neg_edged: `True` if negative-edged, `False` otherwise.
-            neg_enable: `True` if enabled by 0, `False` otherwise.
+            neg_edged: ``True`` if negative-edged, ``False`` otherwise.
+            neg_enable: ``True`` if enabled by 0, ``False`` otherwise.
 
         """
         super().__init__(width, width_a, model)
         self._neg_edged: bool = neg_edged
-        """`True` if negative-edged, `False` otherwise."""
+        """``True`` if negative-edged, ``False`` otherwise."""
         self._neg_enable: bool = neg_enable
-        """`True` if enabled by 0, `False` otherwise."""
+        """``True`` if enabled by 0, ``False`` otherwise."""
         self._port_c: InputPort = InputPort(1)
         """The clock port."""
         self._port_e: InputPort = InputPort(1)
@@ -58,12 +58,12 @@ class EdgeTriggeredMemory(Memory):
 
     @property
     def negative_edged(self) -> bool:
-        """`True` if negative-edged, `False` otherwise."""
+        """``True`` if negative-edged, ``False`` otherwise."""
         return self._neg_edged
 
     @property
     def negative_enabling(self) -> bool:
-        """`True` if enabled by 0, `False` otherwise."""
+        """``True`` if enabled by 0, ``False`` otherwise."""
         return self._neg_enable
 
     @property
@@ -86,11 +86,11 @@ class EdgeTriggeredMemory(Memory):
         """Makes the device work.
 
         Args:
-            time: The current time in seconds. `None` when starting to make the device work.
+            time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
             A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
-            The next resuming time can be `None` if resumable anytime.
+            The next resuming time can be ``None`` if resumable anytime.
 
         """
         ports_i: list[InputPort] = [self._port_c, self._port_e, self._port_a, self._port_i]

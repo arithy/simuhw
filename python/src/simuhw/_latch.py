@@ -31,14 +31,14 @@ class DLatch(Device):
 
         Args:
             width: The data word width in bits.
-            neg_leveled: `True` if negative-leveled, `False` otherwise.
+            neg_leveled: ``True`` if negative-leveled, ``False`` otherwise.
 
         """
         super().__init__()
         self._width: int = width
         """The data word width in bits."""
         self._neg_leveled = neg_leveled
-        """`True` if negative-leveled, `False` otherwise."""
+        """``True`` if negative-leveled, ``False`` otherwise."""
         self._port_g: InputPort = InputPort(1)
         """The gate port."""
         self._port_i: InputPort = InputPort(width)
@@ -53,7 +53,7 @@ class DLatch(Device):
 
     @property
     def negative_leveled(self) -> bool:
-        """`True` if negative-leveled, `False` otherwise."""
+        """``True`` if negative-leveled, ``False`` otherwise."""
         return self._neg_leveled
 
     @property
@@ -82,11 +82,11 @@ class DLatch(Device):
         """Makes the device work.
 
         Args:
-            time: The current time in seconds. `None` when starting to make the device work.
+            time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
             A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
-            The next resuming time can be `None` if resumable anytime.
+            The next resuming time can be ``None`` if resumable anytime.
 
         """
         ports_i: list[InputPort] = [self._port_g, self._port_i]

@@ -34,7 +34,7 @@ class Simulator:
     """
 
     default_max_iter: int | None = 1000
-    """The default maximum iteration count during the same current time. No limit in iteration if `None`."""
+    """The default maximum iteration count during the same current time. No limit in iteration if ``None``."""
 
     def __init__(self, devices: Iterable[Device]) -> None:
         """Creates a simulator.
@@ -65,8 +65,8 @@ class Simulator:
         """Starts the simulation.
 
         Args:
-            duration: The duration time. No limit in duration if `None`.
-            max_iter: The maximum iteration count during the same current time. No limit in iteration if `None`.
+            duration: The duration time. No limit in duration if ``None``.
+            max_iter: The maximum iteration count during the same current time. No limit in iteration if ``None``.
 
         """
         self._time = 0.0
@@ -80,8 +80,8 @@ class Simulator:
         """Resumes the simulation.
 
         Args:
-            duration: The duration time. No limit in duration if `None`.
-            max_iter: The maximum iteration count during the same current time. No limit in iteration if `None`.
+            duration: The duration time. No limit in duration if ``None``.
+            max_iter: The maximum iteration count during the same current time. No limit in iteration if ``None``.
 
         """
         c: tuple[list[InputPort], float | None] = ([], None if first else self._time)
