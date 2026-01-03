@@ -1,6 +1,6 @@
 # SimuHW: A behavioral hardware simulator provided as a Python module.
 #
-# Copyright (c) 2024-2025 Arihiro Yoshida. All rights reserved.
+# Copyright (c) 2024-2026 Arihiro Yoshida. All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -46,7 +46,8 @@ __all__ = [
     'Multiplier', 'SignedMultiplier', 'SIMD_Multiplier', 'SIMD_SignedMultiplier',
     'Divider', 'SignedDivider', 'SIMD_Divider', 'SIMD_SignedDivider',
     'Remainder', 'SignedRemainder', 'SIMD_Remainder', 'SIMD_SignedRemainder',
-    'Comparator', 'SignedComparator', 'SIMD_Comparator', 'SIMD_SignedComparator'
+    'Comparator', 'SignedComparator', 'SIMD_Comparator', 'SIMD_SignedComparator',
+    'IntegerConverter', 'SignedIntegerConverter', 'SIMD_IntegerConverter', 'SIMD_SignedIntegerConverter'
 ]
 
 from ._version import __version__  # noqa:F401
@@ -81,3 +82,4 @@ from ._multiplier import Multiplier, SignedMultiplier, SIMD_Multiplier, SIMD_Sig
 from ._divider import Divider, SignedDivider, SIMD_Divider, SIMD_SignedDivider
 from ._remainder import Remainder, SignedRemainder, SIMD_Remainder, SIMD_SignedRemainder
 from ._comparator import Comparator, SignedComparator, SIMD_Comparator, SIMD_SignedComparator
+from ._converter import IntegerConverter, SignedIntegerConverter, SIMD_IntegerConverter, SIMD_SignedIntegerConverter
