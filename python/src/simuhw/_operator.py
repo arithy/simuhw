@@ -166,8 +166,8 @@ class SIMD_Operator(Operator, metaclass=ABCMeta):
 
         Args:
             width_i: The total width of input data words in bits.
-            width_o: The total width of output data words in bits.
             dsize_i: The selectable input data word width or widths in bits.
+            width_o: The total width of output data words in bits.
             ninputs: The number of the input ports.
 
         Raises:
@@ -224,9 +224,9 @@ class SIMD_UnaryOperator(SIMD_Operator, metaclass=ABCMeta):
 
         Args:
             width_i: The total width of input data words in bits.
+            dsize_i: The selectable input data word width or widths in bits.
             width_o: The total width of output data words in bits.
                      If a negative value is specified, ``width_i`` is used instead.
-            dsize_i: The selectable input data word width or widths in bits.
 
         Raises:
             ValueError: If ``width_i`` is not divisible by any of ``dsize_i``, or if ``width_o`` is inconsistent with them.
@@ -248,9 +248,9 @@ class SIMD_BinaryOperator(SIMD_Operator, metaclass=ABCMeta):
 
         Args:
             width_i: The total width of input data words in bits.
+            dsize_i: The selectable input data word width or widths in bits.
             width_o: The total width of output data words in bits.
                      If a negative value is specified, ``width_i`` is used instead.
-            dsize_i: The selectable input data word width or widths in bits.
 
         Raises:
             ValueError: If ``width_i`` is not divisible by any of ``dsize_i``, or if ``width_o`` is inconsistent with them.
@@ -277,9 +277,9 @@ class SIMD_TernaryOperator(SIMD_Operator, metaclass=ABCMeta):
 
         Args:
             width_i: The total width of input data words in bits.
+            dsize_i: The selectable input data word width or widths in bits.
             width_o: The total width of output data words in bits.
                      If a negative value is specified, ``width_i`` is used instead.
-            dsize_i: The selectable input data word width or widths in bits.
 
         Raises:
             ValueError: If ``width_i`` is not divisible by any of ``dsize_i``, or if ``width_o`` is inconsistent with them.
