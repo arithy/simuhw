@@ -56,9 +56,9 @@ class FPState(metaclass=ABCMeta):
         """The input port to set the tininess detection mode."""
         self._port_fr: InputPort = InputPort(self.width_fr)
         """The input port to set the rounding mode."""
-        self._port_fei: InputPort = InputPort(self.width_fe)
+        self._port_fe_i: InputPort = InputPort(self.width_fe)
         """The input port to set the floating-point exception flags."""
-        self._port_feo: OutputPort = OutputPort(self.width_fe)
+        self._port_fe_o: OutputPort = OutputPort(self.width_fe)
         """The output port to get the floating-point exception flags."""
 
     @property
@@ -72,14 +72,14 @@ class FPState(metaclass=ABCMeta):
         return self._port_fr
 
     @property
-    def port_fei(self) -> InputPort:
+    def port_fe_i(self) -> InputPort:
         """The input port to set the floating-point exception flags."""
-        return self._port_fei
+        return self._port_fe_i
 
     @property
-    def port_feo(self) -> OutputPort:
+    def port_fe_o(self) -> OutputPort:
         """The output port to get the floating-point exception flags."""
-        return self._port_feo
+        return self._port_fe_o
 
     def reset(self) -> None:
         """Resets the states."""
@@ -88,8 +88,8 @@ class FPState(metaclass=ABCMeta):
         self._exception_flags = None
         self._port_ft.reset()
         self._port_fr.reset()
-        self._port_fei.reset()
-        self._port_feo.reset()
+        self._port_fe_i.reset()
+        self._port_fe_o.reset()
 
     def apply_states(self) -> None:
         """Applies the floating-point states from the input ports after saving the current ones."""
@@ -100,8 +100,8 @@ class FPState(metaclass=ABCMeta):
             sf.set_tininess_mode(sf.TininessMode(int.from_bytes(self._port_ft.data[0])))
         if self._port_fr.data[0] is not None and int.from_bytes(self._port_fr.data[0]) in sf.RoundingMode:
             sf.set_rounding_mode(sf.RoundingMode(int.from_bytes(self._port_fr.data[0])))
-        if self._port_fei.data[0] is not None:
-            sf.set_exception_flags(int.from_bytes(self._port_fei.data[0]))
+        if self._port_fe_i.data[0] is not None:
+            sf.set_exception_flags(int.from_bytes(self._port_fe_i.data[0]))
 
     def restore_states(self, time: float, none: bool) -> None:
         """Restores the floating-point states after posting the current ones to the output port.
@@ -110,10 +110,10 @@ class FPState(metaclass=ABCMeta):
             time: The current device time in seconds.
 
         """
-        if none or any(d is None for d in [self._port_ft.data[0], self._port_fr.data[0], self._port_fei.data[0]]):
-            self._port_feo.post((None, time))
+        if none or any(d is None for d in [self._port_ft.data[0], self._port_fr.data[0], self._port_fe_i.data[0]]):
+            self._port_fe_o.post((None, time))
         else:
-            self._port_feo.post((sf.get_exception_flags().to_bytes(1), time))
+            self._port_fe_o.post((sf.get_exception_flags().to_bytes(1), time))
         if self._tininess_mode is not None:
             sf.set_tininess_mode(self._tininess_mode)
         if self._rounding_mode is not None:
