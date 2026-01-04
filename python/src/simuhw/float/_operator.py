@@ -193,7 +193,7 @@ class SIMD_FPUnaryOperator(SIMD_UnaryOperator, FPState, metaclass=ABCMeta):
 
         Args:
             width: The data word width in bits.
-            dtype: The selectable floating-point type for types.
+            dtype: The selectable floating-point type or types.
 
         """
         super().__init__(width, tuple(t.size() for t in dtype) if isinstance(dtype, Iterable) else (dtype.size(),))
@@ -215,7 +215,7 @@ class SIMD_FPBinaryOperator(SIMD_BinaryOperator, FPState, metaclass=ABCMeta):
 
         Args:
             width: The data word width in bits.
-            dtype: The selectable floating-point type for types.
+            dtype: The selectable floating-point type or types.
 
         """
         super().__init__(width, tuple(t.size() for t in dtype) if isinstance(dtype, Iterable) else (dtype.size(),))
@@ -237,7 +237,7 @@ class SIMD_FPTernaryOperator(SIMD_TernaryOperator, FPState, metaclass=ABCMeta):
 
         Args:
             width: The data word width in bits.
-            dtype: The selectable floating-point type for types.
+            dtype: The selectable floating-point type or types.
 
         """
         super().__init__(width, tuple(t.size() for t in dtype) if isinstance(dtype, Iterable) else (dtype.size(),))
