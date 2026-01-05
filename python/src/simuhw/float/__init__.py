@@ -64,7 +64,8 @@ try:
         'FPFromIntegerConverter', 'SIMD_FPFromIntegerConverter',
         'FPToSignedIntegerConverter', 'SIMD_FPToSignedIntegerConverter',
         'FPFromSignedIntegerConverter', 'SIMD_FPFromSignedIntegerConverter',
-        'FPConverter', 'SIMD_FPConverter'
+        'FPConverter', 'SIMD_FPConverter',
+        'is_available', 'get_required_softfloatpy_least_version'
     ]
 
     from softfloatpy import (
@@ -100,10 +101,30 @@ try:
     )
 
 except importlib.metadata.PackageNotFoundError:
-    print(f'{__name__} [WARNING] No \'softfloatpy\' module')
+    print(f'{__name__} [WARNING] Not available (No \'softfloatpy\' module)')
 except RuntimeError as e:
-    print(f'{__name__} [WARNING] {e}')
+    print(f'{__name__} [WARNING] Not available ({e})')
 
 
 def is_available() -> bool:
+    """Checks whether ``float`` subpackage is available or not.
+
+    Returns:
+        ``True`` if ``float`` subpackage is available.
+
+    Note:
+        ``float`` subpackage is available only when an appropriate version of ``softfloatpy`` module is found.
+        The least version can be retrieved using :func:`get_required_softfloatpy_least_version()`
+
+    """
     return _available
+
+
+def get_required_softfloatpy_least_version() -> str:
+    """Retrieves the least version of ``softfloatpy`` module required for ``float`` subpackage.
+
+    Returns:
+        The least version of ``softfloatpy`` module required for ``float`` subpackage.
+
+    """
+    return str(_softfloatpy_least)

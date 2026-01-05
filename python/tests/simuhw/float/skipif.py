@@ -22,10 +22,10 @@
 
 import pytest
 
-from simuhw.float import is_available
+from simuhw.float import is_available, get_required_softfloatpy_least_version
 
 
 skipif_unavailable = pytest.mark.skipif(
     not is_available(),
-    reason='float subpackage is not available (reason: an appropriate version of \'softfloatpy\' is not found)'
+    reason=f'\'float\' subpackage is not available (reason: \'softfloatpy\' version {get_required_softfloatpy_least_version()} or later is not found)'
 )
