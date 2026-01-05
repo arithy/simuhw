@@ -96,9 +96,9 @@ class FPState(metaclass=ABCMeta):
         self._tininess_mode = sf.get_tininess_mode()
         self._rounding_mode = sf.get_rounding_mode()
         self._exception_flags = sf.get_exception_flags()
-        if self._port_ft.data[0] is not None and int.from_bytes(self._port_ft.data[0]) in sf.TininessMode:
+        if self._port_ft.data[0] is not None and int.from_bytes(self._port_ft.data[0]) in [m.value for m in sf.TininessMode]:
             sf.set_tininess_mode(sf.TininessMode(int.from_bytes(self._port_ft.data[0])))
-        if self._port_fr.data[0] is not None and int.from_bytes(self._port_fr.data[0]) in sf.RoundingMode:
+        if self._port_fr.data[0] is not None and int.from_bytes(self._port_fr.data[0]) in [m.value for m in sf.RoundingMode]:
             sf.set_rounding_mode(sf.RoundingMode(int.from_bytes(self._port_fr.data[0])))
         if self._port_fe_i.data[0] is not None:
             sf.set_exception_flags(int.from_bytes(self._port_fe_i.data[0]))
