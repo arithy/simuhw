@@ -1,6 +1,6 @@
 # SimuHW: A behavioral hardware simulator provided as a Python module.
 #
-# Copyright (c) 2024-2025 Arihiro Yoshida. All rights reserved.
+# Copyright (c) 2024-2026 Arihiro Yoshida. All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -48,7 +48,23 @@ try:
         'set_exception_flags', 'get_exception_flags', 'test_exception_flags',
         'Float', 'FPState',
         'FPUnaryOperator', 'FPBinaryOperator', 'FPTernaryOperator',
-        'SIMD_FPUnaryOperator', 'SIMD_FPBinaryOperator', 'SIMD_FPTernaryOperator'
+        'SIMD_FPUnaryOperator', 'SIMD_FPBinaryOperator', 'SIMD_FPTernaryOperator',
+        'FPNegator', 'SIMD_FPNegator',
+        'FPAdder', 'SIMD_FPAdder',
+        'FPSubtractor', 'SIMD_FPSubtractor',
+        'FPMultiplier', 'SIMD_FPMultiplier',
+        'FPMultiplyAdder', 'SIMD_FPMultiplyAdder',
+        'FPDivider', 'SIMD_FPDivider',
+        'FPRemainder', 'SIMD_FPRemainder',
+        'FPSquareRoot', 'SIMD_FPSquareRoot',
+        'FPComparator', 'SIMD_FPComparator',
+        'FPClassifier', 'SIMD_FPClassifier',
+        'FPToIntegerRounder', 'SIMD_FPToIntegerRounder',
+        'FPToIntegerConverter', 'SIMD_FPToIntegerConverter',
+        'FPFromIntegerConverter', 'SIMD_FPFromIntegerConverter',
+        'FPToSignedIntegerConverter', 'SIMD_FPToSignedIntegerConverter',
+        'FPFromSignedIntegerConverter', 'SIMD_FPFromSignedIntegerConverter',
+        'FPConverter', 'SIMD_FPConverter'
     ]
 
     from softfloatpy import (
@@ -63,6 +79,24 @@ try:
         Float, FPState,
         FPUnaryOperator, FPBinaryOperator, FPTernaryOperator,
         SIMD_FPUnaryOperator, SIMD_FPBinaryOperator, SIMD_FPTernaryOperator
+    )
+    from ._negator import FPNegator, SIMD_FPNegator
+    from ._adder import FPAdder, SIMD_FPAdder
+    from ._subtractor import FPSubtractor, SIMD_FPSubtractor
+    from ._multiplier import FPMultiplier, SIMD_FPMultiplier
+    from ._multiply_adder import FPMultiplyAdder, SIMD_FPMultiplyAdder
+    from ._divider import FPDivider, SIMD_FPDivider
+    from ._remainder import FPRemainder, SIMD_FPRemainder
+    from ._square_root import FPSquareRoot, SIMD_FPSquareRoot
+    from ._comparator import FPComparator, SIMD_FPComparator
+    from ._classifier import FPClassifier, SIMD_FPClassifier
+    from ._rounder import FPToIntegerRounder, SIMD_FPToIntegerRounder
+    from ._converter import (
+        FPToIntegerConverter, SIMD_FPToIntegerConverter,
+        FPFromIntegerConverter, SIMD_FPFromIntegerConverter,
+        FPToSignedIntegerConverter, SIMD_FPToSignedIntegerConverter,
+        FPFromSignedIntegerConverter, SIMD_FPFromSignedIntegerConverter,
+        FPConverter, SIMD_FPConverter
     )
 
 except importlib.metadata.PackageNotFoundError:

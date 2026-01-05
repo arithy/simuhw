@@ -1,0 +1,573 @@
+# SimuHW: A behavioral hardware simulator provided as a Python module.
+#
+# Copyright (c) 2024-2026 Arihiro Yoshida. All rights reserved.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+import softfloatpy as sf
+
+from .._base import InputPort, to_signed_int
+from .._operator import UnaryOperator, SIMD_UnaryOperator
+from ._operator import Float, FPState
+
+
+class FPToIntegerConverter(UnaryOperator, FPState):
+    """A floating-point to integer converter.
+
+    This device converts the floating-point to an unsigned integer.
+
+    """
+
+    def __init__(self, dtype_i: Float, width_o: int) -> None:
+        """Creates a floating-point to integer converter.
+
+        Args:
+            dtype_i: The input floating-point type.
+            width_o: The output data word width in bits.
+                     Must be less than or equal to 64.
+
+        Raises:
+            ValueError: If ``width_o`` is greater than 64.
+
+        """
+        if width_o > 64:
+            raise ValueError('output data word width greater than 64')
+        super().__init__(dtype_i.size(), width_o)
+        FPState.__init__(self)
+        self._dtype_i: Float = dtype_i
+        """The input floating-point type."""
+
+    def reset(self) -> None:
+        """Resets the states."""
+        super().reset()
+        FPState.reset(self)
+
+    def work(self, time: float | None) -> tuple[list[InputPort], float | None]:
+        """Makes the device work.
+
+        Args:
+            time: The current time in seconds. ``None`` when starting to make the device work.
+
+        Returns:
+            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            The next resuming time can be ``None`` if resumable anytime.
+
+        """
+        if self._update_time_and_check_inputs(time, self._ports_i):
+            self.apply_states()
+            if self._ports_i[0].data[0] is None:
+                self._port_o.post((None, self._time))
+            else:
+                o: int = self._dtype_i.from_bytes(self._ports_i[0].data[0]).to_ui64(sf.get_rounding_mode()).to_int()
+                e: int = sf.get_exception_flags()
+                if (
+                    (e & (sf.ExceptionFlag.OVERFLOW | sf.ExceptionFlag.INFINITE | sf.ExceptionFlag.INVALID)) == 0 and
+                    o >= (1 << self._width_o)
+                ):
+                    sf.set_exception_flags(e | sf.ExceptionFlag.INVALID)
+                self._port_o.post(((o & self._mask).to_bytes(self._nbytes), self._time))
+            self.restore_states(self._time, self._port_o.data[0] is None)
+            self._set_inputs_unchanged(self._ports_i)
+        return (list(self._ports_i), None)
+
+
+class FPFromIntegerConverter(UnaryOperator, FPState):
+    """A integer to floating-point converter.
+
+    This device converts the unsigned integer to a floating-point.
+
+    """
+
+    def __init__(self, width_i: int, dtype_o: Float) -> None:
+        """Creates a integer to floating-point converter.
+
+        Args:
+            width_i: The input data word width in bits.
+            dtype_o: The output floating-point type.
+
+        """
+        super().__init__(width_i, dtype_o.size())
+        FPState.__init__(self)
+        self._dtype_o: Float = dtype_o
+        """The output floating-point type."""
+
+    def reset(self) -> None:
+        """Resets the states."""
+        super().reset()
+        FPState.reset(self)
+
+    def work(self, time: float | None) -> tuple[list[InputPort], float | None]:
+        """Makes the device work.
+
+        Args:
+            time: The current time in seconds. ``None`` when starting to make the device work.
+
+        Returns:
+            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            The next resuming time can be ``None`` if resumable anytime.
+
+        """
+        if self._update_time_and_check_inputs(time, self._ports_i):
+            self.apply_states()
+            if self._ports_i[0].data[0] is None:
+                self._port_o.post((None, self._time))
+            else:
+                self._port_o.post((
+                    self._dtype_o.from_ui64(sf.UInt64.from_int(int.from_bytes(self._ports_i[0].data[0]))).to_bytes(),
+                    self._time
+                ))
+            self.restore_states(self._time, self._port_o.data[0] is None)
+            self._set_inputs_unchanged(self._ports_i)
+        return (list(self._ports_i), None)
+
+
+class FPToSignedIntegerConverter(FPToIntegerConverter):
+    """A floating-point to signed-integer converter.
+
+    This device converts the floating-point to a signed integer.
+
+    """
+
+    def __init__(self, dtype_i: Float, width_o: int) -> None:
+        """Creates a floating-point to signed-integer converter.
+
+        Args:
+            dtype_i: The input floating-point type.
+            width_o: The output data word width in bits.
+
+        """
+        super().__init__(dtype_i, width_o)
+
+    def work(self, time: float | None) -> tuple[list[InputPort], float | None]:
+        """Makes the device work.
+
+        Args:
+            time: The current time in seconds. ``None`` when starting to make the device work.
+
+        Returns:
+            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            The next resuming time can be ``None`` if resumable anytime.
+
+        """
+        if self._update_time_and_check_inputs(time, self._ports_i):
+            self.apply_states()
+            if self._ports_i[0].data[0] is None:
+                self._port_o.post((None, self._time))
+            else:
+                o: int = self._dtype_i.from_bytes(self._ports_i[0].data[0]).to_i64(sf.get_rounding_mode()).to_int()
+                e: int = sf.get_exception_flags()
+                l: int = (1 << self._width_o) >> 1
+                if (
+                    (e & (sf.ExceptionFlag.OVERFLOW | sf.ExceptionFlag.INFINITE | sf.ExceptionFlag.INVALID)) == 0 and
+                    (o >= l or o < -l)
+                ):
+                    sf.set_exception_flags(e | sf.ExceptionFlag.INVALID)
+                self._port_o.post(((o & self._mask).to_bytes(self._nbytes), self._time))
+            self.restore_states(self._time, self._port_o.data[0] is None)
+            self._set_inputs_unchanged(self._ports_i)
+        return (list(self._ports_i), None)
+
+
+class FPFromSignedIntegerConverter(FPFromIntegerConverter):
+    """A signed-integer to floating-point converter.
+
+    This device converts the signed integer to a floating-point.
+
+    """
+
+    def __init__(self, width_i: int, dtype_o: Float) -> None:
+        """Creates a signed-integer to floating-point converter.
+
+        Args:
+            width_i: The input data word width in bits.
+            dtype_o: The output floating-point type.
+
+        """
+        super().__init__(width_i, dtype_o)
+
+    def work(self, time: float | None) -> tuple[list[InputPort], float | None]:
+        """Makes the device work.
+
+        Args:
+            time: The current time in seconds. ``None`` when starting to make the device work.
+
+        Returns:
+            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            The next resuming time can be ``None`` if resumable anytime.
+
+        """
+        if self._update_time_and_check_inputs(time, self._ports_i):
+            self.apply_states()
+            if self._ports_i[0].data[0] is None:
+                self._port_o.post((None, self._time))
+            else:
+                self._port_o.post((
+                    self._dtype_o.from_i64(sf.Int64.from_int(
+                        to_signed_int(self._width_i, int.from_bytes(self._ports_i[0].data[0]))
+                    )).to_bytes(),
+                    self._time
+                ))
+            self.restore_states(self._time, self._port_o.data[0] is None)
+            self._set_inputs_unchanged(self._ports_i)
+        return (list(self._ports_i), None)
+
+
+class FPConverter(UnaryOperator, FPState):
+    """A floating-point converter.
+
+    This device converts the floating-point to that of another type.
+
+    """
+
+    def __init__(self, dtype_i: Float, dtype_o: Float) -> None:
+        """Creates a floating-point converter.
+
+        Args:
+            dtype_i: The input floating-point type.
+            dtype_o: The output floating-point type.
+
+        """
+        super().__init__(dtype_i.size(), dtype_o.size())
+        FPState.__init__(self)
+        self._dtype_i: Float = dtype_i
+        """The input floating-point type."""
+        self._dtype_o: Float = dtype_o
+        """The output floating-point type."""
+
+    def reset(self) -> None:
+        """Resets the states."""
+        super().reset()
+        FPState.reset(self)
+
+    def work(self, time: float | None) -> tuple[list[InputPort], float | None]:
+        """Makes the device work.
+
+        Args:
+            time: The current time in seconds. ``None`` when starting to make the device work.
+
+        Returns:
+            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            The next resuming time can be ``None`` if resumable anytime.
+
+        """
+        if self._update_time_and_check_inputs(time, self._ports_i):
+            self.apply_states()
+            if self._ports_i[0].data[0] is None:
+                self._port_o.post((None, self._time))
+            else:
+                self._port_o.post((
+                    (
+                        self._dtype_o.from_f16 if self._dtype_i == sf.Float16 else
+                        self._dtype_o.from_f32 if self._dtype_i == sf.Float32 else
+                        self._dtype_o.from_f64 if self._dtype_i == sf.Float64 else
+                        self._dtype_o.from_f128
+                    )(self._dtype_i.from_bytes(self._ports_i[0].data[0])).to_bytes(),  # type: ignore
+                    self._time
+                ))
+            self.restore_states(self._time, self._port_o.data[0] is None)
+            self._set_inputs_unchanged(self._ports_i)
+        return (list(self._ports_i), None)
+
+
+class SIMD_FPToIntegerConverter(SIMD_UnaryOperator, FPState):
+    """A SIMD floating-point to integer converter.
+
+    This device converts the respective floating-points to unsigned integers simultaneously.
+
+    """
+
+    def __init__(self, multi: int, dtype_i: Float, dsize_o: int) -> None:
+        """Creates a SIMD floating-point to integer converter.
+
+        Args:
+            multi: The number of SIMD elements.
+            dtype_i: The input floating-point type.
+            dsize_o: The output data word width in bits.
+
+        """
+        super().__init__(dtype_i.size() * multi, dtype_i.size(), dsize_o * multi)
+        FPState.__init__(self)
+        self._dtype_i: Float = dtype_i
+        """The input floating-point type."""
+
+    def reset(self) -> None:
+        """Resets the states."""
+        super().reset()
+        FPState.reset(self)
+
+    def work(self, time: float | None) -> tuple[list[InputPort], float | None]:
+        """Makes the device work.
+
+        Args:
+            time: The current time in seconds. ``None`` when starting to make the device work.
+
+        Returns:
+            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            The next resuming time can be ``None`` if resumable anytime.
+
+        """
+        if self._update_time_and_check_inputs(time, self._ports_i):
+            self.apply_states()
+            if self._ports_i[0].data[0] is None:
+                self._port_o.post((None, self._time))
+            else:
+                s: int = self._dsize_i[0]
+                t: int = self._dsize_o[0]
+                m: int = (1 << s) - 1
+                n: int = (1 << t) - 1
+                v: int = int.from_bytes(self._ports_i[0].data[0])
+                o: int = 0
+                for i, j in zip(
+                    range(0, self._width_i, s),
+                    range(0, self._width_o, t)
+                ):
+                    e: int = sf.get_exception_flags()
+                    u: int = self._dtype_i.from_bytes(((v >> i) & m).to_bytes(s >> 3)).to_ui64(sf.get_rounding_mode()).to_int()
+                    if (
+                        (e & (sf.ExceptionFlag.OVERFLOW | sf.ExceptionFlag.INFINITE | sf.ExceptionFlag.INVALID)) == 0 and
+                        u >= (1 << t)
+                    ):
+                        sf.set_exception_flags(e | sf.ExceptionFlag.INVALID)
+                    o |= (u & n) << j
+                self._port_o.post((o.to_bytes(self._nbytes), self._time))
+            self.restore_states(self._time, self._port_o.data[0] is None)
+            self._set_inputs_unchanged(self._ports_i)
+        return (list(self._ports_i), None)
+
+
+class SIMD_FPFromIntegerConverter(SIMD_UnaryOperator, FPState):
+    """A SIMD integer to floating-point converter.
+
+    This device converts the respective unsigned integers to floating-points simultaneously.
+
+    """
+
+    def __init__(self, multi: int, dsize_i: int, dtype_o: Float) -> None:
+        """Creates a SIMD integer to floating-point converter.
+
+        Args:
+            multi: The number of SIMD elements.
+            dsize_i: The input data word width in bits.
+            dtype_o: The output floating-point type.
+
+        """
+        super().__init__(dsize_i * multi, dsize_i, dtype_o.size() * multi)
+        FPState.__init__(self)
+        self._dtype_o: Float = dtype_o
+        """The output floating-point type."""
+
+    def reset(self) -> None:
+        """Resets the states."""
+        super().reset()
+        FPState.reset(self)
+
+    def work(self, time: float | None) -> tuple[list[InputPort], float | None]:
+        """Makes the device work.
+
+        Args:
+            time: The current time in seconds. ``None`` when starting to make the device work.
+
+        Returns:
+            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            The next resuming time can be ``None`` if resumable anytime.
+
+        """
+        if self._update_time_and_check_inputs(time, self._ports_i):
+            self.apply_states()
+            if self._ports_i[0].data[0] is None:
+                self._port_o.post((None, self._time))
+            else:
+                s: int = self._dsize_i[0]
+                m: int = (1 << s) - 1
+                v: int = int.from_bytes(self._ports_i[0].data[0])
+                o: bytes = b''
+                for i in range(0, self._width_i, s):
+                    o = self._dtype_o.from_ui64(sf.UInt64.from_int((v >> i) & m)).to_bytes() + o
+                self._port_o.post((o, self._time))
+            self.restore_states(self._time, self._port_o.data[0] is None)
+            self._set_inputs_unchanged(self._ports_i)
+        return (list(self._ports_i), None)
+
+
+class SIMD_FPToSignedIntegerConverter(SIMD_FPToIntegerConverter):
+    """A SIMD floating-point to signed-integer converter.
+
+    This device converts the respective floating-points to signed integers simultaneously.
+
+    """
+
+    def __init__(self, multi: int, dtype_i: Float, dsize_o: int) -> None:
+        """Creates a SIMD floating-point to signed-integer converter.
+
+        Args:
+            multi: The number of SIMD elements.
+            dtype_i: The input floating-point type.
+            dsize_o: The output data word width in bits.
+
+        """
+        super().__init__(multi, dtype_i, dsize_o)
+
+    def work(self, time: float | None) -> tuple[list[InputPort], float | None]:
+        """Makes the device work.
+
+        Args:
+            time: The current time in seconds. ``None`` when starting to make the device work.
+
+        Returns:
+            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            The next resuming time can be ``None`` if resumable anytime.
+
+        """
+        if self._update_time_and_check_inputs(time, self._ports_i):
+            self.apply_states()
+            if self._ports_i[0].data[0] is None:
+                self._port_o.post((None, self._time))
+            else:
+                s: int = self._dsize_i[0]
+                t: int = self._dsize_o[0]
+                m: int = (1 << s) - 1
+                n: int = (1 << t) - 1
+                l: int = (1 << t) >> 1
+                v: int = int.from_bytes(self._ports_i[0].data[0])
+                o: int = 0
+                for i, j in zip(
+                    range(0, self._width_i, s),
+                    range(0, self._width_o, t)
+                ):
+                    e: int = sf.get_exception_flags()
+                    u: int = self._dtype_i.from_bytes(((v >> i) & m).to_bytes(s >> 3)).to_i64(sf.get_rounding_mode()).to_int()
+                    if (
+                        (e & (sf.ExceptionFlag.OVERFLOW | sf.ExceptionFlag.INFINITE | sf.ExceptionFlag.INVALID)) == 0 and
+                        (u >= l or u < -l)
+                    ):
+                        sf.set_exception_flags(e | sf.ExceptionFlag.INVALID)
+                    o |= (u & n) << j
+                self._port_o.post((o.to_bytes(self._nbytes), self._time))
+            self.restore_states(self._time, self._port_o.data[0] is None)
+            self._set_inputs_unchanged(self._ports_i)
+        return (list(self._ports_i), None)
+
+
+class SIMD_FPFromSignedIntegerConverter(SIMD_FPFromIntegerConverter):
+    """A SIMD signed-integer to floating-point converter.
+
+    This device converts the respective signed integers to floating-points simultaneously.
+
+    """
+
+    def __init__(self, multi: int, dsize_i: int, dtype_o: Float) -> None:
+        """Creates a SIMD signed-integer to floating-point converter.
+
+        Args:
+            multi: The number of SIMD elements.
+            dsize_i: The input data word width in bits.
+            dtype_o: The output floating-point type.
+
+        """
+        super().__init__(multi, dsize_i, dtype_o)
+
+    def work(self, time: float | None) -> tuple[list[InputPort], float | None]:
+        """Makes the device work.
+
+        Args:
+            time: The current time in seconds. ``None`` when starting to make the device work.
+
+        Returns:
+            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            The next resuming time can be ``None`` if resumable anytime.
+
+        """
+        if self._update_time_and_check_inputs(time, self._ports_i):
+            self.apply_states()
+            if self._ports_i[0].data[0] is None:
+                self._port_o.post((None, self._time))
+            else:
+                s: int = self._dsize_i[0]
+                m: int = (1 << s) - 1
+                v: int = int.from_bytes(self._ports_i[0].data[0])
+                o: bytes = b''
+                for i in range(0, self._width_i, s):
+                    o = self._dtype_o.from_i64(sf.Int64.from_int(
+                        to_signed_int(s, (v >> i) & m)
+                    )).to_bytes() + o
+                self._port_o.post((o, self._time))
+            self.restore_states(self._time, self._port_o.data[0] is None)
+            self._set_inputs_unchanged(self._ports_i)
+        return (list(self._ports_i), None)
+
+
+class SIMD_FPConverter(SIMD_UnaryOperator, FPState):
+    """A SIMD floating-point converter.
+
+    This device converts the respective floating-points to those of another type simultaneously.
+
+    """
+
+    def __init__(self, multi: int, dtype_i: Float, dtype_o: Float) -> None:
+        """Creates a SIMD floating-point converter.
+
+        Args:
+            multi: The number of SIMD elements.
+            dtype_i: The input floating-point type.
+            dtype_o: The output floating-point type.
+
+        """
+        super().__init__(dtype_i.size() * multi, dtype_i.size(), dtype_o.size() * multi)
+        FPState.__init__(self)
+        self._dtype_i: Float = dtype_i
+        """The input floating-point type."""
+        self._dtype_o: Float = dtype_o
+        """The output floating-point type."""
+
+    def reset(self) -> None:
+        """Resets the states."""
+        super().reset()
+        FPState.reset(self)
+
+    def work(self, time: float | None) -> tuple[list[InputPort], float | None]:
+        """Makes the device work.
+
+        Args:
+            time: The current time in seconds. ``None`` when starting to make the device work.
+
+        Returns:
+            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            The next resuming time can be ``None`` if resumable anytime.
+
+        """
+        if self._update_time_and_check_inputs(time, self._ports_i):
+            self.apply_states()
+            if self._ports_i[0].data[0] is None:
+                self._port_o.post((None, self._time))
+            else:
+                s: int = self._dsize_i[0]
+                m: int = (1 << s) - 1
+                v: int = int.from_bytes(self._ports_i[0].data[0])
+                o: bytes = b''
+                for i in range(0, self._width_i, s):
+                    o = (
+                        self._dtype_o.from_f16 if self._dtype_i == sf.Float16 else
+                        self._dtype_o.from_f32 if self._dtype_i == sf.Float32 else
+                        self._dtype_o.from_f64 if self._dtype_i == sf.Float64 else
+                        self._dtype_o.from_f128
+                    )(self._dtype_i.from_bytes(((v >> i) & m).to_bytes(self._dtype_i.size() >> 3))).to_bytes() + o  # type: ignore
+                self._port_o.post((o, self._time))
+            self.restore_states(self._time, self._port_o.data[0] is None)
+            self._set_inputs_unchanged(self._ports_i)
+        return (list(self._ports_i), None)
