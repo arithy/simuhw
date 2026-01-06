@@ -23,7 +23,7 @@
 import importlib.metadata
 from packaging.version import Version
 
-__all__ = ['is_available']
+__all__ = ['is_available', 'get_required_softfloatpy_least_version']
 
 _softfloatpy_least: Version = Version('1.2.2')
 
@@ -64,8 +64,7 @@ try:
         'FPFromIntegerConverter', 'SIMD_FPFromIntegerConverter',
         'FPToSignedIntegerConverter', 'SIMD_FPToSignedIntegerConverter',
         'FPFromSignedIntegerConverter', 'SIMD_FPFromSignedIntegerConverter',
-        'FPConverter', 'SIMD_FPConverter',
-        'is_available', 'get_required_softfloatpy_least_version'
+        'FPConverter', 'SIMD_FPConverter'
     ]
 
     from softfloatpy import (
