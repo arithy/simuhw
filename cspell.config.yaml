@@ -9,11 +9,18 @@ words:
   - bysource
   - Combinational
   - Demultiplexer
+  - DIVBYZERO
   - docstrings
   - doctest
   - doctests
   - dumpvars
   - errorlevel
+  - feclearexcept
+  - fenv
+  - fesetround
+  - fetestexcept
+  - frec
+  - frsqrt
   - genindex
   - hcycle
   - includehidden
@@ -35,6 +42,7 @@ words:
   - PYROOTDIR
   - pytest
   - qcycle
+  - riscv
   - setuptools
   - sigstore
   - Simu
@@ -43,13 +51,19 @@ words:
   - SOURCEDIR
   - SPHINXBUILD
   - SPHINXOPTS
+  - STDC
   - subtractor
   - subtractors
   - testpypi
   - toctree
   - undoc
+  - vfloat
+  - vfrec
+  - vfrsqrt
+  - vsetvl
   - warningiserror
   - XNOR
   - Yoshida
+  - zvfh
 ignoreWords: []
 import: []

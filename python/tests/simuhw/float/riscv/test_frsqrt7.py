@@ -1,0 +1,713 @@
+# SimuHW: A behavioral hardware simulator provided as a Python module.
+#
+# Copyright (c) 2024-2026 Arihiro Yoshida. All rights reserved.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+from functools import reduce
+
+from simuhw import Source, Drain, ChannelProbe, Simulator
+import simuhw.float as hwf
+import simuhw.float.riscv as rv
+
+from ..skipif import skipif_unavailable
+
+_EPS: float = 1e-18
+
+_float_data: dict[type, list[tuple[bytes, bytes, bytes]]] = {}
+_float_data_count: dict[type, int] = {}
+if hwf.is_available():
+    _float_data = {
+        hwf.Float16: [
+            (b'\x00\x00', b'\x7c\x00', b'\x08'),
+            (b'\x00\x01', b'\x6b\xf8', b'\x00'),
+            (b'\x00\x02', b'\x69\xa0', b'\x00'),
+            (b'\x03\xfd', b'\x58\x00', b'\x00'),
+            (b'\x03\xfe', b'\x58\x00', b'\x00'),
+            (b'\x03\xff', b'\x58\x00', b'\x00'),
+            (b'\x04\x00', b'\x57\xf8', b'\x00'),
+            (b'\x04\x01', b'\x57\xf8', b'\x00'),
+            (b'\x04\x02', b'\x57\xf8', b'\x00'),
+            (b'\x07\xfd', b'\x55\xa8', b'\x00'),
+            (b'\x07\xfe', b'\x55\xa8', b'\x00'),
+            (b'\x07\xff', b'\x55\xa8', b'\x00'),
+            (b'\x08\x00', b'\x55\xa0', b'\x00'),
+            (b'\x08\x01', b'\x55\xa0', b'\x00'),
+            (b'\x08\x02', b'\x55\xa0', b'\x00'),
+            (b'\x0b\xfd', b'\x54\x00', b'\x00'),
+            (b'\x0b\xfe', b'\x54\x00', b'\x00'),
+            (b'\x0b\xff', b'\x54\x00', b'\x00'),
+            (b'\x34\x00', b'\x3f\xf8', b'\x00'),
+            (b'\x34\x01', b'\x3f\xf8', b'\x00'),
+            (b'\x34\x02', b'\x3f\xf8', b'\x00'),
+            (b'\x37\xfd', b'\x3d\xa8', b'\x00'),
+            (b'\x37\xfe', b'\x3d\xa8', b'\x00'),
+            (b'\x37\xff', b'\x3d\xa8', b'\x00'),
+            (b'\x38\x00', b'\x3d\xa0', b'\x00'),
+            (b'\x38\x01', b'\x3d\xa0', b'\x00'),
+            (b'\x38\x02', b'\x3d\xa0', b'\x00'),
+            (b'\x3b\xfd', b'\x3c\x00', b'\x00'),
+            (b'\x3b\xfe', b'\x3c\x00', b'\x00'),
+            (b'\x3b\xff', b'\x3c\x00', b'\x00'),
+            (b'\x3c\x00', b'\x3b\xf8', b'\x00'),
+            (b'\x3c\x01', b'\x3b\xf8', b'\x00'),
+            (b'\x3c\x02', b'\x3b\xf8', b'\x00'),
+            (b'\x3f\xfd', b'\x39\xa8', b'\x00'),
+            (b'\x3f\xfe', b'\x39\xa8', b'\x00'),
+            (b'\x3f\xff', b'\x39\xa8', b'\x00'),
+            (b'\x40\x00', b'\x39\xa0', b'\x00'),
+            (b'\x40\x01', b'\x39\xa0', b'\x00'),
+            (b'\x40\x02', b'\x39\xa0', b'\x00'),
+            (b'\x43\xfd', b'\x38\x00', b'\x00'),
+            (b'\x43\xfe', b'\x38\x00', b'\x00'),
+            (b'\x43\xff', b'\x38\x00', b'\x00'),
+            (b'\x44\x00', b'\x37\xf8', b'\x00'),
+            (b'\x44\x01', b'\x37\xf8', b'\x00'),
+            (b'\x44\x02', b'\x37\xf8', b'\x00'),
+            (b'\x47\xfd', b'\x35\xa8', b'\x00'),
+            (b'\x47\xfe', b'\x35\xa8', b'\x00'),
+            (b'\x47\xff', b'\x35\xa8', b'\x00'),
+            (b'\x74\x00', b'\x1f\xf8', b'\x00'),
+            (b'\x74\x01', b'\x1f\xf8', b'\x00'),
+            (b'\x74\x02', b'\x1f\xf8', b'\x00'),
+            (b'\x77\xfd', b'\x1d\xa8', b'\x00'),
+            (b'\x77\xfe', b'\x1d\xa8', b'\x00'),
+            (b'\x77\xff', b'\x1d\xa8', b'\x00'),
+            (b'\x78\x00', b'\x1d\xa0', b'\x00'),
+            (b'\x78\x01', b'\x1d\xa0', b'\x00'),
+            (b'\x78\x02', b'\x1d\xa0', b'\x00'),
+            (b'\x7b\xfd', b'\x1c\x00', b'\x00'),
+            (b'\x7b\xfe', b'\x1c\x00', b'\x00'),
+            (b'\x7b\xff', b'\x1c\x00', b'\x00'),
+            (b'\x7c\x00', b'\x00\x00', b'\x00'),
+            (b'\x7c\x01', b'\x7e\x00', b'\x10'),
+            (b'\x7c\x02', b'\x7e\x00', b'\x10'),
+            (b'\x7f\xfd', b'\x7e\x00', b'\x00'),
+            (b'\x7f\xfe', b'\x7e\x00', b'\x00'),
+            (b'\x7f\xff', b'\x7e\x00', b'\x00'),
+            (b'\x80\x00', b'\xfc\x00', b'\x08'),
+            (b'\x80\x01', b'\x7e\x00', b'\x10'),
+            (b'\x80\x02', b'\x7e\x00', b'\x10'),
+            (b'\x83\xfd', b'\x7e\x00', b'\x10'),
+            (b'\x83\xfe', b'\x7e\x00', b'\x10'),
+            (b'\x83\xff', b'\x7e\x00', b'\x10'),
+            (b'\x84\x00', b'\x7e\x00', b'\x10'),
+            (b'\x84\x01', b'\x7e\x00', b'\x10'),
+            (b'\x84\x02', b'\x7e\x00', b'\x10'),
+            (b'\x87\xfd', b'\x7e\x00', b'\x10'),
+            (b'\x87\xfe', b'\x7e\x00', b'\x10'),
+            (b'\x87\xff', b'\x7e\x00', b'\x10'),
+            (b'\x88\x00', b'\x7e\x00', b'\x10'),
+            (b'\x88\x01', b'\x7e\x00', b'\x10'),
+            (b'\x88\x02', b'\x7e\x00', b'\x10'),
+            (b'\x8b\xfd', b'\x7e\x00', b'\x10'),
+            (b'\x8b\xfe', b'\x7e\x00', b'\x10'),
+            (b'\x8b\xff', b'\x7e\x00', b'\x10'),
+            (b'\xb4\x00', b'\x7e\x00', b'\x10'),
+            (b'\xb4\x01', b'\x7e\x00', b'\x10'),
+            (b'\xb4\x02', b'\x7e\x00', b'\x10'),
+            (b'\xb7\xfd', b'\x7e\x00', b'\x10'),
+            (b'\xb7\xfe', b'\x7e\x00', b'\x10'),
+            (b'\xb7\xff', b'\x7e\x00', b'\x10'),
+            (b'\xb8\x00', b'\x7e\x00', b'\x10'),
+            (b'\xb8\x01', b'\x7e\x00', b'\x10'),
+            (b'\xb8\x02', b'\x7e\x00', b'\x10'),
+            (b'\xbb\xfd', b'\x7e\x00', b'\x10'),
+            (b'\xbb\xfe', b'\x7e\x00', b'\x10'),
+            (b'\xbb\xff', b'\x7e\x00', b'\x10'),
+            (b'\xbc\x00', b'\x7e\x00', b'\x10'),
+            (b'\xbc\x01', b'\x7e\x00', b'\x10'),
+            (b'\xbc\x02', b'\x7e\x00', b'\x10'),
+            (b'\xbf\xfd', b'\x7e\x00', b'\x10'),
+            (b'\xbf\xfe', b'\x7e\x00', b'\x10'),
+            (b'\xbf\xff', b'\x7e\x00', b'\x10'),
+            (b'\xc0\x00', b'\x7e\x00', b'\x10'),
+            (b'\xc0\x01', b'\x7e\x00', b'\x10'),
+            (b'\xc0\x02', b'\x7e\x00', b'\x10'),
+            (b'\xc3\xfd', b'\x7e\x00', b'\x10'),
+            (b'\xc3\xfe', b'\x7e\x00', b'\x10'),
+            (b'\xc3\xff', b'\x7e\x00', b'\x10'),
+            (b'\xc4\x00', b'\x7e\x00', b'\x10'),
+            (b'\xc4\x01', b'\x7e\x00', b'\x10'),
+            (b'\xc4\x02', b'\x7e\x00', b'\x10'),
+            (b'\xc7\xfd', b'\x7e\x00', b'\x10'),
+            (b'\xc7\xfe', b'\x7e\x00', b'\x10'),
+            (b'\xc7\xff', b'\x7e\x00', b'\x10'),
+            (b'\xf4\x00', b'\x7e\x00', b'\x10'),
+            (b'\xf4\x01', b'\x7e\x00', b'\x10'),
+            (b'\xf4\x02', b'\x7e\x00', b'\x10'),
+            (b'\xf7\xfd', b'\x7e\x00', b'\x10'),
+            (b'\xf7\xfe', b'\x7e\x00', b'\x10'),
+            (b'\xf7\xff', b'\x7e\x00', b'\x10'),
+            (b'\xf8\x00', b'\x7e\x00', b'\x10'),
+            (b'\xf8\x01', b'\x7e\x00', b'\x10'),
+            (b'\xf8\x02', b'\x7e\x00', b'\x10'),
+            (b'\xfb\xfd', b'\x7e\x00', b'\x10'),
+            (b'\xfb\xfe', b'\x7e\x00', b'\x10'),
+            (b'\xfb\xff', b'\x7e\x00', b'\x10'),
+            (b'\xfc\x00', b'\x7e\x00', b'\x10'),
+            (b'\xfc\x01', b'\x7e\x00', b'\x10'),
+            (b'\xfc\x02', b'\x7e\x00', b'\x10'),
+            (b'\xff\xfd', b'\x7e\x00', b'\x00'),
+            (b'\xff\xfe', b'\x7e\x00', b'\x00'),
+            (b'\xff\xff', b'\x7e\x00', b'\x00')
+        ],
+        hwf.Float32: [
+            (b'\x00\x00\x00\x00', b'\x7f\x80\x00\x00', b'\x08'),
+            (b'\x00\x00\x00\x01', b'\x64\xb4\x00\x00', b'\x00'),
+            (b'\x00\x00\x00\x02', b'\x64\x7f\x00\x00', b'\x00'),
+            (b'\x00\x7f\xff\xfd', b'\x5f\x00\x00\x00', b'\x00'),
+            (b'\x00\x7f\xff\xfe', b'\x5f\x00\x00\x00', b'\x00'),
+            (b'\x00\x7f\xff\xff', b'\x5f\x00\x00\x00', b'\x00'),
+            (b'\x00\x80\x00\x00', b'\x5e\xff\x00\x00', b'\x00'),
+            (b'\x00\x80\x00\x01', b'\x5e\xff\x00\x00', b'\x00'),
+            (b'\x00\x80\x00\x02', b'\x5e\xff\x00\x00', b'\x00'),
+            (b'\x00\xff\xff\xfd', b'\x5e\xb5\x00\x00', b'\x00'),
+            (b'\x00\xff\xff\xfe', b'\x5e\xb5\x00\x00', b'\x00'),
+            (b'\x00\xff\xff\xff', b'\x5e\xb5\x00\x00', b'\x00'),
+            (b'\x01\x00\x00\x00', b'\x5e\xb4\x00\x00', b'\x00'),
+            (b'\x01\x00\x00\x01', b'\x5e\xb4\x00\x00', b'\x00'),
+            (b'\x01\x00\x00\x02', b'\x5e\xb4\x00\x00', b'\x00'),
+            (b'\x01\x7f\xff\xfd', b'\x5e\x80\x00\x00', b'\x00'),
+            (b'\x01\x7f\xff\xfe', b'\x5e\x80\x00\x00', b'\x00'),
+            (b'\x01\x7f\xff\xff', b'\x5e\x80\x00\x00', b'\x00'),
+            (b'\x3e\x80\x00\x00', b'\x3f\xff\x00\x00', b'\x00'),
+            (b'\x3e\x80\x00\x01', b'\x3f\xff\x00\x00', b'\x00'),
+            (b'\x3e\x80\x00\x02', b'\x3f\xff\x00\x00', b'\x00'),
+            (b'\x3e\xff\xff\xfd', b'\x3f\xb5\x00\x00', b'\x00'),
+            (b'\x3e\xff\xff\xfe', b'\x3f\xb5\x00\x00', b'\x00'),
+            (b'\x3e\xff\xff\xff', b'\x3f\xb5\x00\x00', b'\x00'),
+            (b'\x3f\x00\x00\x00', b'\x3f\xb4\x00\x00', b'\x00'),
+            (b'\x3f\x00\x00\x01', b'\x3f\xb4\x00\x00', b'\x00'),
+            (b'\x3f\x00\x00\x02', b'\x3f\xb4\x00\x00', b'\x00'),
+            (b'\x3f\x7f\xff\xfd', b'\x3f\x80\x00\x00', b'\x00'),
+            (b'\x3f\x7f\xff\xfe', b'\x3f\x80\x00\x00', b'\x00'),
+            (b'\x3f\x7f\xff\xff', b'\x3f\x80\x00\x00', b'\x00'),
+            (b'\x3f\x80\x00\x00', b'\x3f\x7f\x00\x00', b'\x00'),
+            (b'\x3f\x80\x00\x01', b'\x3f\x7f\x00\x00', b'\x00'),
+            (b'\x3f\x80\x00\x02', b'\x3f\x7f\x00\x00', b'\x00'),
+            (b'\x3f\xff\xff\xfd', b'\x3f\x35\x00\x00', b'\x00'),
+            (b'\x3f\xff\xff\xfe', b'\x3f\x35\x00\x00', b'\x00'),
+            (b'\x3f\xff\xff\xff', b'\x3f\x35\x00\x00', b'\x00'),
+            (b'\x40\x00\x00\x00', b'\x3f\x34\x00\x00', b'\x00'),
+            (b'\x40\x00\x00\x01', b'\x3f\x34\x00\x00', b'\x00'),
+            (b'\x40\x00\x00\x02', b'\x3f\x34\x00\x00', b'\x00'),
+            (b'\x40\x7f\xff\xfd', b'\x3f\x00\x00\x00', b'\x00'),
+            (b'\x40\x7f\xff\xfe', b'\x3f\x00\x00\x00', b'\x00'),
+            (b'\x40\x7f\xff\xff', b'\x3f\x00\x00\x00', b'\x00'),
+            (b'\x40\x80\x00\x00', b'\x3e\xff\x00\x00', b'\x00'),
+            (b'\x40\x80\x00\x01', b'\x3e\xff\x00\x00', b'\x00'),
+            (b'\x40\x80\x00\x02', b'\x3e\xff\x00\x00', b'\x00'),
+            (b'\x40\xff\xff\xfd', b'\x3e\xb5\x00\x00', b'\x00'),
+            (b'\x40\xff\xff\xfe', b'\x3e\xb5\x00\x00', b'\x00'),
+            (b'\x40\xff\xff\xff', b'\x3e\xb5\x00\x00', b'\x00'),
+            (b'\x7e\x80\x00\x00', b'\x1f\xff\x00\x00', b'\x00'),
+            (b'\x7e\x80\x00\x01', b'\x1f\xff\x00\x00', b'\x00'),
+            (b'\x7e\x80\x00\x02', b'\x1f\xff\x00\x00', b'\x00'),
+            (b'\x7e\xff\xff\xfd', b'\x1f\xb5\x00\x00', b'\x00'),
+            (b'\x7e\xff\xff\xfe', b'\x1f\xb5\x00\x00', b'\x00'),
+            (b'\x7e\xff\xff\xff', b'\x1f\xb5\x00\x00', b'\x00'),
+            (b'\x7f\x00\x00\x00', b'\x1f\xb4\x00\x00', b'\x00'),
+            (b'\x7f\x00\x00\x01', b'\x1f\xb4\x00\x00', b'\x00'),
+            (b'\x7f\x00\x00\x02', b'\x1f\xb4\x00\x00', b'\x00'),
+            (b'\x7f\x7f\xff\xfd', b'\x1f\x80\x00\x00', b'\x00'),
+            (b'\x7f\x7f\xff\xfe', b'\x1f\x80\x00\x00', b'\x00'),
+            (b'\x7f\x7f\xff\xff', b'\x1f\x80\x00\x00', b'\x00'),
+            (b'\x7f\x80\x00\x00', b'\x00\x00\x00\x00', b'\x00'),
+            (b'\x7f\x80\x00\x01', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\x7f\x80\x00\x02', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\x7f\xff\xff\xfd', b'\x7f\xc0\x00\x00', b'\x00'),
+            (b'\x7f\xff\xff\xfe', b'\x7f\xc0\x00\x00', b'\x00'),
+            (b'\x7f\xff\xff\xff', b'\x7f\xc0\x00\x00', b'\x00'),
+            (b'\x80\x00\x00\x00', b'\xff\x80\x00\x00', b'\x08'),
+            (b'\x80\x00\x00\x01', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\x80\x00\x00\x02', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\x80\x7f\xff\xfd', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\x80\x7f\xff\xfe', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\x80\x7f\xff\xff', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\x80\x80\x00\x00', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\x80\x80\x00\x01', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\x80\x80\x00\x02', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\x80\xff\xff\xfd', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\x80\xff\xff\xfe', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\x80\xff\xff\xff', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\x81\x00\x00\x00', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\x81\x00\x00\x01', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\x81\x00\x00\x02', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\x81\x7f\xff\xfd', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\x81\x7f\xff\xfe', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\x81\x7f\xff\xff', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\xbe\x80\x00\x00', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\xbe\x80\x00\x01', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\xbe\x80\x00\x02', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\xbe\xff\xff\xfd', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\xbe\xff\xff\xfe', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\xbe\xff\xff\xff', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\xbf\x00\x00\x00', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\xbf\x00\x00\x01', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\xbf\x00\x00\x02', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\xbf\x7f\xff\xfd', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\xbf\x7f\xff\xfe', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\xbf\x7f\xff\xff', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\xbf\x80\x00\x00', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\xbf\x80\x00\x01', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\xbf\x80\x00\x02', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\xbf\xff\xff\xfd', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\xbf\xff\xff\xfe', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\xbf\xff\xff\xff', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\xc0\x00\x00\x00', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\xc0\x00\x00\x01', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\xc0\x00\x00\x02', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\xc0\x7f\xff\xfd', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\xc0\x7f\xff\xfe', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\xc0\x7f\xff\xff', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\xc0\x80\x00\x00', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\xc0\x80\x00\x01', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\xc0\x80\x00\x02', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\xc0\xff\xff\xfd', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\xc0\xff\xff\xfe', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\xc0\xff\xff\xff', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\xfe\x80\x00\x00', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\xfe\x80\x00\x01', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\xfe\x80\x00\x02', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\xfe\xff\xff\xfd', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\xfe\xff\xff\xfe', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\xfe\xff\xff\xff', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\xff\x00\x00\x00', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\xff\x00\x00\x01', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\xff\x00\x00\x02', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\xff\x7f\xff\xfd', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\xff\x7f\xff\xfe', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\xff\x7f\xff\xff', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\xff\x80\x00\x00', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\xff\x80\x00\x01', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\xff\x80\x00\x02', b'\x7f\xc0\x00\x00', b'\x10'),
+            (b'\xff\xff\xff\xfd', b'\x7f\xc0\x00\x00', b'\x00'),
+            (b'\xff\xff\xff\xfe', b'\x7f\xc0\x00\x00', b'\x00'),
+            (b'\xff\xff\xff\xff', b'\x7f\xc0\x00\x00', b'\x00')
+        ],
+        hwf.Float64: [
+            (b'\x00\x00\x00\x00\x00\x00\x00\x00', b'\x7f\xf0\x00\x00\x00\x00\x00\x00', b'\x08'),
+            (b'\x00\x00\x00\x00\x00\x00\x00\x01', b'\x61\x7f\xe0\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x00\x00\x00\x00\x00\x00\x00\x02', b'\x61\x76\x80\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x00\x0f\xff\xff\xff\xff\xff\xfd', b'\x5f\xe0\x00\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x00\x0f\xff\xff\xff\xff\xff\xfe', b'\x5f\xe0\x00\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x00\x0f\xff\xff\xff\xff\xff\xff', b'\x5f\xe0\x00\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x00\x10\x00\x00\x00\x00\x00\x00', b'\x5f\xdf\xe0\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x00\x10\x00\x00\x00\x00\x00\x01', b'\x5f\xdf\xe0\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x00\x10\x00\x00\x00\x00\x00\x02', b'\x5f\xdf\xe0\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x00\x1f\xff\xff\xff\xff\xff\xfd', b'\x5f\xd6\xa0\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x00\x1f\xff\xff\xff\xff\xff\xfe', b'\x5f\xd6\xa0\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x00\x1f\xff\xff\xff\xff\xff\xff', b'\x5f\xd6\xa0\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x00\x20\x00\x00\x00\x00\x00\x00', b'\x5f\xd6\x80\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x00\x20\x00\x00\x00\x00\x00\x01', b'\x5f\xd6\x80\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x00\x20\x00\x00\x00\x00\x00\x02', b'\x5f\xd6\x80\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x00\x2f\xff\xff\xff\xff\xff\xfd', b'\x5f\xd0\x00\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x00\x2f\xff\xff\xff\xff\xff\xfe', b'\x5f\xd0\x00\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x00\x2f\xff\xff\xff\xff\xff\xff', b'\x5f\xd0\x00\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x3f\xd0\x00\x00\x00\x00\x00\x00', b'\x3f\xff\xe0\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x3f\xd0\x00\x00\x00\x00\x00\x01', b'\x3f\xff\xe0\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x3f\xd0\x00\x00\x00\x00\x00\x02', b'\x3f\xff\xe0\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x3f\xdf\xff\xff\xff\xff\xff\xfd', b'\x3f\xf6\xa0\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x3f\xdf\xff\xff\xff\xff\xff\xfe', b'\x3f\xf6\xa0\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x3f\xdf\xff\xff\xff\xff\xff\xff', b'\x3f\xf6\xa0\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x3f\xe0\x00\x00\x00\x00\x00\x00', b'\x3f\xf6\x80\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x3f\xe0\x00\x00\x00\x00\x00\x01', b'\x3f\xf6\x80\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x3f\xe0\x00\x00\x00\x00\x00\x02', b'\x3f\xf6\x80\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x3f\xef\xff\xff\xff\xff\xff\xfd', b'\x3f\xf0\x00\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x3f\xef\xff\xff\xff\xff\xff\xfe', b'\x3f\xf0\x00\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x3f\xef\xff\xff\xff\xff\xff\xff', b'\x3f\xf0\x00\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x3f\xf0\x00\x00\x00\x00\x00\x00', b'\x3f\xef\xe0\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x3f\xf0\x00\x00\x00\x00\x00\x01', b'\x3f\xef\xe0\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x3f\xf0\x00\x00\x00\x00\x00\x02', b'\x3f\xef\xe0\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x3f\xff\xff\xff\xff\xff\xff\xfd', b'\x3f\xe6\xa0\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x3f\xff\xff\xff\xff\xff\xff\xfe', b'\x3f\xe6\xa0\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x3f\xff\xff\xff\xff\xff\xff\xff', b'\x3f\xe6\xa0\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x40\x00\x00\x00\x00\x00\x00\x00', b'\x3f\xe6\x80\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x40\x00\x00\x00\x00\x00\x00\x01', b'\x3f\xe6\x80\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x40\x00\x00\x00\x00\x00\x00\x02', b'\x3f\xe6\x80\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x40\x0f\xff\xff\xff\xff\xff\xfd', b'\x3f\xe0\x00\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x40\x0f\xff\xff\xff\xff\xff\xfe', b'\x3f\xe0\x00\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x40\x0f\xff\xff\xff\xff\xff\xff', b'\x3f\xe0\x00\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x40\x10\x00\x00\x00\x00\x00\x00', b'\x3f\xdf\xe0\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x40\x10\x00\x00\x00\x00\x00\x01', b'\x3f\xdf\xe0\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x40\x10\x00\x00\x00\x00\x00\x02', b'\x3f\xdf\xe0\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x40\x1f\xff\xff\xff\xff\xff\xfd', b'\x3f\xd6\xa0\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x40\x1f\xff\xff\xff\xff\xff\xfe', b'\x3f\xd6\xa0\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x40\x1f\xff\xff\xff\xff\xff\xff', b'\x3f\xd6\xa0\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x7f\xd0\x00\x00\x00\x00\x00\x00', b'\x1f\xff\xe0\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x7f\xd0\x00\x00\x00\x00\x00\x01', b'\x1f\xff\xe0\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x7f\xd0\x00\x00\x00\x00\x00\x02', b'\x1f\xff\xe0\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x7f\xdf\xff\xff\xff\xff\xff\xfd', b'\x1f\xf6\xa0\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x7f\xdf\xff\xff\xff\xff\xff\xfe', b'\x1f\xf6\xa0\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x7f\xdf\xff\xff\xff\xff\xff\xff', b'\x1f\xf6\xa0\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x7f\xe0\x00\x00\x00\x00\x00\x00', b'\x1f\xf6\x80\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x7f\xe0\x00\x00\x00\x00\x00\x01', b'\x1f\xf6\x80\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x7f\xe0\x00\x00\x00\x00\x00\x02', b'\x1f\xf6\x80\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x7f\xef\xff\xff\xff\xff\xff\xfd', b'\x1f\xf0\x00\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x7f\xef\xff\xff\xff\xff\xff\xfe', b'\x1f\xf0\x00\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x7f\xef\xff\xff\xff\xff\xff\xff', b'\x1f\xf0\x00\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x7f\xf0\x00\x00\x00\x00\x00\x00', b'\x00\x00\x00\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x7f\xf0\x00\x00\x00\x00\x00\x01', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\x7f\xf0\x00\x00\x00\x00\x00\x02', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\x7f\xff\xff\xff\xff\xff\xff\xfd', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x7f\xff\xff\xff\xff\xff\xff\xfe', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x7f\xff\xff\xff\xff\xff\xff\xff', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\x80\x00\x00\x00\x00\x00\x00\x00', b'\xff\xf0\x00\x00\x00\x00\x00\x00', b'\x08'),
+            (b'\x80\x00\x00\x00\x00\x00\x00\x01', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\x80\x00\x00\x00\x00\x00\x00\x02', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\x80\x0f\xff\xff\xff\xff\xff\xfd', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\x80\x0f\xff\xff\xff\xff\xff\xfe', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\x80\x0f\xff\xff\xff\xff\xff\xff', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\x80\x10\x00\x00\x00\x00\x00\x00', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\x80\x10\x00\x00\x00\x00\x00\x01', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\x80\x10\x00\x00\x00\x00\x00\x02', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\x80\x1f\xff\xff\xff\xff\xff\xfd', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\x80\x1f\xff\xff\xff\xff\xff\xfe', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\x80\x1f\xff\xff\xff\xff\xff\xff', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\x80\x20\x00\x00\x00\x00\x00\x00', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\x80\x20\x00\x00\x00\x00\x00\x01', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\x80\x20\x00\x00\x00\x00\x00\x02', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\x80\x2f\xff\xff\xff\xff\xff\xfd', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\x80\x2f\xff\xff\xff\xff\xff\xfe', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\x80\x2f\xff\xff\xff\xff\xff\xff', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\xbf\xd0\x00\x00\x00\x00\x00\x00', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\xbf\xd0\x00\x00\x00\x00\x00\x01', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\xbf\xd0\x00\x00\x00\x00\x00\x02', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\xbf\xdf\xff\xff\xff\xff\xff\xfd', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\xbf\xdf\xff\xff\xff\xff\xff\xfe', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\xbf\xdf\xff\xff\xff\xff\xff\xff', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\xbf\xe0\x00\x00\x00\x00\x00\x00', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\xbf\xe0\x00\x00\x00\x00\x00\x01', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\xbf\xe0\x00\x00\x00\x00\x00\x02', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\xbf\xef\xff\xff\xff\xff\xff\xfd', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\xbf\xef\xff\xff\xff\xff\xff\xfe', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\xbf\xef\xff\xff\xff\xff\xff\xff', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\xbf\xf0\x00\x00\x00\x00\x00\x00', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\xbf\xf0\x00\x00\x00\x00\x00\x01', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\xbf\xf0\x00\x00\x00\x00\x00\x02', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\xbf\xff\xff\xff\xff\xff\xff\xfd', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\xbf\xff\xff\xff\xff\xff\xff\xfe', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\xbf\xff\xff\xff\xff\xff\xff\xff', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\xc0\x00\x00\x00\x00\x00\x00\x00', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\xc0\x00\x00\x00\x00\x00\x00\x01', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\xc0\x00\x00\x00\x00\x00\x00\x02', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\xc0\x0f\xff\xff\xff\xff\xff\xfd', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\xc0\x0f\xff\xff\xff\xff\xff\xfe', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\xc0\x0f\xff\xff\xff\xff\xff\xff', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\xc0\x10\x00\x00\x00\x00\x00\x00', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\xc0\x10\x00\x00\x00\x00\x00\x01', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\xc0\x10\x00\x00\x00\x00\x00\x02', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\xc0\x1f\xff\xff\xff\xff\xff\xfd', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\xc0\x1f\xff\xff\xff\xff\xff\xfe', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\xc0\x1f\xff\xff\xff\xff\xff\xff', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\xff\xd0\x00\x00\x00\x00\x00\x00', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\xff\xd0\x00\x00\x00\x00\x00\x01', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\xff\xd0\x00\x00\x00\x00\x00\x02', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\xff\xdf\xff\xff\xff\xff\xff\xfd', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\xff\xdf\xff\xff\xff\xff\xff\xfe', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\xff\xdf\xff\xff\xff\xff\xff\xff', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\xff\xe0\x00\x00\x00\x00\x00\x00', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\xff\xe0\x00\x00\x00\x00\x00\x01', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\xff\xe0\x00\x00\x00\x00\x00\x02', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\xff\xef\xff\xff\xff\xff\xff\xfd', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\xff\xef\xff\xff\xff\xff\xff\xfe', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\xff\xef\xff\xff\xff\xff\xff\xff', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\xff\xf0\x00\x00\x00\x00\x00\x00', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\xff\xf0\x00\x00\x00\x00\x00\x01', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\xff\xf0\x00\x00\x00\x00\x00\x02', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x10'),
+            (b'\xff\xff\xff\xff\xff\xff\xff\xfd', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\xff\xff\xff\xff\xff\xff\xff\xfe', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x00'),
+            (b'\xff\xff\xff\xff\xff\xff\xff\xff', b'\x7f\xf8\x00\x00\x00\x00\x00\x00', b'\x00')
+        ]
+    }
+    """
+    Data were generated by the following C program executed
+    on RISC-V QEMU version 9 (qemu-system-riscv64 --cpu rv64,v=true,zvfh=true).
+    ```
+    $ cat vfrsqrt7.c
+    #include <stdio.h>
+    #include <fenv.h>
+    #include <riscv_vector.h>
+
+    #pragma STDC FENV_ACCESS ON
+
+    #define L 3
+    #define NE (L * 4 - 1)
+    #define NM (L * 2)
+
+    int main(int argc, char **argv) {
+        fesetround(FE_DOWNWARD);
+        { /* Float16 */
+            printf("[Float16]\n");
+            const uint16_t e = 5, m = 10, b = 15;
+            uint16_t fi, fo;
+            for (int is = 0; is <= 1; is++) {
+                const uint16_t vs = (uint16_t)is << (e + m);
+            for (int ie = 0; ie < NE; ie++) {
+                const uint16_t ve = (uint16_t)((ie < L) ? ie : (ie < L * 3 - 1) ? b + ie - L * 2 + 1 : ie - L * 4 + (1 << e) + 1) << m;
+            for (int im = 0; im < NM; im++) {
+                const uint16_t vm = (uint16_t)((im < L) ? im : im - L * 2 + (1 << m));
+                fi = vs | ve | vm;
+                __riscv_vsetvl_e16m1(1);
+                vfloat16m1_t vi = __riscv_vle16_v_f16m1((_Float16 *)&fi, 1);
+                feclearexcept(FE_ALL_EXCEPT);
+                vfloat16m1_t vo = __riscv_vfrsqrt7_v_f16m1(vi, 1);
+                const int fe = fetestexcept(FE_ALL_EXCEPT);
+                __riscv_vse16_v_f16m1((_Float16 *)&fo, vo, 1);
+                printf("(b'");
+                for (int i = 0; i < 16; i += 8) printf("\\x%02x", (uint8_t)((fi >> (16 - 8 - i)) & 0xff));
+                printf("', b'");
+                for (int i = 0; i < 16; i += 8) printf("\\x%02x", (uint8_t)((fo >> (16 - 8 - i)) & 0xff));
+                printf("', b'");
+                printf("\\x%02x", (uint8_t)(
+                    ((fe & FE_INEXACT) ? 0x01 : 0) |
+                    ((fe & FE_UNDERFLOW) ? 0x02 : 0) |
+                    ((fe & FE_OVERFLOW) ? 0x04 : 0) |
+                    ((fe & FE_DIVBYZERO) ? 0x08 : 0) |
+                    ((fe & FE_INVALID) ? 0x10 : 0)
+                ));
+                printf("'),\n");
+            }
+            }
+            }
+        }
+        { /* Float32 */
+            printf("[Float32]\n");
+            const uint32_t e = 8, m = 23, b = 127;
+            uint32_t fi, fo;
+            for (int is = 0; is <= 1; is++) {
+                const uint32_t vs = (uint32_t)is << (e + m);
+            for (int ie = 0; ie < NE; ie++) {
+                const uint32_t ve = (uint32_t)((ie < L) ? ie : (ie < L * 3 - 1) ? b + ie - L * 2 + 1 : ie - L * 4 + (1 << e) + 1) << m;
+            for (int im = 0; im < NM; im++) {
+                const uint32_t vm = (uint32_t)((im < L) ? im : im - L * 2 + (1 << m));
+                fi = vs | ve | vm;
+                __riscv_vsetvl_e32m1(1);
+                vfloat32m1_t vi = __riscv_vle32_v_f32m1((float *)&fi, 1);
+                feclearexcept(FE_ALL_EXCEPT);
+                vfloat32m1_t vo = __riscv_vfrsqrt7_v_f32m1(vi, 1);
+                const int fe = fetestexcept(FE_ALL_EXCEPT);
+                __riscv_vse32_v_f32m1((float *)&fo, vo, 1);
+                printf("(b'");
+                for (int i = 0; i < 32; i += 8) printf("\\x%02x", (uint8_t)((fi >> (32 - 8 - i)) & 0xff));
+                printf("', b'");
+                for (int i = 0; i < 32; i += 8) printf("\\x%02x", (uint8_t)((fo >> (32 - 8 - i)) & 0xff));
+                printf("', b'");
+                printf("\\x%02x", (uint8_t)(
+                    ((fe & FE_INEXACT) ? 0x01 : 0) |
+                    ((fe & FE_UNDERFLOW) ? 0x02 : 0) |
+                    ((fe & FE_OVERFLOW) ? 0x04 : 0) |
+                    ((fe & FE_DIVBYZERO) ? 0x08 : 0) |
+                    ((fe & FE_INVALID) ? 0x10 : 0)
+                ));
+                printf("'),\n");
+            }
+            }
+            }
+        }
+        { /* Float64 */
+            printf("[Float64]\n");
+            const uint64_t e = 11, m = 52, b = 1023;
+            uint64_t fi, fo;
+            for (int is = 0; is <= 1; is++) {
+                const uint64_t vs = (uint64_t)is << (e + m);
+            for (int ie = 0; ie < NE; ie++) {
+                const uint64_t ve = (uint64_t)((ie < L) ? ie : (ie < L * 3 - 1) ? b + ie - L * 2 + 1 : ie - L * 4 + (1LL << e) + 1) << m;
+            for (int im = 0; im < NM; im++) {
+                const uint64_t vm = (uint64_t)((im < L) ? im : im - L * 2 + (1LL << m));
+                fi = vs | ve | vm;
+                __riscv_vsetvl_e64m1(1);
+                vfloat64m1_t vi = __riscv_vle64_v_f64m1((double *)&fi, 1);
+                feclearexcept(FE_ALL_EXCEPT);
+                vfloat64m1_t vo = __riscv_vfrsqrt7_v_f64m1(vi, 1);
+                const int fe = fetestexcept(FE_ALL_EXCEPT);
+                __riscv_vse64_v_f64m1((double *)&fo, vo, 1);
+                printf("(b'");
+                for (int i = 0; i < 64; i += 8) printf("\\x%02x", (uint8_t)((fi >> (64 - 8 - i)) & 0xff));
+                printf("', b'");
+                for (int i = 0; i < 64; i += 8) printf("\\x%02x", (uint8_t)((fo >> (64 - 8 - i)) & 0xff));
+                printf("', b'");
+                printf("\\x%02x", (uint8_t)(
+                    ((fe & FE_INEXACT) ? 0x01 : 0) |
+                    ((fe & FE_UNDERFLOW) ? 0x02 : 0) |
+                    ((fe & FE_OVERFLOW) ? 0x04 : 0) |
+                    ((fe & FE_DIVBYZERO) ? 0x08 : 0) |
+                    ((fe & FE_INVALID) ? 0x10 : 0)
+                ));
+                printf("'),\n");
+            }
+            }
+            }
+        }
+        return 0;
+    }
+    $ clang-20 -march=rv64gcv_zvfh vfrsqrt7.c -lm
+    $ ./a.out
+    ```
+    """
+    _float_data_count = {
+        t: len(_float_data[t])
+        for t in _float_data
+    }
+
+
+@skipif_unavailable
+def test_FRSqrt7() -> None:
+    hwf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
+    hwf.set_rounding_mode(hwf.RoundingMode.MIN)
+    hwf.set_exception_flags(0)
+    test_i: list[tuple[type, list[int], list[list[tuple[bytes | None, float]]]]] = [
+        (
+            f,
+            [f.size(), 1, 3, 5],  # type: ignore[attr-defined]
+            [
+                [
+                    (u[0], 1e-9 * (1 + i))
+                    for i, u in enumerate(_float_data[f])
+                ],
+                [
+                    (hwf.TininessMode.AFTER_ROUNDING.to_bytes(1), 0e-9)
+                ],
+                [
+                    (hwf.RoundingMode.MIN.to_bytes(1), 0e-9)
+                ],
+                [
+                    (b'\x00', 0e-9)
+                ]
+            ]
+        )
+        for f in [hwf.Float16, hwf.Float32, hwf.Float64]
+    ]
+    test_o: list[list[list[tuple[bytes | None, float]]]] = [
+        [
+            [
+                (u[1], 1e-9 * (1 + i))
+                for i, u in enumerate(_float_data[f])
+            ],
+            [
+                (u[2], 1e-9 * (1 + i))
+                for i, u in enumerate(_float_data[f])
+            ]
+        ]
+        for f in [hwf.Float16, hwf.Float32, hwf.Float64]
+    ]
+    for t, s in zip(test_i, test_o):
+        f: hwf.Float = t[0]
+        w: int = f.size()
+        po: list[ChannelProbe] = [ChannelProbe('out', w), ChannelProbe('fe', rv.FRSqrt7.width_fe)]
+        ti: list[Source] = [Source(u, d) for u, d in zip(t[1], t[2])]
+        to: list[Drain] = [Drain(w), Drain(rv.FRSqrt7.width_fe)]
+        dev: rv.FRSqrt7 = rv.FRSqrt7(f)
+        for i, u in enumerate([dev.port_o, dev.port_fe_o]):
+            u.connect(to[i].port_i)
+            u.add_probe(po[i])
+        for i, v in enumerate([*dev.ports_i, dev.port_ft, dev.port_fr, dev.port_fe_i]):
+            ti[i].port_o.connect(v)
+        sim: Simulator = Simulator([*ti, *to, dev])
+        sim.start(show_time=True)
+        for p, r in zip(po, [[o[i] for i in range(len(o)) if i == 0 or o[i][0] != o[i - 1][0]] for o in s]):
+            assert len(p.data) == len(r)
+            for o, q in zip(p.data, r):
+                assert o[0] == q[0]
+                assert abs(o[1] - q[1]) <= _EPS
+
+
+@skipif_unavailable
+def test_SIMD_FRSqrt7() -> None:
+    hwf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
+    hwf.set_rounding_mode(hwf.RoundingMode.MIN)
+    hwf.set_exception_flags(0)
+    test_w: int = 256
+    test_f: list[hwf.Float] = [hwf.Float16, hwf.Float32, hwf.Float64]
+    test_i: list[tuple[list[int], list[hwf.Float], list[list[tuple[bytes | None, float]]]]] = [
+        (
+            [test_w, 2, 1, 3, 5],
+            test_f,
+            [
+                [
+                    (
+                        b''.join((
+                            _float_data[f][(i + j) % _float_data_count[f]][0]
+                            for j in range(test_w // f.size())
+                        )),
+                        1e-9 * (1 + i)
+                    )
+                    for h, f in enumerate(test_f)
+                    for i in range(sum((_float_data_count[g] for g in test_f[0:h])), sum((_float_data_count[g] for g in test_f[0:h + 1])))
+                ],
+                [
+                    (h.to_bytes(1), 1e-9 * (1 + sum((_float_data_count[g] for g in test_f[0:h]))))
+                    for h in range(len(test_f))
+                ],
+                [
+                    (hwf.TininessMode.AFTER_ROUNDING.to_bytes(1), 0e-9)
+                ],
+                [
+                    (hwf.RoundingMode.MIN.to_bytes(1), 0e-9)
+                ],
+                [
+                    (b'\x00', 0e-9)
+                ]
+            ]
+        )
+    ]
+    test_o: list[list[list[tuple[bytes | None, float]]]] = [
+        [
+            [
+                (
+                    b''.join((
+                        _float_data[f][(i + j) % _float_data_count[f]][1]
+                        for j in range(test_w // f.size())
+                    )),
+                    1e-9 * (1 + i)
+                )
+                for h, f in enumerate(test_f)
+                for i in range(sum((_float_data_count[g] for g in test_f[0:h])), sum((_float_data_count[g] for g in test_f[0:h + 1])))
+            ],
+            [
+                (
+                    reduce(lambda x, y: x | y, (
+                        int.from_bytes(_float_data[f][(i + j) % _float_data_count[f]][2])
+                        for j in range(test_w // f.size())
+                    ), 0).to_bytes(1),
+                    1e-9 * (1 + i)
+                )
+                for h, f in enumerate(test_f)
+                for i in range(sum((_float_data_count[g] for g in test_f[0:h])), sum((_float_data_count[g] for g in test_f[0:h + 1])))
+            ]
+        ]
+    ]
+    for t, s in zip(test_i, test_o):
+        po: list[ChannelProbe] = [ChannelProbe('out', test_w), ChannelProbe('fe', rv.SIMD_FRSqrt7.width_fe)]
+        ti: list[Source] = [Source(u, d) for u, d in zip(t[0], t[2])]
+        to: list[Drain] = [Drain(test_w), Drain(rv.SIMD_FRSqrt7.width_fe)]
+        dev: rv.SIMD_FRSqrt7 = rv.SIMD_FRSqrt7(test_w, t[1])
+        for i, u in enumerate([dev.port_o, dev.port_fe_o]):
+            u.connect(to[i].port_i)
+            u.add_probe(po[i])
+        for i, v in enumerate([*dev.ports_i, dev.port_s, dev.port_ft, dev.port_fr, dev.port_fe_i]):
+            ti[i].port_o.connect(v)
+        sim: Simulator = Simulator([*ti, *to, dev])
+        sim.start(show_time=True)
+        for p, r in zip(po, [[o[i] for i in range(len(o)) if i == 0 or o[i][0] != o[i - 1][0]] for o in s]):
+            assert len(p.data) == len(r)
+            for o, q in zip(p.data, r):
+                assert o[0] == q[0]
+                assert abs(o[1] - q[1]) <= _EPS
