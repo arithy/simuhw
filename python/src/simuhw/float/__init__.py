@@ -41,11 +41,7 @@ try:
 
     __all__ += [
         'TininessMode', 'RoundingMode', 'ExceptionFlag',
-        'UInt32', 'UInt64', 'Int32', 'Int64',
-        'BFloat16', 'Float16', 'Float32', 'Float64', 'Float128',
-        'set_tininess_mode', 'get_tininess_mode',
-        'set_rounding_mode', 'get_rounding_mode',
-        'set_exception_flags', 'get_exception_flags', 'test_exception_flags',
+        'Float16', 'Float32', 'Float64', 'Float128',
         'Float', 'FPState',
         'FPUnaryOperator', 'FPBinaryOperator', 'FPTernaryOperator',
         'SIMD_FPUnaryOperator', 'SIMD_FPBinaryOperator', 'SIMD_FPTernaryOperator',
@@ -69,11 +65,7 @@ try:
 
     from softfloatpy import (
         TininessMode, RoundingMode, ExceptionFlag,
-        UInt32, UInt64, Int32, Int64,
-        BFloat16, Float16, Float32, Float64, Float128,
-        set_tininess_mode, get_tininess_mode,
-        set_rounding_mode, get_rounding_mode,
-        set_exception_flags, get_exception_flags, test_exception_flags
+        Float16, Float32, Float64, Float128
     )
     from ._operator import (
         Float, FPState,

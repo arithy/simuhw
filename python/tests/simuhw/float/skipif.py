@@ -24,8 +24,24 @@ import pytest
 
 from simuhw.float import is_available, get_required_softfloatpy_least_version
 
+__all__ = ['skipif_unavailable']
 
 skipif_unavailable = pytest.mark.skipif(
     not is_available(),
     reason=f'\'float\' subpackage is not available (reason: \'softfloatpy\' version {get_required_softfloatpy_least_version()} or later is not found)'
 )
+
+if is_available():
+    __all__ += [
+        'set_tininess_mode', 'get_tininess_mode',
+        'set_rounding_mode', 'get_rounding_mode',
+        'set_exception_flags', 'get_exception_flags', 'test_exception_flags',
+        'UInt32', 'UInt64', 'Int32', 'Int64'
+    ]
+
+    from softfloatpy import (
+        set_tininess_mode, get_tininess_mode,
+        set_rounding_mode, get_rounding_mode,
+        set_exception_flags, get_exception_flags, test_exception_flags,
+        UInt32, UInt64, Int32, Int64
+    )

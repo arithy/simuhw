@@ -27,6 +27,7 @@ from simuhw import Source, Drain, ChannelProbe, Simulator
 import simuhw.float as hwf
 
 from .skipif import skipif_unavailable
+from . import skipif as sf
 
 _EPS: float = 1e-18
 
@@ -62,9 +63,9 @@ def _to_signed_int(nbits: int, value: int) -> int:
 
 @skipif_unavailable
 def test_FPToIntegerConverter() -> None:
-    hwf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
-    hwf.set_rounding_mode(hwf.RoundingMode.NEAR_EVEN)
-    hwf.set_exception_flags(0)
+    sf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
+    sf.set_rounding_mode(hwf.RoundingMode.NEAR_EVEN)
+    sf.set_exception_flags(0)
     for fi in [hwf.Float16, hwf.Float32, hwf.Float64, hwf.Float128]:
         for wo in [7, 33]:
             print(f'fi: {fi}, wo: {wo}')
@@ -131,9 +132,9 @@ def test_FPToIntegerConverter() -> None:
 
 @skipif_unavailable
 def test_FPFromIntegerConverter() -> None:
-    hwf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
-    hwf.set_rounding_mode(hwf.RoundingMode.NEAR_EVEN)
-    hwf.set_exception_flags(0)
+    sf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
+    sf.set_rounding_mode(hwf.RoundingMode.NEAR_EVEN)
+    sf.set_exception_flags(0)
     for fo in [hwf.Float16, hwf.Float32, hwf.Float64, hwf.Float128]:
         for wi in [7, 33]:
             print(f'wi: {wi}, fo: {fo}')
@@ -159,7 +160,7 @@ def test_FPFromIntegerConverter() -> None:
                     [
                         (d, (1 + i) * 1e-9) for i, d in enumerate([
                             *(
-                                fo.from_ui64(hwf.UInt64.from_int(abs(v) & ((1 << wi) - 1))).to_bytes()  # type: ignore[attr-defined]
+                                fo.from_ui64(sf.UInt64.from_int(abs(v) & ((1 << wi) - 1))).to_bytes()  # type: ignore[attr-defined]
                                 for v in _int_data
                             ),
                             None
@@ -194,9 +195,9 @@ def test_FPFromIntegerConverter() -> None:
 
 @skipif_unavailable
 def test_FPToSignedIntegerConverter() -> None:
-    hwf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
-    hwf.set_rounding_mode(hwf.RoundingMode.NEAR_EVEN)
-    hwf.set_exception_flags(0)
+    sf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
+    sf.set_rounding_mode(hwf.RoundingMode.NEAR_EVEN)
+    sf.set_exception_flags(0)
     for fi in [hwf.Float16, hwf.Float32, hwf.Float64, hwf.Float128]:
         for wo in [7, 33]:
             print(f'fi: {fi}, wo: {wo}')
@@ -263,9 +264,9 @@ def test_FPToSignedIntegerConverter() -> None:
 
 @skipif_unavailable
 def test_FPFromSignedIntegerConverter() -> None:
-    hwf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
-    hwf.set_rounding_mode(hwf.RoundingMode.NEAR_EVEN)
-    hwf.set_exception_flags(0)
+    sf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
+    sf.set_rounding_mode(hwf.RoundingMode.NEAR_EVEN)
+    sf.set_exception_flags(0)
     for fo in [hwf.Float16, hwf.Float32, hwf.Float64, hwf.Float128]:
         for wi in [7, 33]:
             print(f'wi: {wi}, fo: {fo}')
@@ -291,7 +292,7 @@ def test_FPFromSignedIntegerConverter() -> None:
                     [
                         (d, (1 + i) * 1e-9) for i, d in enumerate([
                             *(
-                                fo.from_i64(hwf.Int64.from_int(_to_signed_int(wi, v & ((1 << wi) - 1)))).to_bytes()  # type: ignore[attr-defined]
+                                fo.from_i64(sf.Int64.from_int(_to_signed_int(wi, v & ((1 << wi) - 1)))).to_bytes()  # type: ignore[attr-defined]
                                 for v in _int_data
                             ),
                             None
@@ -326,9 +327,9 @@ def test_FPFromSignedIntegerConverter() -> None:
 
 @skipif_unavailable
 def test_FPConverter() -> None:
-    hwf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
-    hwf.set_rounding_mode(hwf.RoundingMode.MIN)
-    hwf.set_exception_flags(0)
+    sf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
+    sf.set_rounding_mode(hwf.RoundingMode.MIN)
+    sf.set_exception_flags(0)
     for ii, fi in enumerate([hwf.Float16, hwf.Float32, hwf.Float64, hwf.Float128]):
         for fo in [hwf.Float16, hwf.Float32, hwf.Float64, hwf.Float128]:
             print(f'fi: {fi}, fo: {fo}')
@@ -399,9 +400,9 @@ def test_FPConverter() -> None:
 
 @skipif_unavailable
 def test_SIMD_FPToIntegerConverter() -> None:
-    hwf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
-    hwf.set_rounding_mode(hwf.RoundingMode.NEAR_EVEN)
-    hwf.set_exception_flags(0)
+    sf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
+    sf.set_rounding_mode(hwf.RoundingMode.NEAR_EVEN)
+    sf.set_exception_flags(0)
     m: int = 4
     for fi in [hwf.Float16, hwf.Float32, hwf.Float64, hwf.Float128]:
         for wo in [7, 33]:
@@ -488,9 +489,9 @@ def test_SIMD_FPToIntegerConverter() -> None:
 
 @skipif_unavailable
 def test_SIMD_FPFromIntegerConverter() -> None:
-    hwf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
-    hwf.set_rounding_mode(hwf.RoundingMode.NEAR_EVEN)
-    hwf.set_exception_flags(0)
+    sf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
+    sf.set_rounding_mode(hwf.RoundingMode.NEAR_EVEN)
+    sf.set_exception_flags(0)
     m: int = 4
     for fo in [hwf.Float16, hwf.Float32, hwf.Float64, hwf.Float128]:
         for wi in [7, 33]:
@@ -526,7 +527,7 @@ def test_SIMD_FPFromIntegerConverter() -> None:
                             (
                                 b''.join((
                                     fo.from_ui64(  # type: ignore[attr-defined]
-                                        hwf.UInt64.from_int(abs(_int_data[(i + j) % _int_data_count]) & ((1 << wi) - 1))
+                                        sf.UInt64.from_int(abs(_int_data[(i + j) % _int_data_count]) & ((1 << wi) - 1))
                                     ).to_bytes()
                                     for j in range(m)
                                 )),
@@ -565,9 +566,9 @@ def test_SIMD_FPFromIntegerConverter() -> None:
 
 @skipif_unavailable
 def test_SIMD_FPToSignedIntegerConverter() -> None:
-    hwf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
-    hwf.set_rounding_mode(hwf.RoundingMode.NEAR_EVEN)
-    hwf.set_exception_flags(0)
+    sf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
+    sf.set_rounding_mode(hwf.RoundingMode.NEAR_EVEN)
+    sf.set_exception_flags(0)
     m: int = 4
     for fi in [hwf.Float16, hwf.Float32, hwf.Float64, hwf.Float128]:
         for wo in [7, 33]:
@@ -654,9 +655,9 @@ def test_SIMD_FPToSignedIntegerConverter() -> None:
 
 @skipif_unavailable
 def test_SIMD_FPFromSignedIntegerConverter() -> None:
-    hwf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
-    hwf.set_rounding_mode(hwf.RoundingMode.NEAR_EVEN)
-    hwf.set_exception_flags(0)
+    sf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
+    sf.set_rounding_mode(hwf.RoundingMode.NEAR_EVEN)
+    sf.set_exception_flags(0)
     m: int = 4
     for fo in [hwf.Float16, hwf.Float32, hwf.Float64, hwf.Float128]:
         for wi in [7, 33]:
@@ -692,7 +693,7 @@ def test_SIMD_FPFromSignedIntegerConverter() -> None:
                             (
                                 b''.join((
                                     fo.from_i64(  # type: ignore[attr-defined]
-                                        hwf.Int64.from_int(_to_signed_int(wi, _int_data[(i + j) % _int_data_count] & ((1 << wi) - 1)))
+                                        sf.Int64.from_int(_to_signed_int(wi, _int_data[(i + j) % _int_data_count] & ((1 << wi) - 1)))
                                     ).to_bytes()
                                     for j in range(m)
                                 )),
@@ -731,9 +732,9 @@ def test_SIMD_FPFromSignedIntegerConverter() -> None:
 
 @skipif_unavailable
 def test_SIMD_FPConverter() -> None:
-    hwf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
-    hwf.set_rounding_mode(hwf.RoundingMode.MIN)
-    hwf.set_exception_flags(0)
+    sf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
+    sf.set_rounding_mode(hwf.RoundingMode.MIN)
+    sf.set_exception_flags(0)
     m: int = 4
     for ii, fi in enumerate([hwf.Float16, hwf.Float32, hwf.Float64, hwf.Float128]):
         for fo in [hwf.Float16, hwf.Float32, hwf.Float64, hwf.Float128]:

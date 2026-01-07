@@ -27,6 +27,7 @@ import simuhw.float as hwf
 import simuhw.float.riscv as rv
 
 from ..skipif import skipif_unavailable
+from .. import skipif as sf
 
 _EPS: float = 1e-18
 
@@ -570,9 +571,9 @@ if hwf.is_available():
 
 @skipif_unavailable
 def test_FRec7() -> None:
-    hwf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
-    hwf.set_rounding_mode(hwf.RoundingMode.MIN)
-    hwf.set_exception_flags(0)
+    sf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
+    sf.set_rounding_mode(hwf.RoundingMode.MIN)
+    sf.set_exception_flags(0)
     test_i: list[tuple[type, list[int], list[list[tuple[bytes | None, float]]]]] = [
         (
             f,
@@ -631,9 +632,9 @@ def test_FRec7() -> None:
 
 @skipif_unavailable
 def test_SIMD_FRec7() -> None:
-    hwf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
-    hwf.set_rounding_mode(hwf.RoundingMode.MIN)
-    hwf.set_exception_flags(0)
+    sf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
+    sf.set_rounding_mode(hwf.RoundingMode.MIN)
+    sf.set_exception_flags(0)
     test_w: int = 256
     test_f: list[hwf.Float] = [hwf.Float16, hwf.Float32, hwf.Float64]
     test_i: list[tuple[list[int], list[hwf.Float], list[list[tuple[bytes | None, float]]]]] = [

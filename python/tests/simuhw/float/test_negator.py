@@ -27,6 +27,7 @@ from simuhw import Source, Drain, ChannelProbe, Simulator
 import simuhw.float as hwf
 
 from .skipif import skipif_unavailable
+from . import skipif as sf
 
 _EPS: float = 1e-18
 
@@ -49,9 +50,9 @@ _except_data: dict[int, list[int]] = {}
 
 @skipif_unavailable
 def test_FPNegator() -> None:
-    hwf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
-    hwf.set_rounding_mode(hwf.RoundingMode.NEAR_EVEN)
-    hwf.set_exception_flags(0)
+    sf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
+    sf.set_rounding_mode(hwf.RoundingMode.NEAR_EVEN)
+    sf.set_exception_flags(0)
     test_i: list[tuple[hwf.Float, list[int], list[list[tuple[bytes | None, float]]]]] = [
         (
             hwf.Float16,
@@ -232,9 +233,9 @@ def test_FPNegator() -> None:
 
 @skipif_unavailable
 def test_SIMD_FPNegator() -> None:
-    hwf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
-    hwf.set_rounding_mode(hwf.RoundingMode.NEAR_EVEN)
-    hwf.set_exception_flags(0)
+    sf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
+    sf.set_rounding_mode(hwf.RoundingMode.NEAR_EVEN)
+    sf.set_exception_flags(0)
     test_i: list[tuple[list[int], list[hwf.Float], list[list[tuple[bytes | None, float]]]]] = [
         (
             [256, 2, 1, 3, 5],
