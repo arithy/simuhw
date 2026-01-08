@@ -6,6 +6,8 @@
 
 Python 3.11 or later is required.
 
+The GitHub page is [https://github.com/arithy/simuhw](https://github.com/arithy/simuhw).
+
 ## Installation
 
 ### Release Version
