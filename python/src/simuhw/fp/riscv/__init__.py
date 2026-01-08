@@ -22,7 +22,7 @@
 
 from .. import is_available
 
-__all__ = ['is_available']
+__all__ = []
 
 
 if is_available():
