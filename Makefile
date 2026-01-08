@@ -30,4 +30,4 @@ doc:
 	$(SPHINX_BUILD) -b html $(PYDOCSRCDIR) $(PYDOCOUTDIR)/html
 
 clean:
-	rm -rf $(PYDOCOUTDIR) $(PYROOTDIR)/src/simuhw.egg-info ./dist $(find . -name '__pycache__')
+	rm -rf $(PYDOCOUTDIR) $(PYROOTDIR)/src/simuhw.egg-info $(PYDOCSRCDIR)/apidoc ./dist $$(find . -name '__pycache__')
