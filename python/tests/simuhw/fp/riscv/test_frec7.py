@@ -23,8 +23,8 @@
 from functools import reduce
 
 from simuhw import Source, Drain, ChannelProbe, Simulator
-import simuhw.float as hwf
-import simuhw.float.riscv as rv
+import simuhw.fp as hwf
+import simuhw.fp.riscv as rv
 
 from ..skipif import skipif_unavailable
 from .. import skipif as sf

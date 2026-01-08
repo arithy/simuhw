@@ -24,7 +24,7 @@ from functools import reduce
 import math
 
 from simuhw import Source, Drain, ChannelProbe, Simulator
-import simuhw.float as hwf
+import simuhw.fp as hwf
 
 from .skipif import skipif_unavailable
 from . import skipif as sf
@@ -49,7 +49,7 @@ _except_data: dict[int, list[int]] = {}
 
 
 @skipif_unavailable
-def test_FPComparator() -> None:
+def test_FPAdder() -> None:
     sf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
     sf.set_rounding_mode(hwf.RoundingMode.NEAR_EVEN)
     sf.set_exception_flags(0)
@@ -151,15 +151,10 @@ def test_FPComparator() -> None:
         [
             [
                 (
-                    (
-                        -1 if hwf.Float16.lt_quiet(
-                            hwf.Float16.from_float(_float_data[i]),
-                            hwf.Float16.from_float(_float_data[(i + 3) % _float_data_count])
-                        ) else 1 if hwf.Float16.lt_quiet(
-                            hwf.Float16.from_float(_float_data[(i + 3) % _float_data_count]),
-                            hwf.Float16.from_float(_float_data[i])
-                        ) else 0
-                    ).to_bytes(16 >> 3, signed=True),
+                    hwf.Float16.add(
+                        hwf.Float16.from_float(_float_data[i]),
+                        hwf.Float16.from_float(_float_data[(i + 3) % _float_data_count])
+                    ).to_bytes(),
                     1e-9 * (1 + i)
                 )
                 for i in range(_float_data_count)
@@ -175,15 +170,10 @@ def test_FPComparator() -> None:
         [
             [
                 (
-                    (
-                        -1 if hwf.Float32.lt_quiet(
-                            hwf.Float32.from_float(_float_data[i]),
-                            hwf.Float32.from_float(_float_data[(i + 3) % _float_data_count])
-                        ) else 1 if hwf.Float32.lt_quiet(
-                            hwf.Float32.from_float(_float_data[(i + 3) % _float_data_count]),
-                            hwf.Float32.from_float(_float_data[i])
-                        ) else 0
-                    ).to_bytes(32 >> 3, signed=True),
+                    hwf.Float32.add(
+                        hwf.Float32.from_float(_float_data[i]),
+                        hwf.Float32.from_float(_float_data[(i + 3) % _float_data_count])
+                    ).to_bytes(),
                     1e-9 * (1 + i)
                 )
                 for i in range(_float_data_count)
@@ -199,15 +189,10 @@ def test_FPComparator() -> None:
         [
             [
                 (
-                    (
-                        -1 if hwf.Float64.lt_quiet(
-                            hwf.Float64.from_float(_float_data[i]),
-                            hwf.Float64.from_float(_float_data[(i + 3) % _float_data_count])
-                        ) else 1 if hwf.Float64.lt_quiet(
-                            hwf.Float64.from_float(_float_data[(i + 3) % _float_data_count]),
-                            hwf.Float64.from_float(_float_data[i])
-                        ) else 0
-                    ).to_bytes(64 >> 3, signed=True),
+                    hwf.Float64.add(
+                        hwf.Float64.from_float(_float_data[i]),
+                        hwf.Float64.from_float(_float_data[(i + 3) % _float_data_count])
+                    ).to_bytes(),
                     1e-9 * (1 + i)
                 )
                 for i in range(_float_data_count)
@@ -223,15 +208,10 @@ def test_FPComparator() -> None:
         [
             [
                 (
-                    (
-                        -1 if hwf.Float128.lt_quiet(
-                            hwf.Float128.from_float(_float_data[i]),
-                            hwf.Float128.from_float(_float_data[(i + 3) % _float_data_count])
-                        ) else 1 if hwf.Float128.lt_quiet(
-                            hwf.Float128.from_float(_float_data[(i + 3) % _float_data_count]),
-                            hwf.Float128.from_float(_float_data[i])
-                        ) else 0
-                    ).to_bytes(128 >> 3, signed=True),
+                    hwf.Float128.add(
+                        hwf.Float128.from_float(_float_data[i]),
+                        hwf.Float128.from_float(_float_data[(i + 3) % _float_data_count])
+                    ).to_bytes(),
                     1e-9 * (1 + i)
                 )
                 for i in range(_float_data_count)
@@ -261,10 +241,10 @@ def test_FPComparator() -> None:
     for t, s in zip(test_i, test_o):
         f: hwf.Float = t[0]
         w: int = f.size()
-        po: list[ChannelProbe] = [ChannelProbe('out', w), ChannelProbe('fe', hwf.FPComparator.width_fe)]
+        po: list[ChannelProbe] = [ChannelProbe('out', w), ChannelProbe('fe', hwf.FPAdder.width_fe)]
         ti: list[Source] = [Source(u, d) for u, d in zip(t[1], t[2])]
-        to: list[Drain] = [Drain(w), Drain(hwf.FPComparator.width_fe)]
-        dev: hwf.FPComparator = hwf.FPComparator(f)
+        to: list[Drain] = [Drain(w), Drain(hwf.FPAdder.width_fe)]
+        dev: hwf.FPAdder = hwf.FPAdder(f)
         for i, u in enumerate([dev.port_o, dev.port_fe_o]):
             u.connect(to[i].port_i)
             u.add_probe(po[i])
@@ -280,7 +260,7 @@ def test_FPComparator() -> None:
 
 
 @skipif_unavailable
-def test_SIMD_FPComparator() -> None:
+def test_SIMD_FPAdder() -> None:
     sf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
     sf.set_rounding_mode(hwf.RoundingMode.NEAR_EVEN)
     sf.set_exception_flags(0)
@@ -397,15 +377,10 @@ def test_SIMD_FPComparator() -> None:
                 *(
                     (
                         b''.join((
-                            (
-                                -1 if hwf.Float16.lt_quiet(
-                                    hwf.Float16.from_float(_float_data[(i + j) % _float_data_count]),
-                                    hwf.Float16.from_float(_float_data[(i + j + 3) % _float_data_count])
-                                ) else 1 if hwf.Float16.lt_quiet(
-                                    hwf.Float16.from_float(_float_data[(i + j + 3) % _float_data_count]),
-                                    hwf.Float16.from_float(_float_data[(i + j) % _float_data_count])
-                                ) else 0
-                            ).to_bytes(16 >> 3, signed=True)
+                            hwf.Float16.add(
+                                hwf.Float16.from_float(_float_data[(i + j) % _float_data_count]),
+                                hwf.Float16.from_float(_float_data[(i + j + 3) % _float_data_count])
+                            ).to_bytes()
                             for j in range(256 // 16)
                         )),
                         1e-9 * (1 + i)
@@ -415,15 +390,10 @@ def test_SIMD_FPComparator() -> None:
                 *(
                     (
                         b''.join((
-                            (
-                                -1 if hwf.Float32.lt_quiet(
-                                    hwf.Float32.from_float(_float_data[(i + j) % _float_data_count]),
-                                    hwf.Float32.from_float(_float_data[(i + j + 3) % _float_data_count])
-                                ) else 1 if hwf.Float32.lt_quiet(
-                                    hwf.Float32.from_float(_float_data[(i + j + 3) % _float_data_count]),
-                                    hwf.Float32.from_float(_float_data[(i + j) % _float_data_count])
-                                ) else 0
-                            ).to_bytes(32 >> 3, signed=True)
+                            hwf.Float32.add(
+                                hwf.Float32.from_float(_float_data[(i + j) % _float_data_count]),
+                                hwf.Float32.from_float(_float_data[(i + j + 3) % _float_data_count])
+                            ).to_bytes()
                             for j in range(256 // 32)
                         )),
                         1e-9 * (1 + i)
@@ -433,15 +403,10 @@ def test_SIMD_FPComparator() -> None:
                 *(
                     (
                         b''.join((
-                            (
-                                -1 if hwf.Float64.lt_quiet(
-                                    hwf.Float64.from_float(_float_data[(i + j) % _float_data_count]),
-                                    hwf.Float64.from_float(_float_data[(i + j + 3) % _float_data_count])
-                                ) else 1 if hwf.Float64.lt_quiet(
-                                    hwf.Float64.from_float(_float_data[(i + j + 3) % _float_data_count]),
-                                    hwf.Float64.from_float(_float_data[(i + j) % _float_data_count])
-                                ) else 0
-                            ).to_bytes(64 >> 3, signed=True)
+                            hwf.Float64.add(
+                                hwf.Float64.from_float(_float_data[(i + j) % _float_data_count]),
+                                hwf.Float64.from_float(_float_data[(i + j + 3) % _float_data_count])
+                            ).to_bytes()
                             for j in range(256 // 64)
                         )),
                         1e-9 * (1 + i)
@@ -451,15 +416,10 @@ def test_SIMD_FPComparator() -> None:
                 *(
                     (
                         b''.join((
-                            (
-                                -1 if hwf.Float128.lt_quiet(
-                                    hwf.Float128.from_float(_float_data[(i + j) % _float_data_count]),
-                                    hwf.Float128.from_float(_float_data[(i + j + 3) % _float_data_count])
-                                ) else 1 if hwf.Float128.lt_quiet(
-                                    hwf.Float128.from_float(_float_data[(i + j + 3) % _float_data_count]),
-                                    hwf.Float128.from_float(_float_data[(i + j) % _float_data_count])
-                                ) else 0
-                            ).to_bytes(128 >> 3, signed=True)
+                            hwf.Float128.add(
+                                hwf.Float128.from_float(_float_data[(i + j) % _float_data_count]),
+                                hwf.Float128.from_float(_float_data[(i + j + 3) % _float_data_count])
+                            ).to_bytes()
                             for j in range(256 // 128)
                         )),
                         1e-9 * (1 + i)
@@ -538,7 +498,7 @@ def test_SIMD_FPComparator() -> None:
         po: list[ChannelProbe] = [ChannelProbe('out', w), ChannelProbe('fe', e)]
         ti: list[Source] = [Source(u, d) for u, d in zip(t[0], t[2])]
         to: list[Drain] = [Drain(w), Drain(e)]
-        dev: hwf.SIMD_FPComparator = hwf.SIMD_FPComparator(w, t[1])
+        dev: hwf.SIMD_FPAdder = hwf.SIMD_FPAdder(w, t[1])
         for i, u in enumerate([dev.port_o, dev.port_fe_o]):
             u.connect(to[i].port_i)
             u.add_probe(po[i])

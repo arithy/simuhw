@@ -24,7 +24,7 @@ from functools import reduce
 import math
 
 from simuhw import Source, Drain, ChannelProbe, Simulator
-import simuhw.float as hwf
+import simuhw.fp as hwf
 
 from .skipif import skipif_unavailable
 from . import skipif as sf
@@ -48,19 +48,19 @@ _float_data_count: int = len(_float_data)
 _except_data: dict[int, list[int]] = {}
 if hwf.is_available():
     _except_data = {
-        hwf.ExceptionFlag.INVALID: [6]
+        hwf.ExceptionFlag.INFINITE: [2]
     }
 
 
 @skipif_unavailable
-def test_FPMultiplyAdder() -> None:
+def test_FPDivider() -> None:
     sf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
     sf.set_rounding_mode(hwf.RoundingMode.NEAR_EVEN)
     sf.set_exception_flags(0)
     test_i: list[tuple[hwf.Float, list[int], list[list[tuple[bytes | None, float]]]]] = [
         (
             hwf.Float16,
-            [16, 16, 16, 1, 3, 5],
+            [16, 16, 1, 3, 5],
             [
                 [
                     (hwf.Float16.from_float(_float_data[i]).to_bytes(), 1e-9 * (1 + i))
@@ -68,10 +68,6 @@ def test_FPMultiplyAdder() -> None:
                 ],
                 [
                     (hwf.Float16.from_float(_float_data[(i + 3) % _float_data_count]).to_bytes(), 1e-9 * (1 + i))
-                    for i in range(_float_data_count)
-                ],
-                [
-                    (hwf.Float16.from_float(_float_data[(i + 4) % _float_data_count]).to_bytes(), 1e-9 * (1 + i))
                     for i in range(_float_data_count)
                 ],
                 [
@@ -87,7 +83,7 @@ def test_FPMultiplyAdder() -> None:
         ),
         (
             hwf.Float32,
-            [32, 32, 32, 1, 3, 5],
+            [32, 32, 1, 3, 5],
             [
                 [
                     (hwf.Float32.from_float(_float_data[i]).to_bytes(), 1e-9 * (1 + i))
@@ -95,10 +91,6 @@ def test_FPMultiplyAdder() -> None:
                 ],
                 [
                     (hwf.Float32.from_float(_float_data[(i + 3) % _float_data_count]).to_bytes(), 1e-9 * (1 + i))
-                    for i in range(_float_data_count)
-                ],
-                [
-                    (hwf.Float32.from_float(_float_data[(i + 4) % _float_data_count]).to_bytes(), 1e-9 * (1 + i))
                     for i in range(_float_data_count)
                 ],
                 [
@@ -114,7 +106,7 @@ def test_FPMultiplyAdder() -> None:
         ),
         (
             hwf.Float64,
-            [64, 64, 64, 1, 3, 5],
+            [64, 64, 1, 3, 5],
             [
                 [
                     (hwf.Float64.from_float(_float_data[i]).to_bytes(), 1e-9 * (1 + i))
@@ -122,10 +114,6 @@ def test_FPMultiplyAdder() -> None:
                 ],
                 [
                     (hwf.Float64.from_float(_float_data[(i + 3) % _float_data_count]).to_bytes(), 1e-9 * (1 + i))
-                    for i in range(_float_data_count)
-                ],
-                [
-                    (hwf.Float64.from_float(_float_data[(i + 4) % _float_data_count]).to_bytes(), 1e-9 * (1 + i))
                     for i in range(_float_data_count)
                 ],
                 [
@@ -141,7 +129,7 @@ def test_FPMultiplyAdder() -> None:
         ),
         (
             hwf.Float128,
-            [128, 128, 128, 1, 3, 5],
+            [128, 128, 1, 3, 5],
             [
                 [
                     (hwf.Float128.from_float(_float_data[i]).to_bytes(), 1e-9 * (1 + i))
@@ -149,10 +137,6 @@ def test_FPMultiplyAdder() -> None:
                 ],
                 [
                     (hwf.Float128.from_float(_float_data[(i + 3) % _float_data_count]).to_bytes(), 1e-9 * (1 + i))
-                    for i in range(_float_data_count)
-                ],
-                [
-                    (hwf.Float128.from_float(_float_data[(i + 4) % _float_data_count]).to_bytes(), 1e-9 * (1 + i))
                     for i in range(_float_data_count)
                 ],
                 [
@@ -171,10 +155,9 @@ def test_FPMultiplyAdder() -> None:
         [
             [
                 (
-                    hwf.Float16.mul_add(
+                    hwf.Float16.div(
                         hwf.Float16.from_float(_float_data[i]),
-                        hwf.Float16.from_float(_float_data[(i + 3) % _float_data_count]),
-                        hwf.Float16.from_float(_float_data[(i + 4) % _float_data_count])
+                        hwf.Float16.from_float(_float_data[(i + 3) % _float_data_count])
                     ).to_bytes(),
                     1e-9 * (1 + i)
                 )
@@ -191,10 +174,9 @@ def test_FPMultiplyAdder() -> None:
         [
             [
                 (
-                    hwf.Float32.mul_add(
+                    hwf.Float32.div(
                         hwf.Float32.from_float(_float_data[i]),
-                        hwf.Float32.from_float(_float_data[(i + 3) % _float_data_count]),
-                        hwf.Float32.from_float(_float_data[(i + 4) % _float_data_count])
+                        hwf.Float32.from_float(_float_data[(i + 3) % _float_data_count])
                     ).to_bytes(),
                     1e-9 * (1 + i)
                 )
@@ -211,10 +193,9 @@ def test_FPMultiplyAdder() -> None:
         [
             [
                 (
-                    hwf.Float64.mul_add(
+                    hwf.Float64.div(
                         hwf.Float64.from_float(_float_data[i]),
-                        hwf.Float64.from_float(_float_data[(i + 3) % _float_data_count]),
-                        hwf.Float64.from_float(_float_data[(i + 4) % _float_data_count])
+                        hwf.Float64.from_float(_float_data[(i + 3) % _float_data_count])
                     ).to_bytes(),
                     1e-9 * (1 + i)
                 )
@@ -231,10 +212,9 @@ def test_FPMultiplyAdder() -> None:
         [
             [
                 (
-                    hwf.Float128.mul_add(
+                    hwf.Float128.div(
                         hwf.Float128.from_float(_float_data[i]),
-                        hwf.Float128.from_float(_float_data[(i + 3) % _float_data_count]),
-                        hwf.Float128.from_float(_float_data[(i + 4) % _float_data_count])
+                        hwf.Float128.from_float(_float_data[(i + 3) % _float_data_count])
                     ).to_bytes(),
                     1e-9 * (1 + i)
                 )
@@ -265,10 +245,10 @@ def test_FPMultiplyAdder() -> None:
     for t, s in zip(test_i, test_o):
         f: hwf.Float = t[0]
         w: int = f.size()
-        po: list[ChannelProbe] = [ChannelProbe('out', w), ChannelProbe('fe', hwf.FPMultiplyAdder.width_fe)]
+        po: list[ChannelProbe] = [ChannelProbe('out', w), ChannelProbe('fe', hwf.FPDivider.width_fe)]
         ti: list[Source] = [Source(u, d) for u, d in zip(t[1], t[2])]
-        to: list[Drain] = [Drain(w), Drain(hwf.FPMultiplyAdder.width_fe)]
-        dev: hwf.FPMultiplyAdder = hwf.FPMultiplyAdder(f)
+        to: list[Drain] = [Drain(w), Drain(hwf.FPDivider.width_fe)]
+        dev: hwf.FPDivider = hwf.FPDivider(f)
         for i, u in enumerate([dev.port_o, dev.port_fe_o]):
             u.connect(to[i].port_i)
             u.add_probe(po[i])
@@ -284,13 +264,13 @@ def test_FPMultiplyAdder() -> None:
 
 
 @skipif_unavailable
-def test_SIMD_FPMultiplyAdder() -> None:
+def test_SIMD_FPDivider() -> None:
     sf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
     sf.set_rounding_mode(hwf.RoundingMode.NEAR_EVEN)
     sf.set_exception_flags(0)
     test_i: list[tuple[list[int], list[hwf.Float], list[list[tuple[bytes | None, float]]]]] = [
         (
-            [256, 256, 256, 2, 1, 3, 5],
+            [256, 256, 2, 1, 3, 5],
             [hwf.Float16, hwf.Float32, hwf.Float64, hwf.Float128],
             [
                 [
@@ -378,48 +358,6 @@ def test_SIMD_FPMultiplyAdder() -> None:
                     )
                 ],
                 [
-                    *(
-                        (
-                            b''.join((
-                                hwf.Float16.from_float(_float_data[(i + j + 4) % _float_data_count]).to_bytes()
-                                for j in range(256 // 16)
-                            )),
-                            1e-9 * (1 + i)
-                        )
-                        for i in range(_float_data_count)
-                    ),
-                    *(
-                        (
-                            b''.join((
-                                hwf.Float32.from_float(_float_data[(i + j + 4) % _float_data_count]).to_bytes()
-                                for j in range(256 // 32)
-                            )),
-                            1e-9 * (1 + i)
-                        )
-                        for i in range(_float_data_count, _float_data_count * 2)
-                    ),
-                    *(
-                        (
-                            b''.join((
-                                hwf.Float64.from_float(_float_data[(i + j + 4) % _float_data_count]).to_bytes()
-                                for j in range(256 // 64)
-                            )),
-                            1e-9 * (1 + i)
-                        )
-                        for i in range(_float_data_count * 2, _float_data_count * 3)
-                    ),
-                    *(
-                        (
-                            b''.join((
-                                hwf.Float128.from_float(_float_data[(i + j + 4) % _float_data_count]).to_bytes()
-                                for j in range(256 // 128)
-                            )),
-                            1e-9 * (1 + i)
-                        )
-                        for i in range(_float_data_count * 3, _float_data_count * 4)
-                    )
-                ],
-                [
                     (b'\x00', 1e-9 * (1 + _float_data_count * 0)),
                     (b'\x01', 1e-9 * (1 + _float_data_count * 1)),
                     (b'\x02', 1e-9 * (1 + _float_data_count * 2)),
@@ -443,10 +381,9 @@ def test_SIMD_FPMultiplyAdder() -> None:
                 *(
                     (
                         b''.join((
-                            hwf.Float16.mul_add(
+                            hwf.Float16.div(
                                 hwf.Float16.from_float(_float_data[(i + j) % _float_data_count]),
-                                hwf.Float16.from_float(_float_data[(i + j + 3) % _float_data_count]),
-                                hwf.Float16.from_float(_float_data[(i + j + 4) % _float_data_count])
+                                hwf.Float16.from_float(_float_data[(i + j + 3) % _float_data_count])
                             ).to_bytes()
                             for j in range(256 // 16)
                         )),
@@ -457,10 +394,9 @@ def test_SIMD_FPMultiplyAdder() -> None:
                 *(
                     (
                         b''.join((
-                            hwf.Float32.mul_add(
+                            hwf.Float32.div(
                                 hwf.Float32.from_float(_float_data[(i + j) % _float_data_count]),
-                                hwf.Float32.from_float(_float_data[(i + j + 3) % _float_data_count]),
-                                hwf.Float32.from_float(_float_data[(i + j + 4) % _float_data_count])
+                                hwf.Float32.from_float(_float_data[(i + j + 3) % _float_data_count])
                             ).to_bytes()
                             for j in range(256 // 32)
                         )),
@@ -471,10 +407,9 @@ def test_SIMD_FPMultiplyAdder() -> None:
                 *(
                     (
                         b''.join((
-                            hwf.Float64.mul_add(
+                            hwf.Float64.div(
                                 hwf.Float64.from_float(_float_data[(i + j) % _float_data_count]),
-                                hwf.Float64.from_float(_float_data[(i + j + 3) % _float_data_count]),
-                                hwf.Float64.from_float(_float_data[(i + j + 4) % _float_data_count])
+                                hwf.Float64.from_float(_float_data[(i + j + 3) % _float_data_count])
                             ).to_bytes()
                             for j in range(256 // 64)
                         )),
@@ -485,10 +420,9 @@ def test_SIMD_FPMultiplyAdder() -> None:
                 *(
                     (
                         b''.join((
-                            hwf.Float128.mul_add(
+                            hwf.Float128.div(
                                 hwf.Float128.from_float(_float_data[(i + j) % _float_data_count]),
-                                hwf.Float128.from_float(_float_data[(i + j + 3) % _float_data_count]),
-                                hwf.Float128.from_float(_float_data[(i + j + 4) % _float_data_count])
+                                hwf.Float128.from_float(_float_data[(i + j + 3) % _float_data_count])
                             ).to_bytes()
                             for j in range(256 // 128)
                         )),
@@ -568,7 +502,7 @@ def test_SIMD_FPMultiplyAdder() -> None:
         po: list[ChannelProbe] = [ChannelProbe('out', w), ChannelProbe('fe', e)]
         ti: list[Source] = [Source(u, d) for u, d in zip(t[0], t[2])]
         to: list[Drain] = [Drain(w), Drain(e)]
-        dev: hwf.SIMD_FPMultiplyAdder = hwf.SIMD_FPMultiplyAdder(w, t[1])
+        dev: hwf.SIMD_FPDivider = hwf.SIMD_FPDivider(w, t[1])
         for i, u in enumerate([dev.port_o, dev.port_fe_o]):
             u.connect(to[i].port_i)
             u.add_probe(po[i])

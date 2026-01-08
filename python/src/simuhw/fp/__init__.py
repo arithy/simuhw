@@ -98,13 +98,13 @@ except RuntimeError as e:
 
 
 def is_available() -> bool:
-    """Checks whether ``float`` subpackage is available or not.
+    """Checks whether ``simuhw.fp`` submodule is available or not.
 
     Returns:
-        ``True`` if ``float`` subpackage is available.
+        ``True`` if ``simuhw.fp`` submodule is available.
 
     Note:
-        ``float`` subpackage is available only when an appropriate version of ``softfloatpy`` module is found.
+        ``simuhw.fp`` submodule is available only when an appropriate version of ``softfloatpy`` module is found.
         The least version can be retrieved using :func:`get_required_softfloatpy_least_version()`
 
     """
@@ -112,10 +112,10 @@ def is_available() -> bool:
 
 
 def get_required_softfloatpy_least_version() -> str:
-    """Retrieves the least version of ``softfloatpy`` module required for ``float`` subpackage.
+    """Retrieves the least version of ``softfloatpy`` module required for ``simuhw.fp`` submodule.
 
     Returns:
-        The least version of ``softfloatpy`` module required for ``float`` subpackage.
+        The least version of ``softfloatpy`` module required for ``simuhw.fp`` submodule.
 
     """
     return str(_softfloatpy_least)

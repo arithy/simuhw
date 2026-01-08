@@ -1,6 +1,6 @@
 # SimuHW: A behavioral hardware simulator provided as a Python module.
 #
-# Copyright (c) 2024-2025 Arihiro Yoshida. All rights reserved.
+# Copyright (c) 2024-2026 Arihiro Yoshida. All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -22,13 +22,13 @@
 
 import pytest
 
-from simuhw.float import is_available, get_required_softfloatpy_least_version
+from simuhw.fp import is_available, get_required_softfloatpy_least_version
 
 __all__ = ['skipif_unavailable']
 
 skipif_unavailable = pytest.mark.skipif(
     not is_available(),
-    reason=f'\'float\' subpackage is not available (reason: \'softfloatpy\' version {get_required_softfloatpy_least_version()} or later is not found)'
+    reason=f'\'simuhw.fp\' submodule is not available (reason: \'softfloatpy\' version {get_required_softfloatpy_least_version()} or later is not found)'
 )
 
 if is_available():

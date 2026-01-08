@@ -24,7 +24,7 @@ from functools import reduce
 import math
 
 from simuhw import Source, Drain, ChannelProbe, Simulator
-import simuhw.float as hwf
+import simuhw.fp as hwf
 
 from .skipif import skipif_unavailable
 from . import skipif as sf
@@ -46,10 +46,15 @@ _float_data: list[float] = [
 _float_data_count: int = len(_float_data)
 
 _except_data: dict[int, list[int]] = {}
+if hwf.is_available():
+    _except_data = {
+        hwf.ExceptionFlag.INEXACT: [7],
+        hwf.ExceptionFlag.INVALID: [0, 2, 3]
+    }
 
 
 @skipif_unavailable
-def test_FPClassifier() -> None:
+def test_FPSquareRoot() -> None:
     sf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
     sf.set_rounding_mode(hwf.RoundingMode.NEAR_EVEN)
     sf.set_exception_flags(0)
@@ -135,7 +140,7 @@ def test_FPClassifier() -> None:
         [
             [
                 (
-                    (1 if i in [0, 9] else 3 if i in [1, 8] else 0).to_bytes(16 // 8),
+                    hwf.Float16.from_float(_float_data[i]).sqrt().to_bytes(),
                     1e-9 * (1 + i)
                 )
                 for i in range(_float_data_count)
@@ -151,7 +156,7 @@ def test_FPClassifier() -> None:
         [
             [
                 (
-                    (1 if i in [0, 9] else 3 if i in [1, 8] else 0).to_bytes(32 // 8),
+                    hwf.Float32.from_float(_float_data[i]).sqrt().to_bytes(),
                     1e-9 * (1 + i)
                 )
                 for i in range(_float_data_count)
@@ -167,7 +172,7 @@ def test_FPClassifier() -> None:
         [
             [
                 (
-                    (1 if i in [0, 9] else 3 if i in [1, 8] else 0).to_bytes(64 // 8),
+                    hwf.Float64.from_float(_float_data[i]).sqrt().to_bytes(),
                     1e-9 * (1 + i)
                 )
                 for i in range(_float_data_count)
@@ -183,7 +188,7 @@ def test_FPClassifier() -> None:
         [
             [
                 (
-                    (1 if i in [0, 9] else 3 if i in [1, 8] else 0).to_bytes(128 // 8),
+                    hwf.Float128.from_float(_float_data[i]).sqrt().to_bytes(),
                     1e-9 * (1 + i)
                 )
                 for i in range(_float_data_count)
@@ -213,10 +218,10 @@ def test_FPClassifier() -> None:
     for t, s in zip(test_i, test_o):
         f: hwf.Float = t[0]
         w: int = f.size()
-        po: list[ChannelProbe] = [ChannelProbe('out', w), ChannelProbe('fe', hwf.FPClassifier.width_fe)]
+        po: list[ChannelProbe] = [ChannelProbe('out', w), ChannelProbe('fe', hwf.FPSquareRoot.width_fe)]
         ti: list[Source] = [Source(u, d) for u, d in zip(t[1], t[2])]
-        to: list[Drain] = [Drain(w), Drain(hwf.FPClassifier.width_fe)]
-        dev: hwf.FPClassifier = hwf.FPClassifier(f)
+        to: list[Drain] = [Drain(w), Drain(hwf.FPSquareRoot.width_fe)]
+        dev: hwf.FPSquareRoot = hwf.FPSquareRoot(f)
         for i, u in enumerate([dev.port_o, dev.port_fe_o]):
             u.connect(to[i].port_i)
             u.add_probe(po[i])
@@ -232,7 +237,7 @@ def test_FPClassifier() -> None:
 
 
 @skipif_unavailable
-def test_SIMD_FPClassifier() -> None:
+def test_SIMD_FPSquareRoot() -> None:
     sf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
     sf.set_rounding_mode(hwf.RoundingMode.NEAR_EVEN)
     sf.set_exception_flags(0)
@@ -307,7 +312,7 @@ def test_SIMD_FPClassifier() -> None:
                 *(
                     (
                         b''.join((
-                            (1 if (i + j) % _float_data_count in [0, 9] else 3 if (i + j) % _float_data_count in [1, 8] else 0).to_bytes(16 // 8)
+                            hwf.Float16.from_float(_float_data[(i + j) % _float_data_count]).sqrt().to_bytes()
                             for j in range(256 // 16)
                         )),
                         1e-9 * (1 + i)
@@ -317,7 +322,7 @@ def test_SIMD_FPClassifier() -> None:
                 *(
                     (
                         b''.join((
-                            (1 if (i + j) % _float_data_count in [0, 9] else 3 if (i + j) % _float_data_count in [1, 8] else 0).to_bytes(32 // 8)
+                            hwf.Float32.from_float(_float_data[(i + j) % _float_data_count]).sqrt().to_bytes()
                             for j in range(256 // 32)
                         )),
                         1e-9 * (1 + i)
@@ -327,7 +332,7 @@ def test_SIMD_FPClassifier() -> None:
                 *(
                     (
                         b''.join((
-                            (1 if (i + j) % _float_data_count in [0, 9] else 3 if (i + j) % _float_data_count in [1, 8] else 0).to_bytes(64 // 8)
+                            hwf.Float64.from_float(_float_data[(i + j) % _float_data_count]).sqrt().to_bytes()
                             for j in range(256 // 64)
                         )),
                         1e-9 * (1 + i)
@@ -337,7 +342,7 @@ def test_SIMD_FPClassifier() -> None:
                 *(
                     (
                         b''.join((
-                            (1 if (i + j) % _float_data_count in [0, 9] else 3 if (i + j) % _float_data_count in [1, 8] else 0).to_bytes(128 // 8)
+                            hwf.Float128.from_float(_float_data[(i + j) % _float_data_count]).sqrt().to_bytes()
                             for j in range(256 // 128)
                         )),
                         1e-9 * (1 + i)
@@ -416,7 +421,7 @@ def test_SIMD_FPClassifier() -> None:
         po: list[ChannelProbe] = [ChannelProbe('out', w), ChannelProbe('fe', e)]
         ti: list[Source] = [Source(u, d) for u, d in zip(t[0], t[2])]
         to: list[Drain] = [Drain(w), Drain(e)]
-        dev: hwf.SIMD_FPClassifier = hwf.SIMD_FPClassifier(w, t[1])
+        dev: hwf.SIMD_FPSquareRoot = hwf.SIMD_FPSquareRoot(w, t[1])
         for i, u in enumerate([dev.port_o, dev.port_fe_o]):
             u.connect(to[i].port_i)
             u.add_probe(po[i])

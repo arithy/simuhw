@@ -24,7 +24,7 @@ from functools import reduce
 import math
 
 from simuhw import Source, Drain, ChannelProbe, Simulator
-import simuhw.float as hwf
+import simuhw.fp as hwf
 
 from .skipif import skipif_unavailable
 from . import skipif as sf

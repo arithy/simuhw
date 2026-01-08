@@ -24,7 +24,7 @@ from functools import reduce
 import math
 
 from simuhw import Source, Drain, ChannelProbe, Simulator
-import simuhw.float as hwf
+import simuhw.fp as hwf
 
 from .skipif import skipif_unavailable
 from . import skipif as sf
@@ -48,12 +48,12 @@ _float_data_count: int = len(_float_data)
 _except_data: dict[int, list[int]] = {}
 if hwf.is_available():
     _except_data = {
-        hwf.ExceptionFlag.INFINITE: [2]
+        hwf.ExceptionFlag.INVALID: [0, 2, 9]
     }
 
 
 @skipif_unavailable
-def test_FPDivider() -> None:
+def test_FPRemainder() -> None:
     sf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
     sf.set_rounding_mode(hwf.RoundingMode.NEAR_EVEN)
     sf.set_exception_flags(0)
@@ -155,7 +155,7 @@ def test_FPDivider() -> None:
         [
             [
                 (
-                    hwf.Float16.div(
+                    hwf.Float16.rem(
                         hwf.Float16.from_float(_float_data[i]),
                         hwf.Float16.from_float(_float_data[(i + 3) % _float_data_count])
                     ).to_bytes(),
@@ -174,7 +174,7 @@ def test_FPDivider() -> None:
         [
             [
                 (
-                    hwf.Float32.div(
+                    hwf.Float32.rem(
                         hwf.Float32.from_float(_float_data[i]),
                         hwf.Float32.from_float(_float_data[(i + 3) % _float_data_count])
                     ).to_bytes(),
@@ -193,7 +193,7 @@ def test_FPDivider() -> None:
         [
             [
                 (
-                    hwf.Float64.div(
+                    hwf.Float64.rem(
                         hwf.Float64.from_float(_float_data[i]),
                         hwf.Float64.from_float(_float_data[(i + 3) % _float_data_count])
                     ).to_bytes(),
@@ -212,7 +212,7 @@ def test_FPDivider() -> None:
         [
             [
                 (
-                    hwf.Float128.div(
+                    hwf.Float128.rem(
                         hwf.Float128.from_float(_float_data[i]),
                         hwf.Float128.from_float(_float_data[(i + 3) % _float_data_count])
                     ).to_bytes(),
@@ -245,10 +245,10 @@ def test_FPDivider() -> None:
     for t, s in zip(test_i, test_o):
         f: hwf.Float = t[0]
         w: int = f.size()
-        po: list[ChannelProbe] = [ChannelProbe('out', w), ChannelProbe('fe', hwf.FPDivider.width_fe)]
+        po: list[ChannelProbe] = [ChannelProbe('out', w), ChannelProbe('fe', hwf.FPRemainder.width_fe)]
         ti: list[Source] = [Source(u, d) for u, d in zip(t[1], t[2])]
-        to: list[Drain] = [Drain(w), Drain(hwf.FPDivider.width_fe)]
-        dev: hwf.FPDivider = hwf.FPDivider(f)
+        to: list[Drain] = [Drain(w), Drain(hwf.FPRemainder.width_fe)]
+        dev: hwf.FPRemainder = hwf.FPRemainder(f)
         for i, u in enumerate([dev.port_o, dev.port_fe_o]):
             u.connect(to[i].port_i)
             u.add_probe(po[i])
@@ -264,7 +264,7 @@ def test_FPDivider() -> None:
 
 
 @skipif_unavailable
-def test_SIMD_FPDivider() -> None:
+def test_SIMD_FPRemainder() -> None:
     sf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
     sf.set_rounding_mode(hwf.RoundingMode.NEAR_EVEN)
     sf.set_exception_flags(0)
@@ -381,7 +381,7 @@ def test_SIMD_FPDivider() -> None:
                 *(
                     (
                         b''.join((
-                            hwf.Float16.div(
+                            hwf.Float16.rem(
                                 hwf.Float16.from_float(_float_data[(i + j) % _float_data_count]),
                                 hwf.Float16.from_float(_float_data[(i + j + 3) % _float_data_count])
                             ).to_bytes()
@@ -394,7 +394,7 @@ def test_SIMD_FPDivider() -> None:
                 *(
                     (
                         b''.join((
-                            hwf.Float32.div(
+                            hwf.Float32.rem(
                                 hwf.Float32.from_float(_float_data[(i + j) % _float_data_count]),
                                 hwf.Float32.from_float(_float_data[(i + j + 3) % _float_data_count])
                             ).to_bytes()
@@ -407,7 +407,7 @@ def test_SIMD_FPDivider() -> None:
                 *(
                     (
                         b''.join((
-                            hwf.Float64.div(
+                            hwf.Float64.rem(
                                 hwf.Float64.from_float(_float_data[(i + j) % _float_data_count]),
                                 hwf.Float64.from_float(_float_data[(i + j + 3) % _float_data_count])
                             ).to_bytes()
@@ -420,7 +420,7 @@ def test_SIMD_FPDivider() -> None:
                 *(
                     (
                         b''.join((
-                            hwf.Float128.div(
+                            hwf.Float128.rem(
                                 hwf.Float128.from_float(_float_data[(i + j) % _float_data_count]),
                                 hwf.Float128.from_float(_float_data[(i + j + 3) % _float_data_count])
                             ).to_bytes()
@@ -502,7 +502,7 @@ def test_SIMD_FPDivider() -> None:
         po: list[ChannelProbe] = [ChannelProbe('out', w), ChannelProbe('fe', e)]
         ti: list[Source] = [Source(u, d) for u, d in zip(t[0], t[2])]
         to: list[Drain] = [Drain(w), Drain(e)]
-        dev: hwf.SIMD_FPDivider = hwf.SIMD_FPDivider(w, t[1])
+        dev: hwf.SIMD_FPRemainder = hwf.SIMD_FPRemainder(w, t[1])
         for i, u in enumerate([dev.port_o, dev.port_fe_o]):
             u.connect(to[i].port_i)
             u.add_probe(po[i])
