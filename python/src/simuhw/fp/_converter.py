@@ -24,7 +24,7 @@ import softfloatpy as sf
 
 from .._base import InputPort, to_signed_int
 from .._operator import UnaryOperator, SIMD_UnaryOperator
-from ._operator import Float, FPState
+from ._operator import Float, Float16, Float32, Float64, Float128, FPState
 
 
 class FPToIntegerConverter(UnaryOperator, FPState):
@@ -271,11 +271,12 @@ class FPConverter(UnaryOperator, FPState):
             if self._ports_i[0].data[0] is None:
                 self._port_o.post((None, self._time))
             else:
+                assert self._dtype_i in [Float16, Float32, Float64, Float128]
                 self._port_o.post((
                     (
-                        self._dtype_o.from_f16 if self._dtype_i == sf.Float16 else
-                        self._dtype_o.from_f32 if self._dtype_i == sf.Float32 else
-                        self._dtype_o.from_f64 if self._dtype_i == sf.Float64 else
+                        self._dtype_o.from_f16 if self._dtype_i == Float16 else
+                        self._dtype_o.from_f32 if self._dtype_i == Float32 else
+                        self._dtype_o.from_f64 if self._dtype_i == Float64 else
                         self._dtype_o.from_f128
                     )(self._dtype_i.from_bytes(self._ports_i[0].data[0])).to_bytes(),  # type: ignore
                     self._time
@@ -556,15 +557,16 @@ class SIMD_FPConverter(SIMD_UnaryOperator, FPState):
             if self._ports_i[0].data[0] is None:
                 self._port_o.post((None, self._time))
             else:
+                assert self._dtype_i in [Float16, Float32, Float64, Float128]
                 s: int = self._dsize_i[0]
                 m: int = (1 << s) - 1
                 v: int = int.from_bytes(self._ports_i[0].data[0])
                 o: bytes = b''
                 for i in range(0, self._width_i, s):
                     o = (
-                        self._dtype_o.from_f16 if self._dtype_i == sf.Float16 else
-                        self._dtype_o.from_f32 if self._dtype_i == sf.Float32 else
-                        self._dtype_o.from_f64 if self._dtype_i == sf.Float64 else
+                        self._dtype_o.from_f16 if self._dtype_i == Float16 else
+                        self._dtype_o.from_f32 if self._dtype_i == Float32 else
+                        self._dtype_o.from_f64 if self._dtype_i == Float64 else
                         self._dtype_o.from_f128
                     )(self._dtype_i.from_bytes(((v >> i) & m).to_bytes(self._dtype_i.size() >> 3))).to_bytes() + o  # type: ignore
                 self._port_o.post((o, self._time))

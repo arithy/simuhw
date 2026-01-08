@@ -31,7 +31,28 @@ from .._operator import (
     SIMD_UnaryOperator, SIMD_BinaryOperator, SIMD_TernaryOperator
 )
 
-Float = type[sf.Float16 | sf.Float32 | sf.Float64 | sf.Float128]
+
+class Float16(sf.Float16, metaclass=ABCMeta):
+    """An IEEE 754 binary16 floating point data type."""
+    pass
+
+
+class Float32(sf.Float32, metaclass=ABCMeta):
+    """An IEEE 754 binary32 floating point data type."""
+    pass
+
+
+class Float64(sf.Float64, metaclass=ABCMeta):
+    """An IEEE 754 binary64 floating point data type."""
+    pass
+
+
+class Float128(sf.Float128, metaclass=ABCMeta):
+    """An IEEE 754 binary128 floating point data type."""
+    pass
+
+
+Float = type[Float16 | Float32 | Float64 | Float128]
 
 
 class FPState(metaclass=ABCMeta):

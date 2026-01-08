@@ -41,9 +41,8 @@ try:
 
     __all__ += [
         'TininessMode', 'RoundingMode', 'ExceptionFlag',
-        'Float16', 'Float32', 'Float64', 'Float128',
-        'Float', 'FPState',
-        'FPUnaryOperator', 'FPBinaryOperator', 'FPTernaryOperator',
+        'Float', 'Float16', 'Float32', 'Float64', 'Float128',
+        'FPState', 'FPUnaryOperator', 'FPBinaryOperator', 'FPTernaryOperator',
         'SIMD_FPUnaryOperator', 'SIMD_FPBinaryOperator', 'SIMD_FPTernaryOperator',
         'FPNegator', 'SIMD_FPNegator',
         'FPAdder', 'SIMD_FPAdder',
@@ -63,13 +62,10 @@ try:
         'FPConverter', 'SIMD_FPConverter'
     ]
 
-    from softfloatpy import (
-        TininessMode, RoundingMode, ExceptionFlag,
-        Float16, Float32, Float64, Float128
-    )
+    from softfloatpy import TininessMode, RoundingMode, ExceptionFlag
     from ._operator import (
-        Float, FPState,
-        FPUnaryOperator, FPBinaryOperator, FPTernaryOperator,
+        Float, Float16, Float32, Float64, Float128,
+        FPState, FPUnaryOperator, FPBinaryOperator, FPTernaryOperator,
         SIMD_FPUnaryOperator, SIMD_FPBinaryOperator, SIMD_FPTernaryOperator
     )
     from ._negator import FPNegator, SIMD_FPNegator
