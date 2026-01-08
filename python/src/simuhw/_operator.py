@@ -55,6 +55,9 @@ class Operator(Device, metaclass=ABCMeta):
         self._port_o: OutputPort = OutputPort(width_o)
         """The output port."""
 
+    def __str__(self) -> str:
+        return f'{self.__class__.__name__}({self._width_i} bits -> {self._width_o} bits)'
+
     @property
     def width_i(self) -> int:
         """The input data word width in bits."""
@@ -189,6 +192,9 @@ class SIMD_Operator(Operator, metaclass=ABCMeta):
         """The selectable data word widths in bits if the input and output data word widths are the same, empty otherwise."""
         self._port_s: InputPort = InputPort(math.ceil(math.log2(len(self._dsize_i))))
         """The input port to select the input data word width."""
+
+    def __str__(self) -> str:
+        return f'{self.__class__.__name__}({self._width_i} bits: {list(self._dsize_i)} -> {self._width_o} bits: {list(self._dsize_o)})'
 
     @property
     def multi(self) -> tuple[int, ...]:
