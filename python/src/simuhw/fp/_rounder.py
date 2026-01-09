@@ -32,7 +32,8 @@ class FPToIntegerRounder(FPUnaryOperator):
     This device rounds the floating-point value to an integer value
     as the same floating-point type.
 
-    Available only if an appropriate version of ``softfloatpy`` module is found.
+    Available only if an appropriate version of
+    `softfloatpy <https://pypi.org/project/softfloatpy/>`_ module is found.
 
     """
 
@@ -75,7 +76,8 @@ class SIMD_FPToIntegerRounder(SIMD_FPUnaryOperator):
     This device rounds the respective floating-point values to integer values
     as the same floating-point type simultaneously.
 
-    Available only if an appropriate version of ``softfloatpy`` module is found.
+    Available only if an appropriate version of
+    `softfloatpy <https://pypi.org/project/softfloatpy/>`_ module is found.
 
     """
 

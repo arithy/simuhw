@@ -100,7 +100,8 @@ def is_available() -> bool:
         ``True`` if ``simuhw.fp`` submodule is available.
 
     Note:
-        ``simuhw.fp`` submodule is available only when an appropriate version of ``softfloatpy`` module is found.
+        ``simuhw.fp`` submodule is available only when an appropriate version of
+        `softfloatpy <https://pypi.org/project/softfloatpy/>`_ module is found.
         The least version can be retrieved using :func:`get_required_softfloatpy_least_version()`
 
     """
@@ -108,10 +109,12 @@ def is_available() -> bool:
 
 
 def get_required_softfloatpy_least_version() -> str:
-    """Retrieves the least version of ``softfloatpy`` module required for ``simuhw.fp`` submodule.
+    """Retrieves the least version of `softfloatpy <https://pypi.org/project/softfloatpy/>`_ module
+    required for ``simuhw.fp`` submodule.
 
     Returns:
-        The least version of ``softfloatpy`` module required for ``simuhw.fp`` submodule.
+        The least version of `softfloatpy <https://pypi.org/project/softfloatpy/>`_ module
+        required for ``simuhw.fp`` submodule.
 
     """
     return str(_softfloatpy_least)

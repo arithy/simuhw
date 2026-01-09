@@ -128,7 +128,7 @@ import simuhw as hw
       - [`SIMD_Remainder`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.SIMD_Remainder)
       - [`SIMD_SignedRemainder`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.SIMD_SignedRemainder)
     - Floating-Point Arithmetic
-      > Available only if an appropriate version of [`softfloatpy`](https://pypi.org/project/softfloatpy/) module is found.
+      > Available only if an appropriate version of [softfloatpy](https://pypi.org/project/softfloatpy/) module is found.
       - [`fp.FPNegator`](https://arithy.github.io/simuhw/apidoc/simuhw.fp.html#simuhw.fp.FPNegator)
       - [`fp.FPAdder`](https://arithy.github.io/simuhw/apidoc/simuhw.fp.html#simuhw.fp.FPAdder)
       - [`fp.FPSubtractor`](https://arithy.github.io/simuhw/apidoc/simuhw.fp.html#simuhw.fp.FPSubtractor)

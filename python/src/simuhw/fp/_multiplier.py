@@ -31,7 +31,8 @@ class FPMultiplier(FPBinaryOperator):
 
     This device calculates a multiplication of two floating-point values.
 
-    Available only if an appropriate version of ``softfloatpy`` module is found.
+    Available only if an appropriate version of
+    `softfloatpy <https://pypi.org/project/softfloatpy/>`_ module is found.
 
     """
 
@@ -79,7 +80,8 @@ class SIMD_FPMultiplier(SIMD_FPBinaryOperator):
 
     This device calculates respective multiplications of multiple pairs of floating-point values simultaneously.
 
-    Available only if an appropriate version of ``softfloatpy`` module is found.
+    Available only if an appropriate version of
+    `softfloatpy <https://pypi.org/project/softfloatpy/>`_ module is found.
 
     """
 

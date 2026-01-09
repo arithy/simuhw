@@ -34,7 +34,8 @@ class FPComparator(FPBinaryOperator):
     1 if the first value is greater than the second one, or 0 otherwise.
     The result integer has the same number of bits as the input floating-points.
 
-    Available only if an appropriate version of ``softfloatpy`` module is found.
+    Available only if an appropriate version of
+    `softfloatpy <https://pypi.org/project/softfloatpy/>`_ module is found.
 
     """
 
@@ -90,7 +91,8 @@ class SIMD_FPComparator(SIMD_FPBinaryOperator):
     1 if the first value is greater than the second one, or 0 otherwise.
     Each result integer has the same number of bits as the input floating-points.
 
-    Available only if an appropriate version of ``softfloatpy`` module is found.
+    Available only if an appropriate version of
+    `softfloatpy <https://pypi.org/project/softfloatpy/>`_ module is found.
 
     """
 

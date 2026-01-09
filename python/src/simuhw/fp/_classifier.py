@@ -34,7 +34,8 @@ class FPClassifier(FPUnaryOperator):
     2 if the value is a signaling NaN, 3 if the value is a quiet NaN, or 0 otherwise.
     The result integer has the same number of bits as the input floating-points.
 
-    Available only if an appropriate version of ``softfloatpy`` module is found.
+    Available only if an appropriate version of
+    `softfloatpy <https://pypi.org/project/softfloatpy/>`_ module is found.
 
     """
 
@@ -87,7 +88,8 @@ class SIMD_FPClassifier(SIMD_FPUnaryOperator):
     2 if the value is a signaling NaN, 3 if the value is a quiet NaN, or 0 otherwise.
     Each result integer has the same number of bits as the input floating-points.
 
-    Available only if an appropriate version of ``softfloatpy`` module is found.
+    Available only if an appropriate version of
+    `softfloatpy <https://pypi.org/project/softfloatpy/>`_ module is found.
 
     """
 

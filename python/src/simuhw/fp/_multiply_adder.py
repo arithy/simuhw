@@ -31,7 +31,8 @@ class FPMultiplyAdder(FPTernaryOperator):
 
     This device calculates a fused multiply-add of three floating-point values (``x * y + z``).
 
-    Available only if an appropriate version of ``softfloatpy`` module is found.
+    Available only if an appropriate version of
+    `softfloatpy <https://pypi.org/project/softfloatpy/>`_ module is found.
 
     """
 
@@ -80,7 +81,8 @@ class SIMD_FPMultiplyAdder(SIMD_FPTernaryOperator):
 
     This device calculates respective fused multiply-add of multiple couples of floating-point values simultaneously (``x * y + z``).
 
-    Available only if an appropriate version of ``softfloatpy`` module is found.
+    Available only if an appropriate version of
+    `softfloatpy <https://pypi.org/project/softfloatpy/>`_ module is found.
 
     """
 

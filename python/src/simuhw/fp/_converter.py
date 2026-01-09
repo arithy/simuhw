@@ -32,6 +32,9 @@ class FPToIntegerConverter(UnaryOperator, FPState):
 
     This device converts the floating-point to an unsigned integer.
 
+    Available only if an appropriate version of
+    `softfloatpy <https://pypi.org/project/softfloatpy/>`_ module is found.
+
     """
 
     def __init__(self, dtype_i: Float, width_o: int) -> None:
@@ -92,6 +95,9 @@ class FPFromIntegerConverter(UnaryOperator, FPState):
 
     This device converts the unsigned integer to a floating-point.
 
+    Available only if an appropriate version of
+    `softfloatpy <https://pypi.org/project/softfloatpy/>`_ module is found.
+
     """
 
     def __init__(self, width_i: int, dtype_o: Float) -> None:
@@ -142,6 +148,9 @@ class FPToSignedIntegerConverter(FPToIntegerConverter):
 
     This device converts the floating-point to a signed integer.
 
+    Available only if an appropriate version of
+    `softfloatpy <https://pypi.org/project/softfloatpy/>`_ module is found.
+
     """
 
     def __init__(self, dtype_i: Float, width_o: int) -> None:
@@ -189,6 +198,9 @@ class FPFromSignedIntegerConverter(FPFromIntegerConverter):
 
     This device converts the signed integer to a floating-point.
 
+    Available only if an appropriate version of
+    `softfloatpy <https://pypi.org/project/softfloatpy/>`_ module is found.
+
     """
 
     def __init__(self, width_i: int, dtype_o: Float) -> None:
@@ -232,6 +244,9 @@ class FPConverter(UnaryOperator, FPState):
     """A floating-point converter.
 
     This device converts the floating-point to that of another type.
+
+    Available only if an appropriate version of
+    `softfloatpy <https://pypi.org/project/softfloatpy/>`_ module is found.
 
     """
 
@@ -290,6 +305,9 @@ class SIMD_FPToIntegerConverter(SIMD_UnaryOperator, FPState):
     """A SIMD floating-point to integer converter.
 
     This device converts the respective floating-points to unsigned integers simultaneously.
+
+    Available only if an appropriate version of
+    `softfloatpy <https://pypi.org/project/softfloatpy/>`_ module is found.
 
     """
 
@@ -357,6 +375,9 @@ class SIMD_FPFromIntegerConverter(SIMD_UnaryOperator, FPState):
 
     This device converts the respective unsigned integers to floating-points simultaneously.
 
+    Available only if an appropriate version of
+    `softfloatpy <https://pypi.org/project/softfloatpy/>`_ module is found.
+
     """
 
     def __init__(self, multi: int, dsize_i: int, dtype_o: Float) -> None:
@@ -410,6 +431,9 @@ class SIMD_FPToSignedIntegerConverter(SIMD_FPToIntegerConverter):
     """A SIMD floating-point to signed-integer converter.
 
     This device converts the respective floating-points to signed integers simultaneously.
+
+    Available only if an appropriate version of
+    `softfloatpy <https://pypi.org/project/softfloatpy/>`_ module is found.
 
     """
 
@@ -470,6 +494,9 @@ class SIMD_FPFromSignedIntegerConverter(SIMD_FPFromIntegerConverter):
 
     This device converts the respective signed integers to floating-points simultaneously.
 
+    Available only if an appropriate version of
+    `softfloatpy <https://pypi.org/project/softfloatpy/>`_ module is found.
+
     """
 
     def __init__(self, multi: int, dsize_i: int, dtype_o: Float) -> None:
@@ -517,6 +544,9 @@ class SIMD_FPConverter(SIMD_UnaryOperator, FPState):
     """A SIMD floating-point converter.
 
     This device converts the respective floating-points to those of another type simultaneously.
+
+    Available only if an appropriate version of
+    `softfloatpy <https://pypi.org/project/softfloatpy/>`_ module is found.
 
     """
 

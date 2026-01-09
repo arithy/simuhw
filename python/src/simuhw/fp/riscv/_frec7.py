@@ -99,7 +99,8 @@ class FRec7(FPUnaryOperator):
 
     This device is intended to be used for emulation of the RISC-V instruction ``vfrec7``.
 
-    Available only if an appropriate version of ``softfloatpy`` module is found.
+    Available only if an appropriate version of
+    `softfloatpy <https://pypi.org/project/softfloatpy/>`_ module is found.
 
     """
 
@@ -141,7 +142,8 @@ class SIMD_FRec7(SIMD_FPUnaryOperator):
 
     This device is intended to be used for emulation of the RISC-V instruction ``vfrec7``.
 
-    Available only if an appropriate version of ``softfloatpy`` module is found.
+    Available only if an appropriate version of
+    `softfloatpy <https://pypi.org/project/softfloatpy/>`_ module is found.
 
     """
 

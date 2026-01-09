@@ -31,7 +31,8 @@ class FPNegator(FPUnaryOperator):
 
     This device negates the floating-point value.
 
-    Available only if an appropriate version of ``softfloatpy`` module is found.
+    Available only if an appropriate version of
+    `softfloatpy <https://pypi.org/project/softfloatpy/>`_ module is found.
 
     """
 
@@ -73,7 +74,8 @@ class SIMD_FPNegator(SIMD_FPUnaryOperator):
 
     This device negates the respective sign of multiple floating-point values simultaneously.
 
-    Available only if an appropriate version of ``softfloatpy`` module is found.
+    Available only if an appropriate version of
+    `softfloatpy <https://pypi.org/project/softfloatpy/>`_ module is found.
 
     """
 
