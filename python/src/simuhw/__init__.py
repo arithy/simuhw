@@ -47,7 +47,8 @@ __all__ = [
     'Divider', 'SignedDivider', 'SIMD_Divider', 'SIMD_SignedDivider',
     'Remainder', 'SignedRemainder', 'SIMD_Remainder', 'SIMD_SignedRemainder',
     'Comparator', 'SignedComparator', 'SIMD_Comparator', 'SIMD_SignedComparator',
-    'IntegerConverter', 'SignedIntegerConverter', 'SIMD_IntegerConverter', 'SIMD_SignedIntegerConverter'
+    'IntegerConverter', 'SignedIntegerConverter', 'SIMD_IntegerConverter', 'SIMD_SignedIntegerConverter',
+    'LookupTable'
 ]
 
 from ._version import __version__  # noqa:F401
@@ -83,3 +84,4 @@ from ._divider import Divider, SignedDivider, SIMD_Divider, SIMD_SignedDivider
 from ._remainder import Remainder, SignedRemainder, SIMD_Remainder, SIMD_SignedRemainder
 from ._comparator import Comparator, SignedComparator, SIMD_Comparator, SIMD_SignedComparator
 from ._converter import IntegerConverter, SignedIntegerConverter, SIMD_IntegerConverter, SIMD_SignedIntegerConverter
+from ._lut import LookupTable

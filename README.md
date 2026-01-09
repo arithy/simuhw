@@ -85,9 +85,8 @@ import simuhw as hw
     - Elementary Sequential Circuit
       - [`DLatch`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.DLatch)
       - [`DFlipFlop`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.DFlipFlop)
-    - Counter
-      - [`counter.SynchronousBinaryCounter74161`](https://arithy.github.io/simuhw/apidoc/simuhw.counter.html#simuhw.counter.SynchronousBinaryCounter74161)
-      - [`counter.SynchronousBinaryCounter74163`](https://arithy.github.io/simuhw/apidoc/simuhw.counter.html#simuhw.counter.SynchronousBinaryCounter74163)
+    - Lookup Table
+      - [`LookupTable`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.LookupTable)
     - Bit Operation
       - [`LeftShifter`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.LeftShifter)
       - [`RightShifter`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.RightShifter)
@@ -166,6 +165,9 @@ import simuhw as hw
       - [`fp.riscv.FRSqrt7`](https://arithy.github.io/simuhw/apidoc/simuhw.fp.riscv.html#simuhw.fp.riscv.FRSqrt7)
       - [`fp.riscv.SIMD_FRec7`](https://arithy.github.io/simuhw/apidoc/simuhw.fp.riscv.html#simuhw.fp.riscv.SIMD_FRec7)
       - [`fp.riscv.SIMD_FRSqrt7`](https://arithy.github.io/simuhw/apidoc/simuhw.fp.riscv.html#simuhw.fp.riscv.SIMD_FRSqrt7)
+    - Counter
+      - [`counter.SynchronousBinaryCounter74161`](https://arithy.github.io/simuhw/apidoc/simuhw.counter.html#simuhw.counter.SynchronousBinaryCounter74161)
+      - [`counter.SynchronousBinaryCounter74163`](https://arithy.github.io/simuhw/apidoc/simuhw.counter.html#simuhw.counter.SynchronousBinaryCounter74163)
     - Memory
       - [`memory.LevelTriggeredMemory`](https://arithy.github.io/simuhw/apidoc/simuhw.memory.html#simuhw.memory.LevelTriggeredMemory)
       - [`memory.EdgeTriggeredMemory`](https://arithy.github.io/simuhw/apidoc/simuhw.memory.html#simuhw.memory.EdgeTriggeredMemory)
