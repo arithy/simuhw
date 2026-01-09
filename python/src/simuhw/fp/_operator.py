@@ -55,6 +55,30 @@ class Float128(sf.Float128, metaclass=ABCMeta):
 Float = type[Float16 | Float32 | Float64 | Float128]
 
 
+def dsize_to_dtype(dsize: int) -> Float:
+    """Returns a floating-point type that has the specified data size.
+
+    Args:
+        dsize: The data size in bits.
+
+    Returns:
+        A floating-point type that has the specified data size.
+
+    Raises:
+        ValueError: If no floating-point type that has the specified data size.
+
+    """
+    if dsize == 16:
+        return Float16
+    if dsize == 32:
+        return Float32
+    if dsize == 64:
+        return Float64
+    if dsize == 128:
+        return Float128
+    raise ValueError(f'No floating-point type with {dsize} bits')
+
+
 class FPState(metaclass=ABCMeta):
     """A class that manipulates the floating-point states."""
 
