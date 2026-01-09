@@ -20,15 +20,21 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import sys
 import importlib.metadata
 from packaging.version import Version
 
-__all__ = ['is_available', 'get_required_softfloatpy_least_version']
+__all__ = [
+    'is_available',
+    'get_required_softfloatpy_least_version',
+    'raise_exception_if_not_available'
+]
 
 _softfloatpy_least: Version = Version('1.2.2')
 
 _softfloatpy: Version | None = None
 _available: bool = False
+_error_str: str | None = None
 
 try:
     _softfloatpy = Version(importlib.metadata.version('softfloatpy'))
@@ -88,9 +94,12 @@ try:
     )
 
 except importlib.metadata.PackageNotFoundError:
-    print(f'{__name__} [WARNING] Not available (No \'softfloatpy\' module)')
+    _error_str = 'No \'softfloatpy\' module'
 except RuntimeError as e:
-    print(f'{__name__} [WARNING] Not available ({e})')
+    _error_str = f'{e}'
+
+if _error_str is not None:
+    print(f'{__name__} [WARNING] Not available ({_error_str})', file=sys.stderr)
 
 
 def is_available() -> bool:
@@ -118,3 +127,19 @@ def get_required_softfloatpy_least_version() -> str:
 
     """
     return str(_softfloatpy_least)
+
+
+def raise_exception_if_not_available() -> None:
+    """Raises an exception if ``simuhw.fp`` submodule is not available.
+
+    Raises:
+        RuntimeError: If ``simuhw.fp`` submodule is not available.
+
+    Note:
+        ``simuhw.fp`` submodule is available only when an appropriate version of
+        `softfloatpy <https://pypi.org/project/softfloatpy/>`_ module is found.
+        The least version can be retrieved using :func:`get_required_softfloatpy_least_version()`
+
+    """
+    if not _available:
+        raise RuntimeError(_error_str)
