@@ -34,7 +34,7 @@ __all__ = [
     'Channel',
     'Operator', 'UnaryOperator', 'BinaryOperator', 'TernaryOperator',
     'SIMD_Operator', 'SIMD_UnaryOperator', 'SIMD_BinaryOperator', 'SIMD_TernaryOperator',
-    'Buffer', 'Inverter',
+    'Buffer', 'Inverter', 'TriStateBuffer', 'TriStateInverter',
     'ANDGate', 'ORGate', 'XORGate', 'NANDGate', 'NORGate', 'XNORGate',
     'DLatch',
     'DFlipFlop',
@@ -68,7 +68,7 @@ from ._operator import (
     Operator, UnaryOperator, BinaryOperator, TernaryOperator,
     SIMD_Operator, SIMD_UnaryOperator, SIMD_BinaryOperator, SIMD_TernaryOperator
 )
-from ._buffer import Buffer, Inverter
+from ._buffer import Buffer, Inverter, TriStateBuffer, TriStateInverter
 from ._gate import ANDGate, ORGate, XORGate, NANDGate, NORGate, XNORGate
 from ._latch import DLatch
 from ._flipflop import DFlipFlop

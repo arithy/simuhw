@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from ._word import Unknown
+from ._word import Unknown, HighZ
 from ._base import InputPort
 from ._operator import UnaryOperator
 
@@ -57,7 +57,7 @@ class Buffer(UnaryOperator):
         return ([*self._ports_i], None)
 
 
-class Inverter(UnaryOperator):
+class Inverter(Buffer):
     """An inverter."""
 
     def __init__(self, width: int) -> None:
@@ -89,3 +89,100 @@ class Inverter(UnaryOperator):
             ))
             self._set_inputs_unchanged(self._ports_i)
         return ([*self._ports_i], None)
+
+
+class TriStateBuffer(UnaryOperator):
+    """A tri-state buffer."""
+
+    def __init__(self, width: int, *, active_high: bool = True) -> None:
+        """Creates a tri-state buffer.
+
+        Args:
+            width: The data word width in bits.
+            active_high: ``True`` if the control port is active-high, ``False`` if it is active-low.
+
+        """
+        super().__init__(width)
+        self._active_high: bool = active_high
+        """``True`` if the control port is active-high, ``False`` if it is active-low."""
+        self._port_c: InputPort = InputPort(1)
+        """The control port."""
+
+    @property
+    def active_high(self) -> bool:
+        """``True`` if the control port is active-high, ``False`` if it is active-low."""
+        return self._active_high
+
+    @property
+    def port_i(self) -> InputPort:
+        """The input port."""
+        return self._ports_i[0]
+
+    @property
+    def port_c(self) -> InputPort:
+        """The control port."""
+        return self._port_c
+
+    def work(self, time: float | None) -> tuple[list[InputPort], float | None]:
+        """Makes the device work.
+
+        Args:
+            time: The current time in seconds. ``None`` when starting to make the device work.
+
+        Returns:
+            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            The next resuming time can be ``None`` if resumable anytime.
+
+        """
+        ports_i: list[InputPort] = [*self._ports_i, self._port_c]
+        if self._update_time_and_check_inputs(time, ports_i):
+            if not isinstance(self._port_c.data[0], bytes):
+                self._port_o.post((Unknown, self._time))
+            else:
+                self._port_o.post((
+                    HighZ if int.from_bytes(self._port_c.data[0]) == (0 if self._active_high else 1) else
+                    Unknown if not isinstance(self._ports_i[0].data[0], bytes) else self._ports_i[0].data[0],
+                    self._time
+                ))
+            self._set_inputs_unchanged(ports_i)
+        return (ports_i, None)
+
+
+class TriStateInverter(TriStateBuffer):
+    """A tri-state inverter."""
+
+    def __init__(self, width: int, *, active_high: bool = True) -> None:
+        """Creates a tri-state inverter.
+
+        Args:
+            width: The data word width in bits.
+            active_high: ``True`` if the control port is active-high, ``False`` if it is active-low.
+
+        """
+        super().__init__(width, active_high=active_high)
+
+    def work(self, time: float | None) -> tuple[list[InputPort], float | None]:
+        """Makes the device work.
+
+        Args:
+            time: The current time in seconds. ``None`` when starting to make the device work.
+
+        Returns:
+            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            The next resuming time can be ``None`` if resumable anytime.
+
+        """
+        ports_i: list[InputPort] = [*self._ports_i, self._port_c]
+        if self._update_time_and_check_inputs(time, ports_i):
+            if not isinstance(self._port_c.data[0], bytes):
+                self._port_o.post((Unknown, self._time))
+            else:
+                self._port_o.post((
+                    HighZ if int.from_bytes(self._port_c.data[0]) == (0 if self._active_high else 1) else
+                    Unknown if not isinstance(self._ports_i[0].data[0], bytes) else (
+                        ~int.from_bytes(self._ports_i[0].data[0]) & self._mask
+                    ).to_bytes(self._nbytes),
+                    self._time
+                ))
+            self._set_inputs_unchanged(ports_i)
+        return (ports_i, None)

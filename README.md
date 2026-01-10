@@ -75,6 +75,8 @@ import simuhw as hw
     - Elementary Combinational Circuit
       - [`Buffer`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.Buffer)
       - [`Inverter`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.Inverter)
+      - [`TriStateBuffer`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.TriStateBuffer)
+      - [`TriStateInverter`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.TriStateInverter)
       - [`ANDGate`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.ANDGate)
       - [`ORGate`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.ORGate)
       - [`XORGate`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.XORGate)

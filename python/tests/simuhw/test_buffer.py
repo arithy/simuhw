@@ -20,55 +20,144 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simuhw import DataWord, Unknown, Source, Drain, Buffer, Inverter, ChannelProbe, Simulator
+from typing import cast
+
+from simuhw import (
+    DataWord, Unknown, HighZ, Source, Drain,
+    Buffer, Inverter, TriStateBuffer, TriStateInverter,
+    ChannelProbe, Simulator
+)
 
 _EPS: float = 1e-18
 
 
-_test_data: list[tuple[tuple[int, int], list[list[tuple[DataWord, float]]], dict[type, list[tuple[DataWord, float]]]]] = [
+_test_data: list[tuple[int, list[list[tuple[DataWord, float]]], dict[type, list[list[tuple[DataWord, float]]]]]] = [
     (
-        (1, 1),
+        1,
         [
-            [(b'\x01', 1e-9), (b'\x00', 3e-9), (Unknown, 4e-9), (b'\x01', 6e-9)]
+            [(cast(list[DataWord], [b'\x00', b'\x01', HighZ, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(16)],
+            [(cast(list[DataWord], [b'\x00', b'\x01', HighZ, Unknown])[i % 4], (1 + 4 * i) * 1e-9) for i in range(4)]
         ],
         {
             Buffer: [
-                (b'\x01', 1e-9), (b'\x00', 3e-9), (Unknown, 4e-9), (b'\x01', 6e-9)
+                [(cast(list[DataWord], [b'\x00', b'\x01', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(16)]
             ],
             Inverter: [
-                (b'\x00', 1e-9), (b'\x01', 3e-9), (Unknown, 4e-9), (b'\x00', 6e-9)
+                [(cast(list[DataWord], [b'\x01', b'\x00', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(16)]
+            ],
+            TriStateBuffer: [
+                [
+                    *((cast(list[DataWord], [HighZ, HighZ, HighZ, HighZ])[i % 4], (1 + i) * 1e-9) for i in range(0, 4)),
+                    *((cast(list[DataWord], [b'\x00', b'\x01', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(4, 8)),
+                    *((cast(list[DataWord], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(8, 12)),
+                    *((cast(list[DataWord], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(12, 16))
+                ],
+                [
+                    *((cast(list[DataWord], [b'\x00', b'\x01', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(0, 4)),
+                    *((cast(list[DataWord], [HighZ, HighZ, HighZ, HighZ])[i % 4], (1 + i) * 1e-9) for i in range(4, 8)),
+                    *((cast(list[DataWord], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(8, 12)),
+                    *((cast(list[DataWord], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(12, 16))
+                ]
+            ],
+            TriStateInverter: [
+                [
+                    *((cast(list[DataWord], [HighZ, HighZ, HighZ, HighZ])[i % 4], (1 + i) * 1e-9) for i in range(0, 4)),
+                    *((cast(list[DataWord], [b'\x01', b'\x00', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(4, 8)),
+                    *((cast(list[DataWord], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(8, 12)),
+                    *((cast(list[DataWord], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(12, 16))
+                ],
+                [
+                    *((cast(list[DataWord], [b'\x01', b'\x00', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(0, 4)),
+                    *((cast(list[DataWord], [HighZ, HighZ, HighZ, HighZ])[i % 4], (1 + i) * 1e-9) for i in range(4, 8)),
+                    *((cast(list[DataWord], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(8, 12)),
+                    *((cast(list[DataWord], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(12, 16))
+                ]
             ]
         }
     ),
     (
-        (8, 4),
+        8,
         [
-            [(b'\xfe', 1e-9), (b'\xab', 5e-9), (Unknown, 8e-9), (b'\xcd', 10e-9), (b'\x01', 12e-9)],
-            [(b'\x06', 4e-9), (b'\x01', 5e-9), (Unknown, 8e-9), (b'\x1a', 9e-9), (b'\x16', 14e-9)],
-            [(b'\xff', 3e-9), (b'\x00', 6e-9), (b'\xff', 7e-9), (Unknown, 8e-9), (b'\x00', 9e-9)],
-            [(b'\x0e', 2e-9), (b'\x03', 3e-9), (b'\x0e', 7e-9), (Unknown, 8e-9), (b'\x01', 10e-9)]
+            [(cast(list[DataWord], [b'\x1a', b'\xe5', HighZ, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(16)],
+            [(cast(list[DataWord], [b'\x00', b'\x01', HighZ, Unknown])[i % 4], (1 + 4 * i) * 1e-9) for i in range(4)]
         ],
         {
             Buffer: [
-                (b'\xfe', 1e-9), (b'\xab', 5e-9), (Unknown, 8e-9), (b'\xcd', 10e-9), (b'\x01', 12e-9)
+                [(cast(list[DataWord], [b'\x1a', b'\xe5', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(16)],
             ],
             Inverter: [
-                (b'\x01', 1e-9), (b'\x54', 5e-9), (Unknown, 8e-9), (b'\x32', 10e-9), (b'\xfe', 12e-9)
+                [(cast(list[DataWord], [b'\xe5', b'\x1a', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(16)],
+            ],
+            TriStateBuffer: [
+                [
+                    *((cast(list[DataWord], [HighZ, HighZ, HighZ, HighZ])[i % 4], (1 + i) * 1e-9) for i in range(0, 4)),
+                    *((cast(list[DataWord], [b'\x1a', b'\xe5', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(4, 8)),
+                    *((cast(list[DataWord], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(8, 12)),
+                    *((cast(list[DataWord], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(12, 16))
+                ],
+                [
+                    *((cast(list[DataWord], [b'\x1a', b'\xe5', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(0, 4)),
+                    *((cast(list[DataWord], [HighZ, HighZ, HighZ, HighZ])[i % 4], (1 + i) * 1e-9) for i in range(4, 8)),
+                    *((cast(list[DataWord], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(8, 12)),
+                    *((cast(list[DataWord], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(12, 16))
+                ]
+            ],
+            TriStateInverter: [
+                [
+                    *((cast(list[DataWord], [HighZ, HighZ, HighZ, HighZ])[i % 4], (1 + i) * 1e-9) for i in range(0, 4)),
+                    *((cast(list[DataWord], [b'\xe5', b'\x1a', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(4, 8)),
+                    *((cast(list[DataWord], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(8, 12)),
+                    *((cast(list[DataWord], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(12, 16))
+                ],
+                [
+                    *((cast(list[DataWord], [b'\xe5', b'\x1a', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(0, 4)),
+                    *((cast(list[DataWord], [HighZ, HighZ, HighZ, HighZ])[i % 4], (1 + i) * 1e-9) for i in range(4, 8)),
+                    *((cast(list[DataWord], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(8, 12)),
+                    *((cast(list[DataWord], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(12, 16))
+                ]
             ]
         }
     ),
     (
-        (33, 17),
+        33,
         [
-            [(b'\x00\x00\x00\x00\x00', 0e-9), (b'\x01\x55\x55\xaa\xaa', 1e-9 * (1 + i)), (b'\x01\xff\xff\xff\xff', 18e-9)]
-            for i in range(17)
+            [(cast(list[DataWord], [b'\x01\x55\x55\xaa\xaa', b'\x00\xaa\xaa\x55\x55', HighZ, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(16)],
+            [(cast(list[DataWord], [b'\x00', b'\x01', HighZ, Unknown])[i % 4], (1 + 4 * i) * 1e-9) for i in range(4)]
         ],
         {
             Buffer: [
-                (b'\x00\x00\x00\x00\x00', 0e-9), (b'\x01\x55\x55\xaa\xaa', 1e-9), (b'\x01\xff\xff\xff\xff', 18e-9)
+                [(cast(list[DataWord], [b'\x01\x55\x55\xaa\xaa', b'\x00\xaa\xaa\x55\x55', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(16)],
             ],
             Inverter: [
-                (b'\x01\xff\xff\xff\xff', 0e-9), (b'\x00\xaa\xaa\x55\x55', 1e-9), (b'\x00\x00\x00\x00\x00', 18e-9)
+                [(cast(list[DataWord], [b'\x00\xaa\xaa\x55\x55', b'\x01\x55\x55\xaa\xaa', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(16)],
+            ],
+            TriStateBuffer: [
+                [
+                    *((cast(list[DataWord], [HighZ, HighZ, HighZ, HighZ])[i % 4], (1 + i) * 1e-9) for i in range(0, 4)),
+                    *((cast(list[DataWord], [b'\x01\x55\x55\xaa\xaa', b'\x00\xaa\xaa\x55\x55', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(4, 8)),
+                    *((cast(list[DataWord], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(8, 12)),
+                    *((cast(list[DataWord], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(12, 16))
+                ],
+                [
+                    *((cast(list[DataWord], [b'\x01\x55\x55\xaa\xaa', b'\x00\xaa\xaa\x55\x55', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(0, 4)),
+                    *((cast(list[DataWord], [HighZ, HighZ, HighZ, HighZ])[i % 4], (1 + i) * 1e-9) for i in range(4, 8)),
+                    *((cast(list[DataWord], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(8, 12)),
+                    *((cast(list[DataWord], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(12, 16))
+                ]
+            ],
+            TriStateInverter: [
+                [
+                    *((cast(list[DataWord], [HighZ, HighZ, HighZ, HighZ])[i % 4], (1 + i) * 1e-9) for i in range(0, 4)),
+                    *((cast(list[DataWord], [b'\x00\xaa\xaa\x55\x55', b'\x01\x55\x55\xaa\xaa', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(4, 8)),
+                    *((cast(list[DataWord], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(8, 12)),
+                    *((cast(list[DataWord], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(12, 16))
+                ],
+                [
+                    *((cast(list[DataWord], [b'\x00\xaa\xaa\x55\x55', b'\x01\x55\x55\xaa\xaa', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(0, 4)),
+                    *((cast(list[DataWord], [HighZ, HighZ, HighZ, HighZ])[i % 4], (1 + i) * 1e-9) for i in range(4, 8)),
+                    *((cast(list[DataWord], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(8, 12)),
+                    *((cast(list[DataWord], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(12, 16))
+                ]
             ]
         }
     )
@@ -77,17 +166,18 @@ _test_data: list[tuple[tuple[int, int], list[list[tuple[DataWord, float]]], dict
 
 def test_Buffer() -> None:
     for t in _test_data:
-        w: int = t[0][0]
+        w: int = t[0]
         po: ChannelProbe = ChannelProbe('out', w)
         ti: Source = Source(w, t[1][0])
         to: Drain = Drain(w)
         dev: Buffer = Buffer(w)
-        dev.port_o.connect(to.port_i)
         ti.port_o.connect(dev.port_i)
+        dev.port_o.connect(to.port_i)
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[DataWord, float]] = t[2][Buffer]
+        a: list[tuple[DataWord, float]] = t[2][Buffer][0]
+        r: list[tuple[DataWord, float]] = [a[i] for i in range(len(a)) if i == 0 or a[i][0] != a[i - 1][0]]
         assert len(po.data) == len(r)
         for o, q in zip(po.data, r):
             assert o[0] == q[0]
@@ -96,18 +186,63 @@ def test_Buffer() -> None:
 
 def test_Inverter() -> None:
     for t in _test_data:
-        w: int = t[0][0]
+        w: int = t[0]
         po: ChannelProbe = ChannelProbe('out', w)
         ti: Source = Source(w, t[1][0])
         to: Drain = Drain(w)
         dev: Inverter = Inverter(w)
-        dev.port_o.connect(to.port_i)
         ti.port_o.connect(dev.port_i)
+        dev.port_o.connect(to.port_i)
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[DataWord, float]] = t[2][Inverter]
+        a: list[tuple[DataWord, float]] = t[2][Inverter][0]
+        r: list[tuple[DataWord, float]] = [a[i] for i in range(len(a)) if i == 0 or a[i][0] != a[i - 1][0]]
         assert len(po.data) == len(r)
         for o, q in zip(po.data, r):
             assert o[0] == q[0]
             assert abs(o[1] - q[1]) <= _EPS
+
+
+def test_TriStateBuffer() -> None:
+    for t in _test_data:
+        w: int = t[0]
+        for j in range(2):
+            po: ChannelProbe = ChannelProbe('out', w)
+            ti: list[Source] = [Source(u, d) for u, d in zip([w, 1], t[1])]
+            to: Drain = Drain(w)
+            dev: TriStateBuffer = TriStateBuffer(w) if j == 0 else TriStateBuffer(w, active_high=False)
+            for i, p in enumerate([dev.port_i, dev.port_c]):
+                ti[i].port_o.connect(p)
+            dev.port_o.connect(to.port_i)
+            dev.port_o.add_probe(po)
+            sim: Simulator = Simulator([*ti, to, dev])
+            sim.start(show_time=True)
+            a: list[tuple[DataWord, float]] = t[2][TriStateBuffer][j]
+            r: list[tuple[DataWord, float]] = [a[i] for i in range(len(a)) if i == 0 or a[i][0] != a[i - 1][0]]
+            assert len(po.data) == len(r)
+            for o, q in zip(po.data, r):
+                assert o[0] == q[0]
+                assert abs(o[1] - q[1]) <= _EPS
+
+
+def test_TriStateInverter() -> None:
+    for t in _test_data:
+        w: int = t[0]
+        for j in range(2):
+            po: ChannelProbe = ChannelProbe('out', w)
+            ti: list[Source] = [Source(u, d) for u, d in zip([w, 1], t[1])]
+            to: Drain = Drain(w)
+            dev: TriStateInverter = TriStateInverter(w) if j == 0 else TriStateInverter(w, active_high=False)
+            for i, p in enumerate([dev.port_i, dev.port_c]):
+                ti[i].port_o.connect(p)
+            dev.port_o.connect(to.port_i)
+            dev.port_o.add_probe(po)
+            sim: Simulator = Simulator([*ti, to, dev])
+            sim.start(show_time=True)
+            a: list[tuple[DataWord, float]] = t[2][TriStateInverter][j]
+            r: list[tuple[DataWord, float]] = [a[i] for i in range(len(a)) if i == 0 or a[i][0] != a[i - 1][0]]
+            assert len(po.data) == len(r)
+            for o, q in zip(po.data, r):
+                assert o[0] == q[0]
+                assert abs(o[1] - q[1]) <= _EPS
