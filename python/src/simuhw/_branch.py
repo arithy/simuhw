@@ -24,7 +24,7 @@ from typing import cast
 from collections.abc import Iterable
 from functools import reduce
 
-from ._word import DataWord, Unknown
+from ._word import DataWord, Unknown, HighZ
 from ._base import InputPort, OutputPort, Device, combine_bits, extract_bits
 
 
@@ -345,7 +345,12 @@ class DataRetainingDemultiplexer(Demultiplexer):
 
 
 class Distributor(Device):
-    """A distributor."""
+    """A distributor.
+
+    This device forwards the input data to multiple output ports.
+    Its behavior is that of directly connected multiple output wires.
+
+    """
 
     def __init__(self, width: int, noutputs: int) -> None:
         """Creates a distributor.
@@ -359,7 +364,7 @@ class Distributor(Device):
         self._width: int = width
         """The data word width in bits."""
         self._port_i: InputPort = InputPort(width)
-        """The input port for the data word."""
+        """The input port."""
         self._ports_o: tuple[OutputPort, ...] = tuple(OutputPort(width) for _ in range(noutputs))
         """The output ports."""
 
@@ -370,7 +375,7 @@ class Distributor(Device):
 
     @property
     def port_i(self) -> InputPort:
-        """The input port for the data word."""
+        """The input port."""
         return self._port_i
 
     @property
@@ -401,4 +406,7 @@ class Distributor(Device):
             for p in self._ports_o:
                 p.post((self._port_i.data[0], self._time))
             self._set_inputs_unchanged(ports_i)
+        elif time is None and not self._port_i.connected:  # if the input port is dangling
+            for p in self._ports_o:
+                p.post((HighZ, self._time))
         return (ports_i, None)

@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 from simuhw import (
-    DataWord, Unknown, Source, Drain,
+    DataWord, HighZ, Unknown, Source, Drain,
     DataCombiner, DataSplitter, Multiplexer, Demultiplexer, DataRetainingDemultiplexer, Distributor,
     ChannelProbe, Simulator
 )
@@ -276,17 +276,31 @@ def test_Distributor() -> None:
             ]
         )
     ]
-    for t in test_data:
+    for t in test_data:  # dangling input case
         n: int = len(t[2])
         po: list[ChannelProbe] = [ChannelProbe(f'out{i}', t[0]) for i in range(n)]
-        ti: Source = Source(t[0], t[1])
         to: list[Drain] = [Drain(t[0]) for _ in range(n)]
         dev: Distributor = Distributor(t[0], n)
+        for i in range(n):
+            dev.ports_o[i].connect(to[i].port_i)
+            dev.ports_o[i].add_probe(po[i])
+        sim: Simulator = Simulator([*to, dev])
+        sim.start(show_time=True)
+        for p in po:
+            assert len(p.data) == 1
+            assert p.data[0][0] == HighZ
+            assert p.data[0][1] == 0.0
+    for t in test_data:
+        n: int = len(t[2])  # type: ignore[no-redef]
+        po: list[ChannelProbe] = [ChannelProbe(f'out{i}', t[0]) for i in range(n)]  # type: ignore[no-redef]
+        ti: Source = Source(t[0], t[1])
+        to: list[Drain] = [Drain(t[0]) for _ in range(n)]  # type: ignore[no-redef]
+        dev: Distributor = Distributor(t[0], n)  # type: ignore[no-redef]
         ti.port_o.connect(dev.port_i)
         for i in range(n):
             dev.ports_o[i].connect(to[i].port_i)
             dev.ports_o[i].add_probe(po[i])
-        sim: Simulator = Simulator([ti, *to, dev])
+        sim: Simulator = Simulator([ti, *to, dev])  # type: ignore[no-redef]
         sim.start(show_time=True)
         for p, r in zip(po, t[2]):
             assert len(p.data) == len(r)

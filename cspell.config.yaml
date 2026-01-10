@@ -42,6 +42,7 @@ words:
   - PYROOTDIR
   - pytest
   - qcycle
+  - redef
   - riscv
   - setuptools
   - sigstore
