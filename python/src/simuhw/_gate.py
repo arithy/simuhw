@@ -20,8 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from typing import cast
 from functools import reduce
 
+from ._word import Unknown
 from ._base import InputPort
 from ._operator import Operator, UnaryOperator
 
@@ -51,11 +53,11 @@ class BufferGate(UnaryOperator):
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
             self._port_o.post((
-                self._ports_i[0].data[0],
+                Unknown if not isinstance(self._ports_i[0].data[0], bytes) else self._ports_i[0].data[0],
                 self._time
             ))
             self._set_inputs_unchanged(self._ports_i)
-        return (list(self._ports_i), None)
+        return ([*self._ports_i], None)
 
 
 class NOTGate(UnaryOperator):
@@ -83,13 +85,13 @@ class NOTGate(UnaryOperator):
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
             self._port_o.post((
-                None if self._ports_i[0].data[0] is None else (
+                Unknown if not isinstance(self._ports_i[0].data[0], bytes) else (
                     ~int.from_bytes(self._ports_i[0].data[0]) & self._mask
                 ).to_bytes(self._nbytes),
                 self._time
             ))
             self._set_inputs_unchanged(self._ports_i)
-        return (list(self._ports_i), None)
+        return ([*self._ports_i], None)
 
 
 class ANDGate(Operator):
@@ -118,13 +120,13 @@ class ANDGate(Operator):
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
             self._port_o.post((
-                None if any((p.data[0] is None for p in self._ports_i)) else (
-                    reduce(lambda x, y: x & y, (int.from_bytes(p.data[0]) for p in self._ports_i), self._mask)  # type: ignore
+                Unknown if any((not isinstance(p.data[0], bytes) for p in self._ports_i)) else (
+                    reduce(lambda x, y: x & y, (int.from_bytes(cast(bytes, p.data[0])) for p in self._ports_i), self._mask)
                 ).to_bytes(self._nbytes),
                 self._time
             ))
             self._set_inputs_unchanged(self._ports_i)
-        return (list(self._ports_i), None)
+        return ([*self._ports_i], None)
 
 
 class ORGate(Operator):
@@ -153,13 +155,13 @@ class ORGate(Operator):
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
             self._port_o.post((
-                None if any((p.data[0] is None for p in self._ports_i)) else (
-                    reduce(lambda x, y: x | y, (int.from_bytes(p.data[0]) for p in self._ports_i), 0)  # type: ignore
+                Unknown if any((not isinstance(p.data[0], bytes) for p in self._ports_i)) else (
+                    reduce(lambda x, y: x | y, (int.from_bytes(cast(bytes, p.data[0])) for p in self._ports_i), 0)
                 ).to_bytes(self._nbytes),
                 self._time
             ))
             self._set_inputs_unchanged(self._ports_i)
-        return (list(self._ports_i), None)
+        return ([*self._ports_i], None)
 
 
 class XORGate(Operator):
@@ -188,13 +190,13 @@ class XORGate(Operator):
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
             self._port_o.post((
-                None if any((p.data[0] is None for p in self._ports_i)) else (
-                    reduce(lambda x, y: x ^ y, (int.from_bytes(p.data[0]) for p in self._ports_i), 0)  # type: ignore
+                Unknown if any((not isinstance(p.data[0], bytes) for p in self._ports_i)) else (
+                    reduce(lambda x, y: x ^ y, (int.from_bytes(cast(bytes, p.data[0])) for p in self._ports_i), 0)
                 ).to_bytes(self._nbytes),
                 self._time
             ))
             self._set_inputs_unchanged(self._ports_i)
-        return (list(self._ports_i), None)
+        return ([*self._ports_i], None)
 
 
 class NANDGate(Operator):
@@ -223,13 +225,13 @@ class NANDGate(Operator):
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
             self._port_o.post((
-                None if any((p.data[0] is None for p in self._ports_i)) else (
-                    ~reduce(lambda x, y: x & y, (int.from_bytes(p.data[0]) for p in self._ports_i), self._mask) & self._mask  # type: ignore
+                Unknown if any((not isinstance(p.data[0], bytes) for p in self._ports_i)) else (
+                    ~reduce(lambda x, y: x & y, (int.from_bytes(cast(bytes, p.data[0])) for p in self._ports_i), self._mask) & self._mask
                 ).to_bytes(self._nbytes),
                 self._time
             ))
             self._set_inputs_unchanged(self._ports_i)
-        return (list(self._ports_i), None)
+        return ([*self._ports_i], None)
 
 
 class NORGate(Operator):
@@ -258,13 +260,13 @@ class NORGate(Operator):
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
             self._port_o.post((
-                None if any((p.data[0] is None for p in self._ports_i)) else (
-                    ~reduce(lambda x, y: x | y, (int.from_bytes(p.data[0]) for p in self._ports_i), 0) & self._mask  # type: ignore
+                Unknown if any((not isinstance(p.data[0], bytes) for p in self._ports_i)) else (
+                    ~reduce(lambda x, y: x | y, (int.from_bytes(cast(bytes, p.data[0])) for p in self._ports_i), 0) & self._mask
                 ).to_bytes(self._nbytes),
                 self._time
             ))
             self._set_inputs_unchanged(self._ports_i)
-        return (list(self._ports_i), None)
+        return ([*self._ports_i], None)
 
 
 class XNORGate(Operator):
@@ -293,10 +295,10 @@ class XNORGate(Operator):
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
             self._port_o.post((
-                None if any((p.data[0] is None for p in self._ports_i)) else (
-                    ~reduce(lambda x, y: x ^ y, (int.from_bytes(p.data[0]) for p in self._ports_i), 0) & self._mask  # type: ignore
+                Unknown if any((not isinstance(p.data[0], bytes) for p in self._ports_i)) else (
+                    ~reduce(lambda x, y: x ^ y, (int.from_bytes(cast(bytes, p.data[0])) for p in self._ports_i), 0) & self._mask
                 ).to_bytes(self._nbytes),
                 self._time
             ))
             self._set_inputs_unchanged(self._ports_i)
-        return (list(self._ports_i), None)
+        return ([*self._ports_i], None)

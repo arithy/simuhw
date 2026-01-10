@@ -1,6 +1,6 @@
 # SimuHW: A behavioral hardware simulator provided as a Python module.
 #
-# Copyright (c) 2024-2025 Arihiro Yoshida. All rights reserved.
+# Copyright (c) 2024-2026 Arihiro Yoshida. All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,29 +20,32 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from typing import cast
+
 from simuhw import (
-    Source, Drain, Subtractor, HalfSubtractor, FullSubtractor, SIMD_Subtractor,
+    DataWord, Unknown, Source, Drain,
+    Subtractor, HalfSubtractor, FullSubtractor, SIMD_Subtractor,
     ChannelProbe, Simulator
 )
 
 _EPS: float = 1e-18
 
 
-_test_data: list[tuple[int, list[list[list[tuple[bytes | None, float]]]]]] = [
+_test_data: list[tuple[int, list[list[list[tuple[DataWord, float]]]]]] = [
     (
         1,
         [
             [
-                [(b'\x00', 1e-9), (b'\x01', 4e-9), (None, 7e-9)],
-                [(b'\x00', 2e-9), (b'\x01', 3e-9), (None, 5e-9), (b'\x00', 6e-9), (b'\x01', 8e-9), (None, 9e-9)]
+                [(b'\x00', 1e-9), (b'\x01', 4e-9), (Unknown, 7e-9)],
+                [(b'\x00', 2e-9), (b'\x01', 3e-9), (Unknown, 5e-9), (b'\x00', 6e-9), (b'\x01', 8e-9), (Unknown, 9e-9)]
             ],
             [
-                [(b'\x00', 2e-9), (b'\x01', 3e-9), (b'\x00', 4e-9), (None, 5e-9), (b'\x01', 6e-9), (None, 7e-9)],
-                [(b'\x00', 2e-9), (b'\x01', 3e-9), (b'\x00', 4e-9), (None, 5e-9), (b'\x00', 6e-9), (None, 7e-9)]
+                [(b'\x00', 2e-9), (b'\x01', 3e-9), (b'\x00', 4e-9), (Unknown, 5e-9), (b'\x01', 6e-9), (Unknown, 7e-9)],
+                [(b'\x00', 2e-9), (b'\x01', 3e-9), (b'\x00', 4e-9), (Unknown, 5e-9), (b'\x00', 6e-9), (Unknown, 7e-9)]
             ],
             [
-                [(b'\x01', 2e-9), (b'\x00', 3e-9), (b'\x01', 4e-9), (None, 5e-9), (b'\x00', 6e-9), (None, 7e-9)],
-                [(b'\x01', 2e-9), (None, 5e-9), (b'\x00', 6e-9), (None, 7e-9)]
+                [(b'\x01', 2e-9), (b'\x00', 3e-9), (b'\x01', 4e-9), (Unknown, 5e-9), (b'\x00', 6e-9), (Unknown, 7e-9)],
+                [(b'\x01', 2e-9), (Unknown, 5e-9), (b'\x00', 6e-9), (Unknown, 7e-9)]
             ],
             [
                 [], []
@@ -54,33 +57,33 @@ _test_data: list[tuple[int, list[list[list[tuple[bytes | None, float]]]]]] = [
         [
             [
                 [
-                    (b'\x01', 1e-9), (b'\x02', 5e-9), (b'\xfe', 9e-9), (None, 13e-9)
+                    (b'\x01', 1e-9), (b'\x02', 5e-9), (b'\xfe', 9e-9), (Unknown, 13e-9)
                 ],
                 [
                     (b'\x01', 2e-9), (b'\x02', 3e-9), (b'\xfe', 4e-9),
-                    (None, 6e-9), (b'\x01', 7e-9), (b'\x02', 8e-9),
-                    (b'\xfe', 10e-9), (b'\x01', 11e-9), (None, 12e-9)
+                    (Unknown, 6e-9), (b'\x01', 7e-9), (b'\x02', 8e-9),
+                    (b'\xfe', 10e-9), (b'\x01', 11e-9), (Unknown, 12e-9)
                 ]
             ],
             [
                 [
                     (b'\x00', 2e-9), (b'\xff', 3e-9), (b'\x03', 4e-9), (b'\x04', 5e-9),
-                    (None, 6e-9), (b'\x01', 7e-9), (b'\x00', 8e-9), (b'\xfc', 9e-9),
-                    (b'\x00', 10e-9), (b'\xfd', 11e-9), (None, 12e-9)
+                    (Unknown, 6e-9), (b'\x01', 7e-9), (b'\x00', 8e-9), (b'\xfc', 9e-9),
+                    (b'\x00', 10e-9), (b'\xfd', 11e-9), (Unknown, 12e-9)
                 ],
                 [
-                    (b'\x00', 2e-9), (b'\x01', 3e-9), (None, 6e-9), (b'\x00', 7e-9), (None, 12e-9)
+                    (b'\x00', 2e-9), (b'\x01', 3e-9), (Unknown, 6e-9), (b'\x00', 7e-9), (Unknown, 12e-9)
                 ]
             ],
             [
                 [
                     (b'\xff', 2e-9), (b'\xfe', 3e-9), (b'\x02', 4e-9), (b'\x03', 5e-9),
-                    (None, 6e-9), (b'\x00', 7e-9), (b'\xff', 8e-9), (b'\xfb', 9e-9),
-                    (b'\xff', 10e-9), (b'\xfc', 11e-9), (None, 12e-9)
+                    (Unknown, 6e-9), (b'\x00', 7e-9), (b'\xff', 8e-9), (b'\xfb', 9e-9),
+                    (b'\xff', 10e-9), (b'\xfc', 11e-9), (Unknown, 12e-9)
                 ],
                 [
-                    (b'\x01', 2e-9), (None, 6e-9), (b'\x00', 7e-9), (b'\x01', 8e-9),
-                    (b'\x00', 9e-9), (b'\x01', 10e-9), (b'\x00', 11e-9), (None, 12e-9)
+                    (b'\x01', 2e-9), (Unknown, 6e-9), (b'\x00', 7e-9), (b'\x01', 8e-9),
+                    (b'\x00', 9e-9), (b'\x01', 10e-9), (b'\x00', 11e-9), (Unknown, 12e-9)
                 ]
             ],
             [
@@ -93,34 +96,34 @@ _test_data: list[tuple[int, list[list[list[tuple[bytes | None, float]]]]]] = [
         [
             [
                 [
-                    (b'\x00\x02\x00\x00\x00', 1e-9), (b'\x00\x04\x00\x00\x00', 5e-9), (b'\x01\xfc\x00\x00\x00', 9e-9), (None, 13e-9)
+                    (b'\x00\x02\x00\x00\x00', 1e-9), (b'\x00\x04\x00\x00\x00', 5e-9), (b'\x01\xfc\x00\x00\x00', 9e-9), (Unknown, 13e-9)
                 ],
                 [
                     (b'\x00\x03\x00\x00\x00', 2e-9), (b'\x00\x05\x00\x00\x00', 3e-9), (b'\x01\xfd\x00\x00\x00', 4e-9),
-                    (None, 6e-9), (b'\x00\x03\x00\x00\x00', 7e-9), (b'\x00\x05\x00\x00\x00', 8e-9),
-                    (b'\x01\xfd\x00\x00\x00', 10e-9), (b'\x00\x03\x00\x00\x00', 11e-9), (None, 12e-9)
+                    (Unknown, 6e-9), (b'\x00\x03\x00\x00\x00', 7e-9), (b'\x00\x05\x00\x00\x00', 8e-9),
+                    (b'\x01\xfd\x00\x00\x00', 10e-9), (b'\x00\x03\x00\x00\x00', 11e-9), (Unknown, 12e-9)
                 ]
             ],
             [
                 [
                     (b'\x01\xff\x00\x00\x00', 2e-9), (b'\x01\xfd\x00\x00\x00', 3e-9), (b'\x00\x05\x00\x00\x00', 4e-9), (b'\x00\x07\x00\x00\x00', 5e-9),
-                    (None, 6e-9), (b'\x00\x01\x00\x00\x00', 7e-9), (b'\x01\xff\x00\x00\x00', 8e-9), (b'\x01\xf7\x00\x00\x00', 9e-9),
-                    (b'\x01\xff\x00\x00\x00', 10e-9), (b'\x01\xf9\x00\x00\x00', 11e-9), (None, 12e-9)
+                    (Unknown, 6e-9), (b'\x00\x01\x00\x00\x00', 7e-9), (b'\x01\xff\x00\x00\x00', 8e-9), (b'\x01\xf7\x00\x00\x00', 9e-9),
+                    (b'\x01\xff\x00\x00\x00', 10e-9), (b'\x01\xf9\x00\x00\x00', 11e-9), (Unknown, 12e-9)
                 ],
                 [
-                    (b'\x01', 2e-9), (None, 6e-9), (b'\x00', 7e-9), (b'\x01', 8e-9),
-                    (b'\x00', 9e-9), (b'\x01', 10e-9), (b'\x00', 11e-9), (None, 12e-9)
+                    (b'\x01', 2e-9), (Unknown, 6e-9), (b'\x00', 7e-9), (b'\x01', 8e-9),
+                    (b'\x00', 9e-9), (b'\x01', 10e-9), (b'\x00', 11e-9), (Unknown, 12e-9)
                 ]
             ],
             [
                 [
                     (b'\x01\xfe\xff\xff\xff', 2e-9), (b'\x01\xfc\xff\xff\xff', 3e-9), (b'\x00\x04\xff\xff\xff', 4e-9), (b'\x00\x06\xff\xff\xff', 5e-9),
-                    (None, 6e-9), (b'\x00\x00\xff\xff\xff', 7e-9), (b'\x01\xfe\xff\xff\xff', 8e-9), (b'\x01\xf6\xff\xff\xff', 9e-9),
-                    (b'\x01\xfe\xff\xff\xff', 10e-9), (b'\x01\xf8\xff\xff\xff', 11e-9), (None, 12e-9)
+                    (Unknown, 6e-9), (b'\x00\x00\xff\xff\xff', 7e-9), (b'\x01\xfe\xff\xff\xff', 8e-9), (b'\x01\xf6\xff\xff\xff', 9e-9),
+                    (b'\x01\xfe\xff\xff\xff', 10e-9), (b'\x01\xf8\xff\xff\xff', 11e-9), (Unknown, 12e-9)
                 ],
                 [
-                    (b'\x01', 2e-9), (None, 6e-9), (b'\x00', 7e-9), (b'\x01', 8e-9),
-                    (b'\x00', 9e-9), (b'\x01', 10e-9), (b'\x00', 11e-9), (None, 12e-9)
+                    (b'\x01', 2e-9), (Unknown, 6e-9), (b'\x00', 7e-9), (b'\x01', 8e-9),
+                    (b'\x00', 9e-9), (b'\x01', 10e-9), (b'\x00', 11e-9), (Unknown, 12e-9)
                 ]
             ],
             [
@@ -144,7 +147,7 @@ def test_Subtractor() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[bytes | None, float]] = t[1][1][0]
+        r: list[tuple[DataWord, float]] = t[1][1][0]
         assert len(po.data) == len(r)
         for o, q in zip(po.data, r):
             assert o[0] == q[0]
@@ -176,9 +179,9 @@ def test_HalfSubtractor() -> None:
 def test_FullSubtractor() -> None:
     for t in _test_data:
         w: int = t[0]
-        for j, ci in enumerate([b'\x00', b'\x01', None]):
+        for j, ci in enumerate([b'\x00', b'\x01', Unknown]):
             po: list[ChannelProbe] = [ChannelProbe('out', w), ChannelProbe('carry', 1)]
-            ti: list[Source] = [Source(u, d) for u, d in zip([w, w, 1], [*t[1][0], [(ci, 0.0)]])]
+            ti: list[Source] = [Source(u, d) for u, d in zip([w, w, 1], [*t[1][0], cast(list[tuple[DataWord, float]], [(ci, 0.0)])])]
             to: list[Drain] = [Drain(w), Drain(1)]
             dev: FullSubtractor = FullSubtractor(w)
             dev.port_o.connect(to[0].port_i)
@@ -198,24 +201,24 @@ def test_FullSubtractor() -> None:
 
 
 def test_SIMD_Subtractor() -> None:
-    test_data: list[tuple[list[int], list[int], list[list[tuple[bytes | None, float]]], list[tuple[bytes | None, float]]]] = [
+    test_data: list[tuple[list[int], list[int], list[list[tuple[DataWord, float]]], list[tuple[DataWord, float]]]] = [
         (
             [32, 2],
             [4, 8, 16, 32],
             [
                 [
-                    (b'\xff\xfe\x02\x01', 5e-9), (None, 15e-9)
+                    (b'\xff\xfe\x02\x01', 5e-9), (Unknown, 15e-9)
                 ],
                 [
                     (b'\x02\x01\xff\xfd', 10e-9)
                 ],
                 [
-                    ([None, b'\x00', b'\x01', b'\x02', b'\x03'][i % 5], 1e-9 * i) for i in range(20)
+                    (cast(list[DataWord], [Unknown, b'\x00', b'\x01', b'\x02', b'\x03'])[i % 5], 1e-9 * i) for i in range(20)
                 ]
             ],
             [
                 (b'\xfd\xfd\x13\x14', 11e-9), (b'\xfd\xfd\x03\x04', 12e-9), (b'\xfd\xfd\x02\x04', 13e-9), (b'\xfd\xfc\x02\x04', 14e-9),
-                (None, 15e-9)
+                (Unknown, 15e-9)
             ]
         )
     ]
@@ -233,7 +236,7 @@ def test_SIMD_Subtractor() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[bytes | None, float]] = t[3]
+        r: list[tuple[DataWord, float]] = t[3]
         assert len(po.data) == len(r)
         for o, q in zip(po.data, r):
             assert o[0] == q[0]

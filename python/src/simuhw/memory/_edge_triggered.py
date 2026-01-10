@@ -1,6 +1,6 @@
 # SimuHW: A behavioral hardware simulator provided as a Python module.
 #
-# Copyright (c) 2024-2025 Arihiro Yoshida. All rights reserved.
+# Copyright (c) 2024-2026 Arihiro Yoshida. All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,6 +20,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from typing import cast
+
+from .._word import DataWord, Unknown
 from .._base import InputPort
 from ._base import Memory
 from .model._base import MemorizingModel
@@ -53,7 +56,7 @@ class EdgeTriggeredMemory(Memory):
         """The clock port."""
         self._port_e: InputPort = InputPort(1)
         """The enable port."""
-        self._prev_c: bytes | None = None
+        self._prev_c: DataWord = Unknown
         """The previous clock data word."""
 
     @property
@@ -94,21 +97,22 @@ class EdgeTriggeredMemory(Memory):
 
         """
         ports_i: list[InputPort] = [self._port_c, self._port_e, self._port_a, self._port_i]
-        addr: bytes | None = self._port_a.data[0]
-        clock: bytes | None = self._port_c.data[0]
-        enable: bytes | None = self._port_e.data[0]
+        addr: DataWord = self._port_a.data[0]
+        clock: DataWord = self._port_c.data[0]
+        enable: DataWord = self._port_e.data[0]
         if time is None:
             self._initialize_probes()
         if self._update_time_and_check_inputs(time, ports_i):
-            if clock is None or enable is None or addr is None:
-                self._port_o.post((None, self._time))
+            if any((not isinstance(d, bytes) for d in [clock, enable, addr])):
+                self._port_o.post((Unknown, self._time))
             elif (
-                self._prev_c is not None and
-                int.from_bytes(clock) - int.from_bytes(self._prev_c) == (-1 if self._neg_edged else 1)
+                isinstance(self._prev_c, bytes) and
+                int.from_bytes(cast(bytes, clock)) - int.from_bytes(self._prev_c) == (-1 if self._neg_edged else 1)
             ):
+                assert isinstance(enable, bytes)
                 if int.from_bytes(enable) == (0 if self._neg_enable else 1):
                     self._model.write(addr, self._port_i.data[0])
-                d: tuple[bytes | None, float] = (self._model.read(addr), self._time)
+                d: tuple[DataWord, float] = (self._model.read(addr), self._time)
                 self._port_o.post(d)
                 if int.from_bytes(enable) == (0 if self._neg_enable else 1):
                     self._update_probes(addr, d)

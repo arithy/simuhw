@@ -1,6 +1,6 @@
 # SimuHW: A behavioral hardware simulator provided as a Python module.
 #
-# Copyright (c) 2024-2025 Arihiro Yoshida. All rights reserved.
+# Copyright (c) 2024-2026 Arihiro Yoshida. All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -23,12 +23,14 @@
 from abc import ABCMeta, abstractmethod
 from collections.abc import Sequence
 
+from ..._word import DataWord
+
 
 class ArbitrationPolicy(metaclass=ABCMeta):
     """The super class for all arbitration polices."""
 
     @abstractmethod
-    def select(self, targets: Sequence[tuple[bytes | None, float]]) -> int:
+    def select(self, targets: Sequence[tuple[DataWord, float]]) -> int:
         """Selects one from the given inputs.
 
         Args:

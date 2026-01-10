@@ -1,6 +1,6 @@
 # SimuHW: A behavioral hardware simulator provided as a Python module.
 #
-# Copyright (c) 2024-2025 Arihiro Yoshida. All rights reserved.
+# Copyright (c) 2024-2026 Arihiro Yoshida. All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,7 @@
 from abc import ABCMeta, abstractmethod
 from collections.abc import Iterable
 
+from ._word import DataWord, Unknown, HighZ
 from ._analyzer import ChannelProbe
 
 
@@ -86,7 +87,7 @@ class Port(metaclass=ABCMeta):
         """
         self._width: int = width
         """The data word width in bits."""
-        self._data: tuple[bytes | None, float] = (None, 0.0)
+        self._data: tuple[DataWord, float] = (Unknown, 0.0)
         """The data word with the arrival time in seconds."""
         self._probes: list[ChannelProbe] = []
         """The channel probes."""
@@ -97,13 +98,13 @@ class Port(metaclass=ABCMeta):
         return self._width
 
     @property
-    def data(self) -> tuple[bytes | None, float]:
+    def data(self) -> tuple[DataWord, float]:
         """The data word with the arrival time in seconds."""
         return self._data
 
     def reset(self) -> None:
         """Resets the states."""
-        self._data = (None, 0.0)
+        self._data = (Unknown, 0.0)
 
     def add_probe(self, probe: ChannelProbe) -> None:
         """Adds a channel probe.
@@ -181,7 +182,7 @@ class InputPort(Port):
         """Marks the data as unchanged."""
         self._changed = False
 
-    def post(self, data: tuple[bytes | None, float]) -> None:
+    def post(self, data: tuple[DataWord, float]) -> None:
         """Posts the data word to this port.
 
         Args:
@@ -239,7 +240,7 @@ class OutputPort(Port):
             self._peer = peer  # This is done first to avoid infinite recursive calls between InputPort.mark_as_connected() and OutputPort.connect().
             peer.mark_as_connected()
 
-    def post(self, data: tuple[bytes | None, float]) -> None:
+    def post(self, data: tuple[DataWord, float]) -> None:
         """Posts the data word to this port.
 
         Args:
@@ -299,7 +300,7 @@ class Device(metaclass=ABCMeta):
 class Source(Device):
     """A source device to emit data words."""
 
-    def __init__(self, width: int, data: Iterable[tuple[bytes | None, float]]) -> None:
+    def __init__(self, width: int, data: Iterable[tuple[DataWord, float]]) -> None:
         """Creates a source device.
 
         Args:
@@ -310,7 +311,7 @@ class Source(Device):
         super().__init__()
         self._width: int = width
         """The data word width in bits."""
-        self._data: list[tuple[bytes | None, float]] = sorted(list(iter(data)), key=lambda d: d[1])
+        self._data: list[tuple[DataWord, float]] = sorted([*data], key=lambda d: d[1])
         """The data words to be emitted."""
         self._port_o: OutputPort = OutputPort(width)
         """The output port."""
@@ -348,7 +349,7 @@ class Source(Device):
             self._index = 0
         self._update_time_and_check_inputs(time)
         while self._index < len(self._data):
-            d: tuple[bytes | None, float] = self._data[self._index]
+            d: tuple[DataWord, float] = self._data[self._index]
             if self._time < d[1]:
                 return ([], d[1])
             self._port_o.post(d)
@@ -392,7 +393,20 @@ class LogicUnknownSource(Source):
             width: The data word width in bits.
 
         """
-        super().__init__(width, [(None, 0.0)])
+        super().__init__(width, [(Unknown, 0.0)])
+
+
+class LogicHighZSource(Source):
+    """A source device to hold high impedance."""
+
+    def __init__(self, width: int) -> None:
+        """Creates a source device to hold high impedance.
+
+        Args:
+            width: The data word width in bits.
+
+        """
+        super().__init__(width, [(HighZ, 0.0)])
 
 
 class Drain(Device):

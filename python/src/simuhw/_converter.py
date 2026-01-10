@@ -20,6 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from ._word import Unknown
 from ._base import InputPort, to_signed_int
 from ._operator import UnaryOperator, SIMD_UnaryOperator
 
@@ -53,13 +54,13 @@ class IntegerConverter(UnaryOperator):
 
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
-            if self._ports_i[0].data[0] is None:
-                self._port_o.post((None, self._time))
+            if not isinstance(self._ports_i[0].data[0], bytes):
+                self._port_o.post((Unknown, self._time))
             else:
                 o: int = int.from_bytes(self._ports_i[0].data[0])
                 self._port_o.post(((o & self._mask).to_bytes(self._nbytes), self._time))
             self._set_inputs_unchanged(self._ports_i)
-        return (list(self._ports_i), None)
+        return ([*self._ports_i], None)
 
 
 class SignedIntegerConverter(IntegerConverter):
@@ -91,13 +92,13 @@ class SignedIntegerConverter(IntegerConverter):
 
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
-            if self._ports_i[0].data[0] is None:
-                self._port_o.post((None, self._time))
+            if not isinstance(self._ports_i[0].data[0], bytes):
+                self._port_o.post((Unknown, self._time))
             else:
                 o: int = to_signed_int(self._width_i, int.from_bytes(self._ports_i[0].data[0]))
                 self._port_o.post(((o & self._mask).to_bytes(self._nbytes), self._time))
             self._set_inputs_unchanged(self._ports_i)
-        return (list(self._ports_i), None)
+        return ([*self._ports_i], None)
 
 
 class SIMD_IntegerConverter(SIMD_UnaryOperator):
@@ -130,8 +131,8 @@ class SIMD_IntegerConverter(SIMD_UnaryOperator):
 
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
-            if self._ports_i[0].data[0] is None:
-                self._port_o.post((None, self._time))
+            if not isinstance(self._ports_i[0].data[0], bytes):
+                self._port_o.post((Unknown, self._time))
             else:
                 m: int = (1 << min(self._dsize_i[0], self._dsize_o[0])) - 1
                 v: int = int.from_bytes(self._ports_i[0].data[0])
@@ -143,7 +144,7 @@ class SIMD_IntegerConverter(SIMD_UnaryOperator):
                     o |= ((v >> i) & m) << j
                 self._port_o.post((o.to_bytes(self._nbytes), self._time))
             self._set_inputs_unchanged(self._ports_i)
-        return (list(self._ports_i), None)
+        return ([*self._ports_i], None)
 
 
 class SIMD_SignedIntegerConverter(SIMD_IntegerConverter):
@@ -176,8 +177,8 @@ class SIMD_SignedIntegerConverter(SIMD_IntegerConverter):
 
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
-            if self._ports_i[0].data[0] is None:
-                self._port_o.post((None, self._time))
+            if not isinstance(self._ports_i[0].data[0], bytes):
+                self._port_o.post((Unknown, self._time))
             else:
                 m: int = (1 << self._dsize_i[0]) - 1
                 n: int = (1 << self._dsize_o[0]) - 1
@@ -190,4 +191,4 @@ class SIMD_SignedIntegerConverter(SIMD_IntegerConverter):
                     o |= (to_signed_int(self._dsize_i[0], (v >> i) & m) & n) << j
                 self._port_o.post((o.to_bytes(self._nbytes), self._time))
             self._set_inputs_unchanged(self._ports_i)
-        return (list(self._ports_i), None)
+        return ([*self._ports_i], None)

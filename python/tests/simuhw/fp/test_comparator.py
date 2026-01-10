@@ -23,7 +23,7 @@
 from functools import reduce
 import math
 
-from simuhw import Source, Drain, ChannelProbe, Simulator
+from simuhw import DataWord, Source, Drain, ChannelProbe, Simulator
 import simuhw.fp as hwf
 
 from .skipif import skipif_unavailable
@@ -53,7 +53,7 @@ def test_FPComparator() -> None:
     sf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
     sf.set_rounding_mode(hwf.RoundingMode.NEAR_EVEN)
     sf.set_exception_flags(0)
-    test_i: list[tuple[hwf.Float, list[int], list[list[tuple[bytes | None, float]]]]] = [
+    test_i: list[tuple[hwf.Float, list[int], list[list[tuple[DataWord, float]]]]] = [
         (
             hwf.Float16,
             [16, 16, 1, 3, 5],
@@ -147,7 +147,7 @@ def test_FPComparator() -> None:
             ]
         )
     ]
-    test_t: list[list[list[tuple[bytes | None, float]]]] = [
+    test_t: list[list[list[tuple[DataWord, float]]]] = [
         [
             [
                 (
@@ -245,7 +245,7 @@ def test_FPComparator() -> None:
             ]
         ]
     ]
-    test_o: list[list[list[tuple[bytes | None, float]]]] = [
+    test_o: list[list[list[tuple[DataWord, float]]]] = [
         [
             [
                 *(
@@ -284,7 +284,7 @@ def test_SIMD_FPComparator() -> None:
     sf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
     sf.set_rounding_mode(hwf.RoundingMode.NEAR_EVEN)
     sf.set_exception_flags(0)
-    test_i: list[tuple[list[int], list[hwf.Float], list[list[tuple[bytes | None, float]]]]] = [
+    test_i: list[tuple[list[int], list[hwf.Float], list[list[tuple[DataWord, float]]]]] = [
         (
             [256, 256, 2, 1, 3, 5],
             [hwf.Float16, hwf.Float32, hwf.Float64, hwf.Float128],
@@ -391,7 +391,7 @@ def test_SIMD_FPComparator() -> None:
             ]
         )
     ]
-    test_t: list[list[list[tuple[bytes | None, float]]]] = [
+    test_t: list[list[list[tuple[DataWord, float]]]] = [
         [
             [
                 *(
@@ -519,7 +519,7 @@ def test_SIMD_FPComparator() -> None:
             ]
         ]
     ]
-    test_o: list[list[list[tuple[bytes | None, float]]]] = [
+    test_o: list[list[list[tuple[DataWord, float]]]] = [
         [
             [
                 *(

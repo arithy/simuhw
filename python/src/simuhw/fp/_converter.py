@@ -22,6 +22,7 @@
 
 import softfloatpy as sf
 
+from .._word import Unknown
 from .._base import InputPort, to_signed_int
 from .._operator import UnaryOperator, SIMD_UnaryOperator
 from ._operator import Float, Float16, Float32, Float64, Float128, FPState
@@ -74,8 +75,8 @@ class FPToIntegerConverter(UnaryOperator, FPState):
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
             self.apply_states()
-            if self._ports_i[0].data[0] is None:
-                self._port_o.post((None, self._time))
+            if not isinstance(self._ports_i[0].data[0], bytes):
+                self._port_o.post((Unknown, self._time))
             else:
                 o: int = self._dtype_i.from_bytes(self._ports_i[0].data[0]).to_ui64(sf.get_rounding_mode()).to_int()
                 e: int = sf.get_exception_flags()
@@ -85,9 +86,9 @@ class FPToIntegerConverter(UnaryOperator, FPState):
                 ):
                     sf.set_exception_flags(e | sf.ExceptionFlag.INVALID)
                 self._port_o.post(((o & self._mask).to_bytes(self._nbytes), self._time))
-            self.restore_states(self._time, self._port_o.data[0] is None)
+            self.restore_states(self._time, not isinstance(self._port_o.data[0], bytes))
             self._set_inputs_unchanged(self._ports_i)
-        return (list(self._ports_i), None)
+        return ([*self._ports_i], None)
 
 
 class FPFromIntegerConverter(UnaryOperator, FPState):
@@ -131,16 +132,16 @@ class FPFromIntegerConverter(UnaryOperator, FPState):
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
             self.apply_states()
-            if self._ports_i[0].data[0] is None:
-                self._port_o.post((None, self._time))
+            if not isinstance(self._ports_i[0].data[0], bytes):
+                self._port_o.post((Unknown, self._time))
             else:
                 self._port_o.post((
                     self._dtype_o.from_ui64(sf.UInt64.from_int(int.from_bytes(self._ports_i[0].data[0]))).to_bytes(),
                     self._time
                 ))
-            self.restore_states(self._time, self._port_o.data[0] is None)
+            self.restore_states(self._time, not isinstance(self._port_o.data[0], bytes))
             self._set_inputs_unchanged(self._ports_i)
-        return (list(self._ports_i), None)
+        return ([*self._ports_i], None)
 
 
 class FPToSignedIntegerConverter(FPToIntegerConverter):
@@ -176,8 +177,8 @@ class FPToSignedIntegerConverter(FPToIntegerConverter):
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
             self.apply_states()
-            if self._ports_i[0].data[0] is None:
-                self._port_o.post((None, self._time))
+            if not isinstance(self._ports_i[0].data[0], bytes):
+                self._port_o.post((Unknown, self._time))
             else:
                 o: int = self._dtype_i.from_bytes(self._ports_i[0].data[0]).to_i64(sf.get_rounding_mode()).to_int()
                 e: int = sf.get_exception_flags()
@@ -188,9 +189,9 @@ class FPToSignedIntegerConverter(FPToIntegerConverter):
                 ):
                     sf.set_exception_flags(e | sf.ExceptionFlag.INVALID)
                 self._port_o.post(((o & self._mask).to_bytes(self._nbytes), self._time))
-            self.restore_states(self._time, self._port_o.data[0] is None)
+            self.restore_states(self._time, not isinstance(self._port_o.data[0], bytes))
             self._set_inputs_unchanged(self._ports_i)
-        return (list(self._ports_i), None)
+        return ([*self._ports_i], None)
 
 
 class FPFromSignedIntegerConverter(FPFromIntegerConverter):
@@ -226,8 +227,8 @@ class FPFromSignedIntegerConverter(FPFromIntegerConverter):
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
             self.apply_states()
-            if self._ports_i[0].data[0] is None:
-                self._port_o.post((None, self._time))
+            if not isinstance(self._ports_i[0].data[0], bytes):
+                self._port_o.post((Unknown, self._time))
             else:
                 self._port_o.post((
                     self._dtype_o.from_i64(sf.Int64.from_int(
@@ -235,9 +236,9 @@ class FPFromSignedIntegerConverter(FPFromIntegerConverter):
                     )).to_bytes(),
                     self._time
                 ))
-            self.restore_states(self._time, self._port_o.data[0] is None)
+            self.restore_states(self._time, not isinstance(self._port_o.data[0], bytes))
             self._set_inputs_unchanged(self._ports_i)
-        return (list(self._ports_i), None)
+        return ([*self._ports_i], None)
 
 
 class FPConverter(UnaryOperator, FPState):
@@ -283,8 +284,8 @@ class FPConverter(UnaryOperator, FPState):
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
             self.apply_states()
-            if self._ports_i[0].data[0] is None:
-                self._port_o.post((None, self._time))
+            if not isinstance(self._ports_i[0].data[0], bytes):
+                self._port_o.post((Unknown, self._time))
             else:
                 assert self._dtype_i in [Float16, Float32, Float64, Float128]
                 self._port_o.post((
@@ -293,12 +294,12 @@ class FPConverter(UnaryOperator, FPState):
                         self._dtype_o.from_f32 if self._dtype_i == Float32 else
                         self._dtype_o.from_f64 if self._dtype_i == Float64 else
                         self._dtype_o.from_f128
-                    )(self._dtype_i.from_bytes(self._ports_i[0].data[0])).to_bytes(),  # type: ignore
+                    )(self._dtype_i.from_bytes(self._ports_i[0].data[0])).to_bytes(),  # type: ignore[arg-type]
                     self._time
                 ))
-            self.restore_states(self._time, self._port_o.data[0] is None)
+            self.restore_states(self._time, not isinstance(self._port_o.data[0], bytes))
             self._set_inputs_unchanged(self._ports_i)
-        return (list(self._ports_i), None)
+        return ([*self._ports_i], None)
 
 
 class SIMD_FPToIntegerConverter(SIMD_UnaryOperator, FPState):
@@ -343,8 +344,8 @@ class SIMD_FPToIntegerConverter(SIMD_UnaryOperator, FPState):
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
             self.apply_states()
-            if self._ports_i[0].data[0] is None:
-                self._port_o.post((None, self._time))
+            if not isinstance(self._ports_i[0].data[0], bytes):
+                self._port_o.post((Unknown, self._time))
             else:
                 s: int = self._dsize_i[0]
                 t: int = self._dsize_o[0]
@@ -365,9 +366,9 @@ class SIMD_FPToIntegerConverter(SIMD_UnaryOperator, FPState):
                         sf.set_exception_flags(e | sf.ExceptionFlag.INVALID)
                     o |= (u & n) << j
                 self._port_o.post((o.to_bytes(self._nbytes), self._time))
-            self.restore_states(self._time, self._port_o.data[0] is None)
+            self.restore_states(self._time, not isinstance(self._port_o.data[0], bytes))
             self._set_inputs_unchanged(self._ports_i)
-        return (list(self._ports_i), None)
+        return ([*self._ports_i], None)
 
 
 class SIMD_FPFromIntegerConverter(SIMD_UnaryOperator, FPState):
@@ -412,8 +413,8 @@ class SIMD_FPFromIntegerConverter(SIMD_UnaryOperator, FPState):
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
             self.apply_states()
-            if self._ports_i[0].data[0] is None:
-                self._port_o.post((None, self._time))
+            if not isinstance(self._ports_i[0].data[0], bytes):
+                self._port_o.post((Unknown, self._time))
             else:
                 s: int = self._dsize_i[0]
                 m: int = (1 << s) - 1
@@ -422,9 +423,9 @@ class SIMD_FPFromIntegerConverter(SIMD_UnaryOperator, FPState):
                 for i in range(0, self._width_i, s):
                     o = self._dtype_o.from_ui64(sf.UInt64.from_int((v >> i) & m)).to_bytes() + o
                 self._port_o.post((o, self._time))
-            self.restore_states(self._time, self._port_o.data[0] is None)
+            self.restore_states(self._time, not isinstance(self._port_o.data[0], bytes))
             self._set_inputs_unchanged(self._ports_i)
-        return (list(self._ports_i), None)
+        return ([*self._ports_i], None)
 
 
 class SIMD_FPToSignedIntegerConverter(SIMD_FPToIntegerConverter):
@@ -461,8 +462,8 @@ class SIMD_FPToSignedIntegerConverter(SIMD_FPToIntegerConverter):
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
             self.apply_states()
-            if self._ports_i[0].data[0] is None:
-                self._port_o.post((None, self._time))
+            if not isinstance(self._ports_i[0].data[0], bytes):
+                self._port_o.post((Unknown, self._time))
             else:
                 s: int = self._dsize_i[0]
                 t: int = self._dsize_o[0]
@@ -484,9 +485,9 @@ class SIMD_FPToSignedIntegerConverter(SIMD_FPToIntegerConverter):
                         sf.set_exception_flags(e | sf.ExceptionFlag.INVALID)
                     o |= (u & n) << j
                 self._port_o.post((o.to_bytes(self._nbytes), self._time))
-            self.restore_states(self._time, self._port_o.data[0] is None)
+            self.restore_states(self._time, not isinstance(self._port_o.data[0], bytes))
             self._set_inputs_unchanged(self._ports_i)
-        return (list(self._ports_i), None)
+        return ([*self._ports_i], None)
 
 
 class SIMD_FPFromSignedIntegerConverter(SIMD_FPFromIntegerConverter):
@@ -523,8 +524,8 @@ class SIMD_FPFromSignedIntegerConverter(SIMD_FPFromIntegerConverter):
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
             self.apply_states()
-            if self._ports_i[0].data[0] is None:
-                self._port_o.post((None, self._time))
+            if not isinstance(self._ports_i[0].data[0], bytes):
+                self._port_o.post((Unknown, self._time))
             else:
                 s: int = self._dsize_i[0]
                 m: int = (1 << s) - 1
@@ -535,9 +536,9 @@ class SIMD_FPFromSignedIntegerConverter(SIMD_FPFromIntegerConverter):
                         to_signed_int(s, (v >> i) & m)
                     )).to_bytes() + o
                 self._port_o.post((o, self._time))
-            self.restore_states(self._time, self._port_o.data[0] is None)
+            self.restore_states(self._time, not isinstance(self._port_o.data[0], bytes))
             self._set_inputs_unchanged(self._ports_i)
-        return (list(self._ports_i), None)
+        return ([*self._ports_i], None)
 
 
 class SIMD_FPConverter(SIMD_UnaryOperator, FPState):
@@ -584,8 +585,8 @@ class SIMD_FPConverter(SIMD_UnaryOperator, FPState):
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
             self.apply_states()
-            if self._ports_i[0].data[0] is None:
-                self._port_o.post((None, self._time))
+            if not isinstance(self._ports_i[0].data[0], bytes):
+                self._port_o.post((Unknown, self._time))
             else:
                 assert self._dtype_i in [Float16, Float32, Float64, Float128]
                 s: int = self._dsize_i[0]
@@ -598,8 +599,8 @@ class SIMD_FPConverter(SIMD_UnaryOperator, FPState):
                         self._dtype_o.from_f32 if self._dtype_i == Float32 else
                         self._dtype_o.from_f64 if self._dtype_i == Float64 else
                         self._dtype_o.from_f128
-                    )(self._dtype_i.from_bytes(((v >> i) & m).to_bytes(self._dtype_i.size() >> 3))).to_bytes() + o  # type: ignore
+                    )(self._dtype_i.from_bytes(((v >> i) & m).to_bytes(self._dtype_i.size() >> 3))).to_bytes() + o  # type: ignore[arg-type]
                 self._port_o.post((o, self._time))
-            self.restore_states(self._time, self._port_o.data[0] is None)
+            self.restore_states(self._time, not isinstance(self._port_o.data[0], bytes))
             self._set_inputs_unchanged(self._ports_i)
-        return (list(self._ports_i), None)
+        return ([*self._ports_i], None)

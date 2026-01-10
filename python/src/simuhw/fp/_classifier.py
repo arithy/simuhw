@@ -20,8 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from typing import cast
 from collections.abc import Iterable
 
+from .._word import Unknown
 from .._base import InputPort
 from ._operator import Float, FPUnaryOperator, SIMD_FPUnaryOperator
 
@@ -62,10 +64,10 @@ class FPClassifier(FPUnaryOperator):
         ports_i: list[InputPort] = [*self._ports_i, self._port_ft, self._port_fr, self._port_fe_i]
         if self._update_time_and_check_inputs(time, ports_i):
             self.apply_states()
-            if any((p.data[0] is None for p in [*self._ports_i, self._port_ft, self._port_fr])):
-                self._port_o.post((None, self._time))
+            if any((not isinstance(p.data[0], bytes) for p in [*self._ports_i, self._port_ft, self._port_fr])):
+                self._port_o.post((Unknown, self._time))
             else:
-                assert self._ports_i[0].data[0] is not None
+                assert isinstance(self._ports_i[0].data[0], bytes)
                 v: bytes = self._ports_i[0].data[0]
                 self._port_o.post((
                     (
@@ -75,7 +77,7 @@ class FPClassifier(FPUnaryOperator):
                     ).to_bytes(self._width >> 3),
                     self._time
                 ))
-            self.restore_states(self._time, self._port_o.data[0] is None)
+            self.restore_states(self._time, not isinstance(self._port_o.data[0], bytes))
             self._set_inputs_unchanged(ports_i)
         return (ports_i, None)
 
@@ -121,13 +123,13 @@ class SIMD_FPClassifier(SIMD_FPUnaryOperator):
         if self._update_time_and_check_inputs(time, ports_i):
             self.apply_states()
             if (
-                any((p.data[0] is None for p in [*self._ports_i, self._port_s, self._port_ft, self._port_fr])) or
-                int.from_bytes(self._port_s.data[0]) >= len(self._dsize)  # type: ignore
+                any((not isinstance(p.data[0], bytes) for p in [*self._ports_i, self._port_s, self._port_ft, self._port_fr])) or
+                int.from_bytes(cast(bytes, self._port_s.data[0])) >= len(self._dsize)
             ):
-                self._port_o.post((None, self._time))
+                self._port_o.post((Unknown, self._time))
             else:
-                assert self._ports_i[0].data[0] is not None
-                assert self._port_s.data[0] is not None
+                assert isinstance(self._ports_i[0].data[0], bytes)
+                assert isinstance(self._port_s.data[0], bytes)
                 s: int = int.from_bytes(self._port_s.data[0])
                 w: int = self._dtype[s].size()
                 m: int = (1 << w) - 1
@@ -141,6 +143,6 @@ class SIMD_FPClassifier(SIMD_FPUnaryOperator):
                         3 if self._dtype[s].from_bytes(u).is_nan() else 0
                     ).to_bytes(w >> 3) + o
                 self._port_o.post((o, self._time))
-            self.restore_states(self._time, self._port_o.data[0] is None)
+            self.restore_states(self._time, not isinstance(self._port_o.data[0], bytes))
             self._set_inputs_unchanged(ports_i)
         return (ports_i, None)

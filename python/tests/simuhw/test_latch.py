@@ -1,6 +1,6 @@
 # SimuHW: A behavioral hardware simulator provided as a Python module.
 #
-# Copyright (c) 2024-2025 Arihiro Yoshida. All rights reserved.
+# Copyright (c) 2024-2026 Arihiro Yoshida. All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,39 +20,39 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simuhw import Source, Drain, DLatch, ChannelProbe, Simulator
+from simuhw import DataWord, Unknown, Source, Drain, DLatch, ChannelProbe, Simulator
 
 _EPS: float = 1e-18
 
 
 def test_DLatch() -> None:
-    test_data: list[tuple[tuple[int, bool], list[tuple[bytes | None, float]], list[tuple[bytes | None, float]], list[tuple[bytes | None, float]]]] = [
+    test_data: list[tuple[tuple[int, bool], list[tuple[DataWord, float]], list[tuple[DataWord, float]], list[tuple[DataWord, float]]]] = [
         (
             (8, False),
-            [(b'\x01', 3e-9), (b'\x00', 6e-9), (None, 9e-9), (b'\x00', 12e-9), (b'\x01', 15e-9)],
+            [(b'\x01', 3e-9), (b'\x00', 6e-9), (Unknown, 9e-9), (b'\x00', 12e-9), (b'\x01', 15e-9)],
             [
-                (b'\xc1', 1e-9), (None, 2e-9), (b'\xc2', 3e-9),
-                (b'\xc3', 4e-9), (None, 5e-9), (b'\xc4', 6e-9),
-                (b'\xc5', 7e-9), (None, 8e-9), (b'\xc6', 9e-9),
-                (b'\xc7', 10e-9), (None, 11e-9), (b'\xc8', 12e-9),
-                (b'\xc9', 13e-9), (None, 14e-9), (b'\xca', 15e-9)
+                (b'\xc1', 1e-9), (Unknown, 2e-9), (b'\xc2', 3e-9),
+                (b'\xc3', 4e-9), (Unknown, 5e-9), (b'\xc4', 6e-9),
+                (b'\xc5', 7e-9), (Unknown, 8e-9), (b'\xc6', 9e-9),
+                (b'\xc7', 10e-9), (Unknown, 11e-9), (b'\xc8', 12e-9),
+                (b'\xc9', 13e-9), (Unknown, 14e-9), (b'\xca', 15e-9)
             ],
             [
-                (b'\xc2', 3e-9), (b'\xc3', 4e-9), (None, 5e-9), (b'\xca', 15e-9)
+                (b'\xc2', 3e-9), (b'\xc3', 4e-9), (Unknown, 5e-9), (b'\xca', 15e-9)
             ]
         ),
         (
             (8, True),
-            [(b'\x00', 3e-9), (b'\x01', 6e-9), (None, 9e-9), (b'\x01', 12e-9), (b'\x00', 15e-9)],
+            [(b'\x00', 3e-9), (b'\x01', 6e-9), (Unknown, 9e-9), (b'\x01', 12e-9), (b'\x00', 15e-9)],
             [
-                (b'\xc1', 1e-9), (None, 2e-9), (b'\xc2', 3e-9),
-                (b'\xc3', 4e-9), (None, 5e-9), (b'\xc4', 6e-9),
-                (b'\xc5', 7e-9), (None, 8e-9), (b'\xc6', 9e-9),
-                (b'\xc7', 10e-9), (None, 11e-9), (b'\xc8', 12e-9),
-                (b'\xc9', 13e-9), (None, 14e-9), (b'\xca', 15e-9)
+                (b'\xc1', 1e-9), (Unknown, 2e-9), (b'\xc2', 3e-9),
+                (b'\xc3', 4e-9), (Unknown, 5e-9), (b'\xc4', 6e-9),
+                (b'\xc5', 7e-9), (Unknown, 8e-9), (b'\xc6', 9e-9),
+                (b'\xc7', 10e-9), (Unknown, 11e-9), (b'\xc8', 12e-9),
+                (b'\xc9', 13e-9), (Unknown, 14e-9), (b'\xca', 15e-9)
             ],
             [
-                (b'\xc2', 3e-9), (b'\xc3', 4e-9), (None, 5e-9), (b'\xca', 15e-9)
+                (b'\xc2', 3e-9), (b'\xc3', 4e-9), (Unknown, 5e-9), (b'\xca', 15e-9)
             ]
         )
     ]
@@ -68,7 +68,7 @@ def test_DLatch() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[bytes | None, float]] = t[3]
+        r: list[tuple[DataWord, float]] = t[3]
         assert len(po.data) == len(r)
         for o, q in zip(po.data, r):
             assert o[0] == q[0]

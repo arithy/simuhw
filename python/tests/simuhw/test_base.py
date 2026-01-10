@@ -1,6 +1,6 @@
 # SimuHW: A behavioral hardware simulator provided as a Python module.
 #
-# Copyright (c) 2024-2025 Arihiro Yoshida. All rights reserved.
+# Copyright (c) 2024-2026 Arihiro Yoshida. All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,10 @@
 # SOFTWARE.
 
 from simuhw._base import combine_bits, extract_bits, to_signed_int
-from simuhw import Source, LogicLowSource, LogicHighSource, LogicUnknownSource, Drain, ChannelProbe, Simulator
+from simuhw import (
+    DataWord, Unknown, Source, LogicLowSource, LogicHighSource, LogicUnknownSource, Drain,
+    ChannelProbe, Simulator
+)
 
 
 _test_data: list[int] = [0, 1, 2, 3, 7, 8, 9, 30, 31, 32, 33, 62, 63, 64, 65, 66]
@@ -58,8 +61,8 @@ def test_to_signed_int() -> None:
 
 def test_Source_and_Drain() -> None:
     w: int = 10
-    d: list[tuple[bytes | None, float]] = [
-        (b'\x00\x01', 1.0), (b'\x00\x80', 3.0), (b'\xab\xcd', 3.0), (None, 4.0), (b'\x01\x00', 6.0), (b'\x02\x00', 10.0)
+    d: list[tuple[DataWord, float]] = [
+        (b'\x00\x01', 1.0), (b'\x00\x80', 3.0), (b'\xab\xcd', 3.0), (Unknown, 4.0), (b'\x01\x00', 6.0), (b'\x02\x00', 10.0)
     ]
     po: ChannelProbe = ChannelProbe('out', w)
     ti: Source = Source(w, d)
@@ -73,7 +76,7 @@ def test_Source_and_Drain() -> None:
 
 def test_LogicLowSource() -> None:
     w: int = 10
-    d: list[tuple[bytes | None, float]] = [(b'\x00\x00', 0.0)]
+    d: list[tuple[DataWord, float]] = [(b'\x00\x00', 0.0)]
     po: ChannelProbe = ChannelProbe('out', w)
     ti: Source = LogicLowSource(w)
     to: Drain = Drain(w)
@@ -86,7 +89,7 @@ def test_LogicLowSource() -> None:
 
 def test_LogicHighSource() -> None:
     w: int = 10
-    d: list[tuple[bytes | None, float]] = [(b'\x03\xff', 0.0)]
+    d: list[tuple[DataWord, float]] = [(b'\x03\xff', 0.0)]
     po: ChannelProbe = ChannelProbe('out', w)
     ti: Source = LogicHighSource(w)
     to: Drain = Drain(w)
@@ -99,7 +102,7 @@ def test_LogicHighSource() -> None:
 
 def test_LogicUnknownSource() -> None:
     w: int = 10
-    d: list[tuple[bytes | None, float]] = []
+    d: list[tuple[DataWord, float]] = []
     po: ChannelProbe = ChannelProbe('out', w)
     ti: Source = LogicUnknownSource(w)
     to: Drain = Drain(w)

@@ -20,10 +20,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from typing import cast
 from functools import reduce
 import math
 
-from simuhw import Source, Drain, ChannelProbe, Simulator
+from simuhw import DataWord, Unknown, Source, Drain, ChannelProbe, Simulator
 import simuhw.fp as hwf
 
 from .skipif import skipif_unavailable
@@ -69,13 +70,13 @@ def test_FPToIntegerConverter() -> None:
     for fi in [hwf.Float16, hwf.Float32, hwf.Float64, hwf.Float128]:
         for wo in [7, 33]:
             print(f'fi: {fi}, wo: {wo}')
-            t: tuple[list[list[tuple[bytes | None, float]]], list[list[tuple[bytes | None, float]]]] = (
+            t: tuple[list[list[tuple[DataWord, float]]], list[list[tuple[DataWord, float]]]] = (
                 [
                     [
-                        (d, (1 + i) * 1e-9) for i, d in enumerate([
+                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
                             *(fi.from_float(v).to_bytes() for v in _float_data),  # type: ignore[attr-defined]
-                            None
-                        ])
+                            Unknown
+                        ]))
                     ],
                     [
                         (hwf.TininessMode.AFTER_ROUNDING.to_bytes(1), 0e-9)
@@ -89,16 +90,16 @@ def test_FPToIntegerConverter() -> None:
                 ],
                 [
                     [
-                        (d, (1 + i) * 1e-9) for i, d in enumerate([
+                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
                             *(
                                 (fi.from_float(v).to_ui64(hwf.RoundingMode.MIN).to_int() & ((1 << wo) - 1)).to_bytes((wo + 7) >> 3)  # type: ignore[attr-defined]
                                 for v in _float_data
                             ),
-                            None
-                        ])
+                            Unknown
+                        ]))
                     ],
                     [
-                        (d, (1 + i) * 1e-9) for i, d in enumerate([
+                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
                             *(
                                 e.to_bytes(1) for e in [
                                     hwf.ExceptionFlag.INVALID, hwf.ExceptionFlag.INVALID, hwf.ExceptionFlag.INVALID,
@@ -106,8 +107,8 @@ def test_FPToIntegerConverter() -> None:
                                     hwf.ExceptionFlag.INVALID, hwf.ExceptionFlag.INVALID, hwf.ExceptionFlag.INVALID
                                 ]
                             ),
-                            None
-                        ])
+                            Unknown
+                        ]))
                     ]
                 ]
             )
@@ -138,13 +139,13 @@ def test_FPFromIntegerConverter() -> None:
     for fo in [hwf.Float16, hwf.Float32, hwf.Float64, hwf.Float128]:
         for wi in [7, 33]:
             print(f'wi: {wi}, fo: {fo}')
-            t: tuple[list[list[tuple[bytes | None, float]]], list[list[tuple[bytes | None, float]]]] = (
+            t: tuple[list[list[tuple[DataWord, float]]], list[list[tuple[DataWord, float]]]] = (
                 [
                     [
-                        (d, (1 + i) * 1e-9) for i, d in enumerate([
+                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
                             *((abs(v) & ((1 << wi) - 1)).to_bytes((wi + 7) >> 3) for v in _int_data),
-                            None
-                        ])
+                            Unknown
+                        ]))
                     ],
                     [
                         (hwf.TininessMode.AFTER_ROUNDING.to_bytes(1), 0e-9)
@@ -158,19 +159,19 @@ def test_FPFromIntegerConverter() -> None:
                 ],
                 [
                     [
-                        (d, (1 + i) * 1e-9) for i, d in enumerate([
+                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
                             *(
                                 fo.from_ui64(sf.UInt64.from_int(abs(v) & ((1 << wi) - 1))).to_bytes()  # type: ignore[attr-defined]
                                 for v in _int_data
                             ),
-                            None
-                        ])
+                            Unknown
+                        ]))
                     ],
                     [
-                        (d, (1 + i) * 1e-9) for i, d in enumerate([
+                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
                             *(b'\x00' for _ in _int_data),
-                            None
-                        ])
+                            Unknown
+                        ]))
                     ]
                 ]
             )
@@ -201,13 +202,13 @@ def test_FPToSignedIntegerConverter() -> None:
     for fi in [hwf.Float16, hwf.Float32, hwf.Float64, hwf.Float128]:
         for wo in [7, 33]:
             print(f'fi: {fi}, wo: {wo}')
-            t: tuple[list[list[tuple[bytes | None, float]]], list[list[tuple[bytes | None, float]]]] = (
+            t: tuple[list[list[tuple[DataWord, float]]], list[list[tuple[DataWord, float]]]] = (
                 [
                     [
-                        (d, (1 + i) * 1e-9) for i, d in enumerate([
+                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
                             *(fi.from_float(v).to_bytes() for v in _float_data),  # type: ignore[attr-defined]
-                            None
-                        ])
+                            Unknown
+                        ]))
                     ],
                     [
                         (hwf.TininessMode.AFTER_ROUNDING.to_bytes(1), 0e-9)
@@ -221,16 +222,16 @@ def test_FPToSignedIntegerConverter() -> None:
                 ],
                 [
                     [
-                        (d, (1 + i) * 1e-9) for i, d in enumerate([
+                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
                             *(
                                 (fi.from_float(v).to_i64(hwf.RoundingMode.MIN).to_int() & ((1 << wo) - 1)).to_bytes((wo + 7) >> 3)  # type: ignore[attr-defined]
                                 for v in _float_data
                             ),
-                            None
-                        ])
+                            Unknown
+                        ]))
                     ],
                     [
-                        (d, (1 + i) * 1e-9) for i, d in enumerate([
+                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
                             *(
                                 e.to_bytes(1) for e in [
                                     hwf.ExceptionFlag.INVALID, hwf.ExceptionFlag.INVALID, hwf.ExceptionFlag.INVALID,
@@ -238,8 +239,8 @@ def test_FPToSignedIntegerConverter() -> None:
                                     hwf.ExceptionFlag.INVALID, hwf.ExceptionFlag.INVALID, hwf.ExceptionFlag.INVALID
                                 ]
                             ),
-                            None
-                        ])
+                            Unknown
+                        ]))
                     ]
                 ]
             )
@@ -270,13 +271,13 @@ def test_FPFromSignedIntegerConverter() -> None:
     for fo in [hwf.Float16, hwf.Float32, hwf.Float64, hwf.Float128]:
         for wi in [7, 33]:
             print(f'wi: {wi}, fo: {fo}')
-            t: tuple[list[list[tuple[bytes | None, float]]], list[list[tuple[bytes | None, float]]]] = (
+            t: tuple[list[list[tuple[DataWord, float]]], list[list[tuple[DataWord, float]]]] = (
                 [
                     [
-                        (d, (1 + i) * 1e-9) for i, d in enumerate([
+                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
                             *((v & ((1 << wi) - 1)).to_bytes((wi + 7) >> 3) for v in _int_data),
-                            None
-                        ])
+                            Unknown
+                        ]))
                     ],
                     [
                         (hwf.TininessMode.AFTER_ROUNDING.to_bytes(1), 0e-9)
@@ -290,19 +291,19 @@ def test_FPFromSignedIntegerConverter() -> None:
                 ],
                 [
                     [
-                        (d, (1 + i) * 1e-9) for i, d in enumerate([
+                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
                             *(
                                 fo.from_i64(sf.Int64.from_int(_to_signed_int(wi, v & ((1 << wi) - 1)))).to_bytes()  # type: ignore[attr-defined]
                                 for v in _int_data
                             ),
-                            None
-                        ])
+                            Unknown
+                        ]))
                     ],
                     [
-                        (d, (1 + i) * 1e-9) for i, d in enumerate([
+                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
                             *(b'\x00' for _ in _int_data),
-                            None
-                        ])
+                            Unknown
+                        ]))
                     ]
                 ]
             )
@@ -335,13 +336,13 @@ def test_FPConverter() -> None:
             print(f'fi: {fi}, fo: {fo}')
             be: bool = (fo.size() >= fi.size() or fo.size() >= 64)  # type: ignore[attr-defined]
             bo: bool = (fo.size() <= 16)  # type: ignore[attr-defined]
-            t: tuple[list[list[tuple[bytes | None, float]]], list[list[tuple[bytes | None, float]]]] = (
+            t: tuple[list[list[tuple[DataWord, float]]], list[list[tuple[DataWord, float]]]] = (
                 [
                     [
-                        (d, (1 + i) * 1e-9) for i, d in enumerate([
+                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
                             *(fi.from_float(v).to_bytes() for v in _float_data),  # type: ignore[attr-defined]
-                            None
-                        ])
+                            Unknown
+                        ]))
                     ],
                     [
                         (hwf.TininessMode.AFTER_ROUNDING.to_bytes(1), 0e-9)
@@ -355,13 +356,13 @@ def test_FPConverter() -> None:
                 ],
                 [
                     [
-                        (d, (1 + i) * 1e-9) for i, d in enumerate([
+                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
                             *([fo.from_f16, fo.from_f32, fo.from_f64, fo.from_f128][ii](fi.from_float(v)).to_bytes() for v in _float_data),  # type: ignore[attr-defined]
-                            None
-                        ])
+                            Unknown
+                        ]))
                     ],
                     [
-                        (d, (1 + i) * 1e-9) for i, d in enumerate([
+                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
                             *(
                                 e.to_bytes(1) for e in [
                                     0, 0,
@@ -373,8 +374,8 @@ def test_FPConverter() -> None:
                                     0, 0
                                 ]
                             ),
-                            None
-                        ])
+                            Unknown
+                        ]))
                     ]
                 ]
             )
@@ -407,7 +408,7 @@ def test_SIMD_FPToIntegerConverter() -> None:
     for fi in [hwf.Float16, hwf.Float32, hwf.Float64, hwf.Float128]:
         for wo in [7, 33]:
             print(f'fi: {fi}, wo: {wo}')
-            t: tuple[list[list[tuple[bytes | None, float]]], list[list[tuple[bytes | None, float]]]] = (
+            t: tuple[list[list[tuple[DataWord, float]]], list[list[tuple[DataWord, float]]]] = (
                 [
                     [
                         *(
@@ -420,7 +421,7 @@ def test_SIMD_FPToIntegerConverter() -> None:
                             )
                             for i in range(_float_data_count)
                         ),
-                        (None, (1 + _float_data_count) * 1e-9)
+                        (Unknown, (1 + _float_data_count) * 1e-9)
                     ],
                     [
                         (hwf.TininessMode.AFTER_ROUNDING.to_bytes(1), 0e-9)
@@ -447,7 +448,7 @@ def test_SIMD_FPToIntegerConverter() -> None:
                             )
                             for i in range(_float_data_count)
                         ),
-                        (None, (1 + _float_data_count) * 1e-9)
+                        (Unknown, (1 + _float_data_count) * 1e-9)
                     ],
                     [
                         *(
@@ -464,7 +465,7 @@ def test_SIMD_FPToIntegerConverter() -> None:
                             )
                             for i in range(_float_data_count)
                         ),
-                        (None, (1 + _float_data_count) * 1e-9)
+                        (Unknown, (1 + _float_data_count) * 1e-9)
                     ]
                 ]
             )
@@ -496,7 +497,7 @@ def test_SIMD_FPFromIntegerConverter() -> None:
     for fo in [hwf.Float16, hwf.Float32, hwf.Float64, hwf.Float128]:
         for wi in [7, 33]:
             print(f'wi: {wi}, fo: {fo}')
-            t: tuple[list[list[tuple[bytes | None, float]]], list[list[tuple[bytes | None, float]]]] = (
+            t: tuple[list[list[tuple[DataWord, float]]], list[list[tuple[DataWord, float]]]] = (
                 [
                     [
                         *(
@@ -509,7 +510,7 @@ def test_SIMD_FPFromIntegerConverter() -> None:
                             )
                             for i in range(_int_data_count)
                         ),
-                        (None, (1 + _int_data_count) * 1e-9)
+                        (Unknown, (1 + _int_data_count) * 1e-9)
                     ],
                     [
                         (hwf.TininessMode.AFTER_ROUNDING.to_bytes(1), 0e-9)
@@ -535,13 +536,13 @@ def test_SIMD_FPFromIntegerConverter() -> None:
                             )
                             for i in range(_int_data_count)
                         ),
-                        (None, (1 + _int_data_count) * 1e-9)
+                        (Unknown, (1 + _int_data_count) * 1e-9)
                     ],
                     [
-                        (d, (1 + i) * 1e-9) for i, d in enumerate([
+                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
                             *(b'\x00' for _ in _int_data),
-                            None
-                        ])
+                            Unknown
+                        ]))
                     ]
                 ]
             )
@@ -573,7 +574,7 @@ def test_SIMD_FPToSignedIntegerConverter() -> None:
     for fi in [hwf.Float16, hwf.Float32, hwf.Float64, hwf.Float128]:
         for wo in [7, 33]:
             print(f'fi: {fi}, wo: {wo}')
-            t: tuple[list[list[tuple[bytes | None, float]]], list[list[tuple[bytes | None, float]]]] = (
+            t: tuple[list[list[tuple[DataWord, float]]], list[list[tuple[DataWord, float]]]] = (
                 [
                     [
                         *(
@@ -586,7 +587,7 @@ def test_SIMD_FPToSignedIntegerConverter() -> None:
                             )
                             for i in range(_float_data_count)
                         ),
-                        (None, (1 + _float_data_count) * 1e-9)
+                        (Unknown, (1 + _float_data_count) * 1e-9)
                     ],
                     [
                         (hwf.TininessMode.AFTER_ROUNDING.to_bytes(1), 0e-9)
@@ -613,7 +614,7 @@ def test_SIMD_FPToSignedIntegerConverter() -> None:
                             )
                             for i in range(_float_data_count)
                         ),
-                        (None, (1 + _float_data_count) * 1e-9)
+                        (Unknown, (1 + _float_data_count) * 1e-9)
                     ],
                     [
                         *(
@@ -630,7 +631,7 @@ def test_SIMD_FPToSignedIntegerConverter() -> None:
                             )
                             for i in range(_float_data_count)
                         ),
-                        (None, (1 + _float_data_count) * 1e-9)
+                        (Unknown, (1 + _float_data_count) * 1e-9)
                     ]
                 ]
             )
@@ -662,7 +663,7 @@ def test_SIMD_FPFromSignedIntegerConverter() -> None:
     for fo in [hwf.Float16, hwf.Float32, hwf.Float64, hwf.Float128]:
         for wi in [7, 33]:
             print(f'wi: {wi}, fo: {fo}')
-            t: tuple[list[list[tuple[bytes | None, float]]], list[list[tuple[bytes | None, float]]]] = (
+            t: tuple[list[list[tuple[DataWord, float]]], list[list[tuple[DataWord, float]]]] = (
                 [
                     [
                         *(
@@ -675,7 +676,7 @@ def test_SIMD_FPFromSignedIntegerConverter() -> None:
                             )
                             for i in range(_int_data_count)
                         ),
-                        (None, (1 + _int_data_count) * 1e-9)
+                        (Unknown, (1 + _int_data_count) * 1e-9)
                     ],
                     [
                         (hwf.TininessMode.AFTER_ROUNDING.to_bytes(1), 0e-9)
@@ -701,13 +702,13 @@ def test_SIMD_FPFromSignedIntegerConverter() -> None:
                             )
                             for i in range(_int_data_count)
                         ),
-                        (None, (1 + _int_data_count) * 1e-9)
+                        (Unknown, (1 + _int_data_count) * 1e-9)
                     ],
                     [
-                        (d, (1 + i) * 1e-9) for i, d in enumerate([
+                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
                             *(b'\x00' for _ in _int_data),
-                            None
-                        ])
+                            Unknown
+                        ]))
                     ]
                 ]
             )
@@ -741,7 +742,7 @@ def test_SIMD_FPConverter() -> None:
             print(f'fi: {fi}, fo: {fo}')
             be: bool = (fo.size() >= fi.size() or fo.size() >= 64)  # type: ignore[attr-defined]
             bo: bool = (fo.size() <= 16)  # type: ignore[attr-defined]
-            t: tuple[list[list[tuple[bytes | None, float]]], list[list[tuple[bytes | None, float]]]] = (
+            t: tuple[list[list[tuple[DataWord, float]]], list[list[tuple[DataWord, float]]]] = (
                 [
                     [
                         *(
@@ -754,7 +755,7 @@ def test_SIMD_FPConverter() -> None:
                             )
                             for i in range(_float_data_count)
                         ),
-                        (None, (1 + _float_data_count) * 1e-9)
+                        (Unknown, (1 + _float_data_count) * 1e-9)
                     ],
                     [
                         (hwf.TininessMode.AFTER_ROUNDING.to_bytes(1), 0e-9)
@@ -780,7 +781,7 @@ def test_SIMD_FPConverter() -> None:
                             )
                             for i in range(_float_data_count)
                         ),
-                        (None, (1 + _float_data_count) * 1e-9)
+                        (Unknown, (1 + _float_data_count) * 1e-9)
                     ],
                     [
                         *(
@@ -801,7 +802,7 @@ def test_SIMD_FPConverter() -> None:
                             )
                             for i in range(_float_data_count)
                         ),
-                        (None, (1 + _float_data_count) * 1e-9)
+                        (Unknown, (1 + _float_data_count) * 1e-9)
                     ]
                 ]
             )

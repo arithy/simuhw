@@ -1,6 +1,6 @@
 # SimuHW: A behavioral hardware simulator provided as a Python module.
 #
-# Copyright (c) 2024-2025 Arihiro Yoshida. All rights reserved.
+# Copyright (c) 2024-2026 Arihiro Yoshida. All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,6 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from ._word import DataWord, Unknown
 from ._base import InputPort, OutputPort, Device
 from ._group import Group
 from ._branch import DataCombiner, DataSplitter, Arbitrator, DataRetainingDemultiplexer
@@ -52,7 +53,7 @@ class Channel(Device):
         """The input port."""
         self._port_o: OutputPort = OutputPort(width)
         """The output port."""
-        self._queue: list[tuple[bytes | None, float]] = []
+        self._queue: list[tuple[DataWord, float]] = []
         """The queue of data words to be output later."""
 
     @property
@@ -101,7 +102,7 @@ class Channel(Device):
         ports_i: list[InputPort] = [self._port_i]
         if self._update_time_and_check_inputs(time, ports_i):
             self._queue.append((
-                None if len(self._queue) > 0 and self._queue[-1][1] > self._time and self._queue[-1][0] != self._port_i.data[0] else self._port_i.data[0],
+                Unknown if len(self._queue) > 0 and self._queue[-1][1] > self._time and self._queue[-1][0] != self._port_i.data[0] else self._port_i.data[0],
                 self._time + self._word_delay
             ))
             self._set_inputs_unchanged(ports_i)

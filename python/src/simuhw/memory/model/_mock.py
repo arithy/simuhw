@@ -1,6 +1,6 @@
 # SimuHW: A behavioral hardware simulator provided as a Python module.
 #
-# Copyright (c) 2024-2025 Arihiro Yoshida. All rights reserved.
+# Copyright (c) 2024-2026 Arihiro Yoshida. All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,7 @@
 
 from collections.abc import Callable
 
+from ..._word import DataWord, Unknown
 from ._base import MemorizingModel
 
 
@@ -33,21 +34,21 @@ class MockMemorizingModel(MemorizingModel):
 
     """
 
-    def __init__(self, data_func: Callable[[bytes | None], bytes | None] | None = None) -> None:
+    def __init__(self, data_func: Callable[[DataWord], DataWord] | None = None) -> None:
         """Creates a mock memorizing model.
 
         Args:
             data_func: The function to return a mock data according to a given address.
 
         """
-        self._data_func: Callable[[bytes | None], bytes | None] | None = data_func
+        self._data_func: Callable[[DataWord], DataWord] | None = data_func
         """The function to return a mock data according to a given address."""
 
     def reset(self) -> None:
         """Resets the states."""
         pass
 
-    def read(self, address: bytes | None) -> bytes | None:
+    def read(self, address: DataWord) -> DataWord:
         """Reads the data word from the memory device.
 
         Args:
@@ -57,9 +58,9 @@ class MockMemorizingModel(MemorizingModel):
             The data word read form the specified memory address.
 
         """
-        return None if self._data_func is None else self._data_func(address)
+        return Unknown if self._data_func is None else self._data_func(address)
 
-    def write(self, address: bytes | None, data: bytes | None) -> None:
+    def write(self, address: DataWord, data: DataWord) -> None:
         """Writes the data word to the memory device.
 
         Args:

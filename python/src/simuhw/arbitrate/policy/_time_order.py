@@ -1,6 +1,6 @@
 # SimuHW: A behavioral hardware simulator provided as a Python module.
 #
-# Copyright (c) 2024-2025 Arihiro Yoshida. All rights reserved.
+# Copyright (c) 2024-2026 Arihiro Yoshida. All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,7 @@
 
 from collections.abc import Sequence
 
+from ..._word import DataWord
 from ._base import ArbitrationPolicy
 from ._index_order import IndexOrderArbitrationPolicy
 
@@ -57,7 +58,7 @@ class TimeOrderArbitrationPolicy(ArbitrationPolicy):
         """The arbitration policy applied when there are multiple targets with the same time."""
         return self._when_same
 
-    def select(self, targets: Sequence[tuple[bytes | None, float]]) -> int:
+    def select(self, targets: Sequence[tuple[DataWord, float]]) -> int:
         """Selects one from the given inputs.
 
         Args:
@@ -72,5 +73,5 @@ class TimeOrderArbitrationPolicy(ArbitrationPolicy):
             min([t[1] for t in targets]) if self._select_min else
             max([t[1] for t in targets])
         )
-        em: list[tuple[int, tuple[bytes | None, float]]] = [(i, t) for i, t in enumerate(targets) if t[1] == tm]
+        em: list[tuple[int, tuple[DataWord, float]]] = [(i, t) for i, t in enumerate(targets) if t[1] == tm]
         return em[self._when_same.select([e[1] for e in em]) if len(em) > 1 else 0][0]

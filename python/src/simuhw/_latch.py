@@ -1,6 +1,6 @@
 # SimuHW: A behavioral hardware simulator provided as a Python module.
 #
-# Copyright (c) 2024-2025 Arihiro Yoshida. All rights reserved.
+# Copyright (c) 2024-2026 Arihiro Yoshida. All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,6 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from ._word import Unknown
 from ._base import InputPort, OutputPort, Device
 
 
@@ -91,8 +92,8 @@ class DLatch(Device):
         """
         ports_i: list[InputPort] = [self._port_g, self._port_i]
         if self._update_time_and_check_inputs(time, ports_i):
-            if self._port_g.data[0] is None:
-                self._port_o.post((None, self._time))
+            if not isinstance(self._port_g.data[0], bytes):
+                self._port_o.post((Unknown, self._time))
             elif int.from_bytes(self._port_g.data[0]) == (0 if self._neg_leveled else 1):
                 self._port_o.post((self._port_i.data[0], self._time))
             self._set_inputs_unchanged(ports_i)

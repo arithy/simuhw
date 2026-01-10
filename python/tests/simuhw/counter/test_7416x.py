@@ -1,6 +1,6 @@
 # SimuHW: A behavioral hardware simulator provided as a Python module.
 #
-# Copyright (c) 2024-2025 Arihiro Yoshida. All rights reserved.
+# Copyright (c) 2024-2026 Arihiro Yoshida. All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +22,7 @@
 
 import math
 
-from simuhw import Source, Drain, ChannelProbe, Simulator
+from simuhw import DataWord, Unknown, Source, Drain, ChannelProbe, Simulator
 from simuhw.counter import SynchronousBinaryCounter74161, SynchronousBinaryCounter74163
 
 _EPS: float = 1e-18
@@ -47,7 +47,7 @@ _S_END: int = _S_CLR_1_H + _S_CYCLE * 4
 
 
 def test_SynchronousBinaryCounter74161() -> None:
-    test_data: list[tuple[int, list[list[tuple[bytes | None, float]]], list[list[tuple[bytes | None, float]]]]] = [
+    test_data: list[tuple[int, list[list[tuple[DataWord, float]]], list[list[tuple[DataWord, float]]]]] = [
         (
             1,
             [
@@ -70,7 +70,7 @@ def test_SynchronousBinaryCounter74161() -> None:
                     (b'\x00', _UNIT * _S_LOAD_L), (b'\x01', _UNIT * _S_LOAD_H)
                 ],
                 [  # d
-                    (b'\x01', _UNIT * _S_LOAD_L), (None, _UNIT * _S_LOAD_H)
+                    (b'\x01', _UNIT * _S_LOAD_L), (Unknown, _UNIT * _S_LOAD_H)
                 ]
             ],
             [
@@ -137,7 +137,7 @@ def test_SynchronousBinaryCounter74161() -> None:
                     (b'\x00', _UNIT * _S_LOAD_L), (b'\x01', _UNIT * _S_LOAD_H)
                 ],
                 [  # d
-                    (b'\x0e', _UNIT * _S_LOAD_L), (None, _UNIT * _S_LOAD_H)
+                    (b'\x0e', _UNIT * _S_LOAD_L), (Unknown, _UNIT * _S_LOAD_H)
                 ]
             ],
             [
@@ -191,7 +191,7 @@ def test_SynchronousBinaryCounter74161() -> None:
                     (b'\x00', _UNIT * _S_LOAD_L), (b'\x01', _UNIT * _S_LOAD_H)
                 ],
                 [  # d
-                    (b'\xfe', _UNIT * _S_LOAD_L), (None, _UNIT * _S_LOAD_H)
+                    (b'\xfe', _UNIT * _S_LOAD_L), (Unknown, _UNIT * _S_LOAD_H)
                 ]
             ],
             [
@@ -245,7 +245,7 @@ def test_SynchronousBinaryCounter74161() -> None:
                     (b'\x00', _UNIT * _S_LOAD_L), (b'\x01', _UNIT * _S_LOAD_H)
                 ],
                 [  # d
-                    (b'\x01\xff\xff\xff\xfe', _UNIT * _S_LOAD_L), (None, _UNIT * _S_LOAD_H)
+                    (b'\x01\xff\xff\xff\xfe', _UNIT * _S_LOAD_L), (Unknown, _UNIT * _S_LOAD_H)
                 ]
             ],
             [
@@ -304,7 +304,7 @@ def test_SynchronousBinaryCounter74161() -> None:
 
 
 def test_SynchronousBinaryCounter74163() -> None:
-    test_data: list[tuple[int, list[list[tuple[bytes | None, float]]], list[list[tuple[bytes | None, float]]]]] = [
+    test_data: list[tuple[int, list[list[tuple[DataWord, float]]], list[list[tuple[DataWord, float]]]]] = [
         (
             1,
             [
@@ -327,7 +327,7 @@ def test_SynchronousBinaryCounter74163() -> None:
                     (b'\x00', _UNIT * _S_LOAD_L), (b'\x01', _UNIT * _S_LOAD_H)
                 ],
                 [  # d
-                    (b'\x01', _UNIT * _S_LOAD_L), (None, _UNIT * _S_LOAD_H)
+                    (b'\x01', _UNIT * _S_LOAD_L), (Unknown, _UNIT * _S_LOAD_H)
                 ]
             ],
             [
@@ -394,7 +394,7 @@ def test_SynchronousBinaryCounter74163() -> None:
                     (b'\x00', _UNIT * _S_LOAD_L), (b'\x01', _UNIT * _S_LOAD_H)
                 ],
                 [  # d
-                    (b'\x0e', _UNIT * _S_LOAD_L), (None, _UNIT * _S_LOAD_H)
+                    (b'\x0e', _UNIT * _S_LOAD_L), (Unknown, _UNIT * _S_LOAD_H)
                 ]
             ],
             [
@@ -448,7 +448,7 @@ def test_SynchronousBinaryCounter74163() -> None:
                     (b'\x00', _UNIT * _S_LOAD_L), (b'\x01', _UNIT * _S_LOAD_H)
                 ],
                 [  # d
-                    (b'\xfe', _UNIT * _S_LOAD_L), (None, _UNIT * _S_LOAD_H)
+                    (b'\xfe', _UNIT * _S_LOAD_L), (Unknown, _UNIT * _S_LOAD_H)
                 ]
             ],
             [
@@ -502,7 +502,7 @@ def test_SynchronousBinaryCounter74163() -> None:
                     (b'\x00', _UNIT * _S_LOAD_L), (b'\x01', _UNIT * _S_LOAD_H)
                 ],
                 [  # d
-                    (b'\x01\xff\xff\xff\xfe', _UNIT * _S_LOAD_L), (None, _UNIT * _S_LOAD_H)
+                    (b'\x01\xff\xff\xff\xfe', _UNIT * _S_LOAD_L), (Unknown, _UNIT * _S_LOAD_H)
                 ]
             ],
             [

@@ -1,6 +1,6 @@
 # SimuHW: A behavioral hardware simulator provided as a Python module.
 #
-# Copyright (c) 2024-2025 Arihiro Yoshida. All rights reserved.
+# Copyright (c) 2024-2026 Arihiro Yoshida. All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,8 @@ from abc import ABCMeta, abstractmethod
 from typing import IO
 import heapq
 
+from ._word import DataWord, Unknown, HighZ
+
 
 class Probe(metaclass=ABCMeta):
     """The super class for all probes."""
@@ -46,7 +48,7 @@ class Probe(metaclass=ABCMeta):
         """The probe name."""
         self._width: int = width
         """The data word width in bits."""
-        self._data: list[tuple[bytes | None, float]] = []
+        self._data: list[tuple[DataWord, float]] = []
         """The list of the data words recorded."""
 
     @property
@@ -60,7 +62,7 @@ class Probe(metaclass=ABCMeta):
         return self._width
 
     @property
-    def data(self) -> list[tuple[bytes | None, float]]:
+    def data(self) -> list[tuple[DataWord, float]]:
         """The list of the data words recorded."""
         return self._data
 
@@ -157,20 +159,23 @@ class LogicAnalyzer:
         for i, p in enumerate(self._probe):
             file.write(f'b{"x" * p.width} {i}\n')
         file.write('$end\n')
-        q: list[tuple[int, tuple[int, int, bytes | None]]] = []
+        q: list[tuple[int, tuple[int, int, DataWord]]] = []
         for i, p in enumerate(self._probe):
             for d in p.data:
                 heapq.heappush(q, (int(d[1] * 1e12), (i, p.width, d[0])))
         t: int | None = None
         for i in range(len(q)):
-            e: tuple[int, tuple[int, int, bytes | None]] = heapq.heappop(q)
+            e: tuple[int, tuple[int, int, DataWord]] = heapq.heappop(q)
             if t is None or t != e[0]:
                 t = e[0]
                 file.write(f'#{t}\n')
             s: str = ''
-            if e[1][2] is None:
+            if e[1][2] is Unknown:
                 s += 'x' * e[1][1]
+            elif e[1][2] is HighZ:
+                s += 'z' * e[1][1]
             else:
+                assert isinstance(e[1][2], bytes)
                 for b in e[1][2]:
                     s += f'{b:08b}'
             file.write(f'b{s[-e[1][1]:]} {e[1][0]}\n')

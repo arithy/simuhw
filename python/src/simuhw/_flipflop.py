@@ -1,6 +1,6 @@
 # SimuHW: A behavioral hardware simulator provided as a Python module.
 #
-# Copyright (c) 2024-2025 Arihiro Yoshida. All rights reserved.
+# Copyright (c) 2024-2026 Arihiro Yoshida. All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,6 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from ._word import DataWord, Unknown
 from ._base import InputPort, OutputPort, Device
 
 
@@ -45,7 +46,7 @@ class DFlipFlop(Device):
         """The input port."""
         self._port_o: OutputPort = OutputPort(width)
         """The output port."""
-        self._prev_c: bytes | None = None
+        self._prev_c: DataWord = Unknown
         """The previous clock data word."""
 
     @property
@@ -92,12 +93,12 @@ class DFlipFlop(Device):
 
         """
         ports_i: list[InputPort] = [self._port_c, self._port_i]
-        clock: bytes | None = self._port_c.data[0]
+        clock: DataWord = self._port_c.data[0]
         if self._update_time_and_check_inputs(time, ports_i):
-            if clock is None:
-                self._port_o.post((None, self._time))
+            if not isinstance(clock, bytes):
+                self._port_o.post((Unknown, self._time))
             elif (
-                self._prev_c is not None and
+                isinstance(self._prev_c, bytes) and
                 int.from_bytes(clock) - int.from_bytes(self._prev_c) == (-1 if self._neg_edged else 1)
             ):
                 self._port_o.post((self._port_i.data[0], self._time))

@@ -1,6 +1,6 @@
 # SimuHW: A behavioral hardware simulator provided as a Python module.
 #
-# Copyright (c) 2024-2025 Arihiro Yoshida. All rights reserved.
+# Copyright (c) 2024-2026 Arihiro Yoshida. All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,7 @@
 
 from random import Random
 
+from simuhw import DataWord, Unknown
 from simuhw.arbitrate.policy import (
     ArbitrationPolicy,
     RandomArbitrationPolicy, RoundRobinArbitrationPolicy,
@@ -35,7 +36,7 @@ def test_RandomArbitrationPolicy() -> None:
     p: ArbitrationPolicy = RandomArbitrationPolicy(rng=Random(0))
     h: list[int] = [0 for _ in range(n)]
     for _ in range(s):
-        h[p.select([(None, 0.0) for _ in range(n)])] += 1
+        h[p.select([(Unknown, 0.0) for _ in range(n)])] += 1
     for i in range(n):
         assert h[i] > (s // n) * 0.8
         assert h[i] < (s // n) * 1.2
@@ -46,7 +47,7 @@ def test_RoundRobinArbitrationPolicy() -> None:
     s: int = 1000
     p: ArbitrationPolicy = RoundRobinArbitrationPolicy(initial=2)
     for i in range(s):
-        assert p.select([(None, 0.0) for _ in range(n)]) == (2 + i) % n
+        assert p.select([(Unknown, 0.0) for _ in range(n)]) == (2 + i) % n
 
 
 def test_IndexOrderArbitrationPolicy() -> None:
@@ -56,36 +57,36 @@ def test_IndexOrderArbitrationPolicy() -> None:
         p: ArbitrationPolicy = IndexOrderArbitrationPolicy(select_min=b)
         i: int = 0 if b else n - 1
         for _ in range(s):
-            assert p.select([(None, 0.0) for _ in range(n)]) == i
+            assert p.select([(Unknown, 0.0) for _ in range(n)]) == i
 
 
 def test_DataOrderArbitrationPolicy() -> None:
-    test_data: list[tuple[list[tuple[bytes | None, float]], list[list[int]]]] = [
+    test_data: list[tuple[list[tuple[DataWord, float]], list[list[int]]]] = [
         ([(b'\x10', 0.0)], [[0, 0], [0, 0]]),
         ([(b'\x20', 0.0), (b'\x10', 0.0)], [[1, 0], [1, 0]]),
         ([(b'\x20', 0.0), (b'\x30', 0.0), (b'\x00', 0.0), (b'\x40', 0.0), (b'\x10', 0.0)], [[2, 3], [2, 3]]),
         ([(b'\x20', 0.0), (b'\x40', 0.0), (b'\x20', 0.0), (b'\x40', 0.0), (b'\x20', 0.0)], [[4, 3], [4, 3]]),
-        ([(None, 0.0)], [[0, 0], [0, 0]]),
-        ([(b'\x20', 0.0), (None, 0.0)], [[1, 1], [0, 0]]),
-        ([(b'\x20', 0.0), (None, 0.0), (None, 0.0), (b'\x40', 0.0), (b'\x10', 0.0)], [[2, 2], [4, 3]]),
-        ([(None, 0.0), (b'\x40', 0.0), (None, 0.0), (b'\x40', 0.0), (None, 0.0)], [[4, 4], [3, 3]]),
-        ([(None, 0.0), (None, 0.0), (None, 0.0), (None, 0.0), (None, 0.0)], [[4, 4], [4, 4]])
+        ([(Unknown, 0.0)], [[0, 0], [0, 0]]),
+        ([(b'\x20', 0.0), (Unknown, 0.0)], [[1, 1], [0, 0]]),
+        ([(b'\x20', 0.0), (Unknown, 0.0), (Unknown, 0.0), (b'\x40', 0.0), (b'\x10', 0.0)], [[2, 2], [4, 3]]),
+        ([(Unknown, 0.0), (b'\x40', 0.0), (Unknown, 0.0), (b'\x40', 0.0), (Unknown, 0.0)], [[4, 4], [3, 3]]),
+        ([(Unknown, 0.0), (Unknown, 0.0), (Unknown, 0.0), (Unknown, 0.0), (Unknown, 0.0)], [[4, 4], [4, 4]])
     ]
-    for i, a in enumerate([True, False]):
+    for i, a in enumerate([[Unknown], []]):
         for j, b in enumerate([True, False]):
             p: ArbitrationPolicy = DataOrderArbitrationPolicy(
-                select_min=b, prioritize_none=a, when_same=IndexOrderArbitrationPolicy(select_min=False)
+                select_min=b, priority=a, when_same=IndexOrderArbitrationPolicy(select_min=False)
             )
             for t in test_data:
                 assert p.select(t[0]) == t[1][i][j]
 
 
 def test_TimeOrderArbitrationPolicy() -> None:
-    test_data: list[tuple[list[tuple[bytes | None, float]], list[int]]] = [
-        ([(None, 1.0)], [0, 0]),
-        ([(None, 2.0), (None, 1.0)], [1, 0]),
-        ([(None, 2.0), (None, 3.0), (None, 0.0), (None, 4.0), (None, 1.0)], [2, 3]),
-        ([(None, 2.0), (None, 4.0), (None, 2.0), (None, 4.0), (None, 2.0)], [4, 3])
+    test_data: list[tuple[list[tuple[DataWord, float]], list[int]]] = [
+        ([(Unknown, 1.0)], [0, 0]),
+        ([(Unknown, 2.0), (Unknown, 1.0)], [1, 0]),
+        ([(Unknown, 2.0), (Unknown, 3.0), (Unknown, 0.0), (Unknown, 4.0), (Unknown, 1.0)], [2, 3]),
+        ([(Unknown, 2.0), (Unknown, 4.0), (Unknown, 2.0), (Unknown, 4.0), (Unknown, 2.0)], [4, 3])
     ]
     for i, b in enumerate([True, False]):
         p: ArbitrationPolicy = TimeOrderArbitrationPolicy(

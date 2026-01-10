@@ -1,6 +1,6 @@
 # SimuHW: A behavioral hardware simulator provided as a Python module.
 #
-# Copyright (c) 2024-2025 Arihiro Yoshida. All rights reserved.
+# Copyright (c) 2024-2026 Arihiro Yoshida. All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,9 +20,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from typing import cast
 from collections.abc import Iterable
 from functools import reduce
 
+from ._word import DataWord, Unknown
 from ._base import InputPort, OutputPort, Device, combine_bits, extract_bits
 from .arbitrate.policy import ArbitrationPolicy, IndexOrderArbitrationPolicy, TimeOrderArbitrationPolicy
 
@@ -79,14 +81,14 @@ class DataCombiner(Device):
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
             self._port_o.post((
-                None if any((p.data[0] is None for p in self._ports_i)) else reduce(
-                    lambda x, y: (x[0] + y[0], combine_bits(x[0], x[1], y[0], y[1])),  # type: ignore
-                    ((p.width, p.data[0]) for p in self._ports_i), (0, b'')
+                Unknown if any((not isinstance(p.data[0], bytes) for p in self._ports_i)) else reduce(
+                    lambda x, y: (x[0] + y[0], combine_bits(x[0], x[1], y[0], y[1])),
+                    ((p.width, cast(bytes, p.data[0])) for p in self._ports_i), (0, b'')
                 )[1],
                 self._time
             ))
             self._set_inputs_unchanged(self._ports_i)
-        return (list(self._ports_i), None)
+        return ([*self._ports_i], None)
 
 
 class DataSplitter(Device):
@@ -140,10 +142,10 @@ class DataSplitter(Device):
         """
         ports_i: list[InputPort] = [self._port_i]
         if self._update_time_and_check_inputs(time, ports_i):
-            b: bytes | None = self._port_i.data[0]
-            if b is None:
+            b: DataWord = self._port_i.data[0]
+            if not isinstance(b, bytes):
                 for p in self._ports_o:
-                    p.post((None, self._time))
+                    p.post((Unknown, self._time))
             else:
                 s: int = self._port_i.width
                 for p in self._ports_o:
@@ -234,7 +236,7 @@ class Arbitrator(Device):
                 self._time
             ))
             self._set_inputs_unchanged(self._ports_i)
-        return (list(self._ports_i), None)
+        return ([*self._ports_i], None)
 
 
 class Multiplexer(Device):
@@ -299,12 +301,12 @@ class Multiplexer(Device):
         """
         ports_i: list[InputPort] = [*self._ports_i, self._port_s]
         if self._update_time_and_check_inputs(time, ports_i):
-            if self._port_s.data[0] is None:
-                self._port_o.post((None, self._time))
+            if not isinstance(self._port_s.data[0], bytes):
+                self._port_o.post((Unknown, self._time))
             else:
                 i: int = int.from_bytes(self._port_s.data[0]).bit_length() - 1
                 self._port_o.post((
-                    self._ports_i[i].data[0] if i >= 0 else None,
+                    self._ports_i[i].data[0] if i >= 0 else Unknown,
                     self._time
                 ))
             self._set_inputs_unchanged(ports_i)
@@ -314,7 +316,7 @@ class Multiplexer(Device):
 class Demultiplexer(Device):
     """A demultiplexer."""
 
-    def __init__(self, width: int, noutputs: int, *, deselected: bytes | None = None) -> None:
+    def __init__(self, width: int, noutputs: int, *, deselected: DataWord = Unknown) -> None:
         """Creates a demultiplexer.
 
         Args:
@@ -325,7 +327,7 @@ class Demultiplexer(Device):
         super().__init__()
         self._width: int = width
         """The data word width in bits."""
-        self._deselected: bytes | None = deselected
+        self._deselected: DataWord = deselected
         """The data word when not selected."""
         self._port_i: InputPort = InputPort(width)
         """The input port for the data word."""
@@ -375,7 +377,7 @@ class Demultiplexer(Device):
         """
         ports_i: list[InputPort] = [self._port_i, self._port_s]
         if self._update_time_and_check_inputs(time, ports_i):
-            if self._port_s.data[0] is not None:
+            if isinstance(self._port_s.data[0], bytes):
                 s: int = int.from_bytes(self._port_s.data[0])
                 for i, p in enumerate(self._ports_o):
                     if ((s >> i) & 1) == 1:
@@ -384,7 +386,7 @@ class Demultiplexer(Device):
                         p.post((self._deselected, self._time))
             else:
                 for i, p in enumerate(self._ports_o):
-                    p.post((None, self._time))
+                    p.post((Unknown, self._time))
             self._set_inputs_unchanged(ports_i)
         return (ports_i, None)
 
@@ -415,14 +417,14 @@ class DataRetainingDemultiplexer(Demultiplexer):
         """
         ports_i: list[InputPort] = [self._port_i, self._port_s]
         if self._update_time_and_check_inputs(time, ports_i):
-            if self._port_s.data[0] is not None:
+            if isinstance(self._port_s.data[0], bytes):
                 s: int = int.from_bytes(self._port_s.data[0])
                 for i, p in enumerate(self._ports_o):
                     if ((s >> i) & 1) == 1:
                         p.post((self._port_i.data[0], self._time))
             else:
                 for i, p in enumerate(self._ports_o):
-                    p.post((None, self._time))
+                    p.post((Unknown, self._time))
             self._set_inputs_unchanged(ports_i)
         return (ports_i, None)
 

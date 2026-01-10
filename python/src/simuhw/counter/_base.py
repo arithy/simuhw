@@ -1,6 +1,6 @@
 # SimuHW: A behavioral hardware simulator provided as a Python module.
 #
-# Copyright (c) 2024-2025 Arihiro Yoshida. All rights reserved.
+# Copyright (c) 2024-2026 Arihiro Yoshida. All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,7 @@
 
 from abc import ABCMeta
 
+from .._word import DataWord, Unknown
 from .._base import InputPort, OutputPort, Device
 
 
@@ -48,7 +49,7 @@ class Counter(Device, metaclass=ABCMeta):
         """The count output port."""
         self._port_co: OutputPort = OutputPort(1)
         """The carry output port."""
-        self._count: bytes | None = None
+        self._count: DataWord = Unknown
         """The count."""
 
     @property
@@ -95,7 +96,7 @@ class SynchronousCounter(Counter, metaclass=ABCMeta):
         """``True`` if negative-edged, ``False`` otherwise."""
         self._port_ck: InputPort = InputPort(1)
         """The clock port."""
-        self._prev_ck: bytes | None = None
+        self._prev_ck: DataWord = Unknown
         """The previous clock data word."""
 
     @property

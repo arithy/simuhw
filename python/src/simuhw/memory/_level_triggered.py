@@ -1,6 +1,6 @@
 # SimuHW: A behavioral hardware simulator provided as a Python module.
 #
-# Copyright (c) 2024-2025 Arihiro Yoshida. All rights reserved.
+# Copyright (c) 2024-2026 Arihiro Yoshida. All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,6 +20,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from typing import cast
+
+from .._word import DataWord, Unknown
 from .._base import InputPort
 from ._base import Memory
 from .model._base import MemorizingModel
@@ -76,21 +79,21 @@ class LevelTriggeredMemory(Memory):
 
         """
         ports_i: list[InputPort] = [self._port_g, self._port_a, self._port_i]
-        addr: bytes | None = self._port_a.data[0]
-        gate: bytes | None = self._port_g.data[0]
+        addr: DataWord = self._port_a.data[0]
+        gate: DataWord = self._port_g.data[0]
         if time is None:
-            if gate is None or addr is None:
+            if any((not isinstance(d, bytes) for d in [gate, addr])):
                 self._initialize_probes()
-            elif int.from_bytes(gate) != 0:
+            elif int.from_bytes(cast(bytes, gate)) != 0:
                 self._initialize_probes(addr)
             else:
                 self._initialize_probes()
         if self._update_time_and_check_inputs(time, ports_i):
-            if gate is None or addr is None:
-                self._port_o.post((None, self._time))
-            elif int.from_bytes(gate) == (0 if self._neg_leveled else 1):
+            if any((not isinstance(d, bytes) for d in [gate, addr])):
+                self._port_o.post((Unknown, self._time))
+            elif int.from_bytes(cast(bytes, gate)) == (0 if self._neg_leveled else 1):
                 self._model.write(addr, self._port_i.data[0])
-                d: tuple[bytes | None, float] = (self._model.read(addr), self._time)
+                d: tuple[DataWord, float] = (self._model.read(addr), self._time)
                 self._port_o.post(d)
                 self._update_probes(addr, d)
             else:

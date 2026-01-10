@@ -1,6 +1,6 @@
 # SimuHW: A behavioral hardware simulator provided as a Python module.
 #
-# Copyright (c) 2024-2025 Arihiro Yoshida. All rights reserved.
+# Copyright (c) 2024-2026 Arihiro Yoshida. All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,9 +20,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from typing import cast
 from abc import ABCMeta
 from collections.abc import Iterable
 
+from ._word import Unknown
 from ._base import InputPort, to_signed_int
 from ._operator import BinaryOperator, SIMD_BinaryOperator
 
@@ -65,9 +67,11 @@ class LeftShifter(Shifter):
         """
         ports_i: list[InputPort] = [*self._ports_i]
         if self._update_time_and_check_inputs(time, ports_i):
-            if self._ports_i[0].data[0] is None or self._ports_i[1].data[0] is None:
-                self._port_o.post((None, self._time))
+            if any((not isinstance(p.data[0], bytes) for p in ports_i)):
+                self._port_o.post((Unknown, self._time))
             else:
+                assert isinstance(self._ports_i[0].data[0], bytes)
+                assert isinstance(self._ports_i[1].data[0], bytes)
                 v: int = int.from_bytes(self._ports_i[0].data[0])
                 s: int = int.from_bytes(self._ports_i[1].data[0])
                 o: int = v << s if s < self._width else 0
@@ -101,9 +105,11 @@ class RightShifter(Shifter):
         """
         ports_i: list[InputPort] = [*self._ports_i]
         if self._update_time_and_check_inputs(time, ports_i):
-            if self._ports_i[0].data[0] is None or self._ports_i[1].data[0] is None:
-                self._port_o.post((None, self._time))
+            if any((not isinstance(p.data[0], bytes) for p in ports_i)):
+                self._port_o.post((Unknown, self._time))
             else:
+                assert isinstance(self._ports_i[0].data[0], bytes)
+                assert isinstance(self._ports_i[1].data[0], bytes)
                 v: int = int.from_bytes(self._ports_i[0].data[0])
                 s: int = int.from_bytes(self._ports_i[1].data[0])
                 o: int = v >> s if s < self._width else 0
@@ -137,9 +143,11 @@ class ArithmeticRightShifter(Shifter):
         """
         ports_i: list[InputPort] = [*self._ports_i]
         if self._update_time_and_check_inputs(time, ports_i):
-            if self._ports_i[0].data[0] is None or self._ports_i[1].data[0] is None:
-                self._port_o.post((None, self._time))
+            if any((not isinstance(p.data[0], bytes) for p in ports_i)):
+                self._port_o.post((Unknown, self._time))
             else:
+                assert isinstance(self._ports_i[0].data[0], bytes)
+                assert isinstance(self._ports_i[1].data[0], bytes)
                 v: int = to_signed_int(self._width, int.from_bytes(self._ports_i[0].data[0]))
                 s: int = int.from_bytes(self._ports_i[1].data[0])
                 o: int = v >> s if s < self._width else 0 if v >= 0 else -1
@@ -173,9 +181,11 @@ class LeftRotator(Shifter):
         """
         ports_i: list[InputPort] = [*self._ports_i]
         if self._update_time_and_check_inputs(time, ports_i):
-            if self._ports_i[0].data[0] is None or self._ports_i[1].data[0] is None:
-                self._port_o.post((None, self._time))
+            if any((not isinstance(p.data[0], bytes) for p in ports_i)):
+                self._port_o.post((Unknown, self._time))
             else:
+                assert isinstance(self._ports_i[0].data[0], bytes)
+                assert isinstance(self._ports_i[1].data[0], bytes)
                 v: int = int.from_bytes(self._ports_i[0].data[0])
                 s: int = int.from_bytes(self._ports_i[1].data[0]) % self._width if self._width > 0 else 0
                 o: int = v << s
@@ -209,9 +219,11 @@ class RightRotator(Shifter):
         """
         ports_i: list[InputPort] = [*self._ports_i]
         if self._update_time_and_check_inputs(time, ports_i):
-            if self._ports_i[0].data[0] is None or self._ports_i[1].data[0] is None:
-                self._port_o.post((None, self._time))
+            if any((not isinstance(p.data[0], bytes) for p in ports_i)):
+                self._port_o.post((Unknown, self._time))
             else:
+                assert isinstance(self._ports_i[0].data[0], bytes)
+                assert isinstance(self._ports_i[1].data[0], bytes)
                 v: int = int.from_bytes(self._ports_i[0].data[0])
                 s: int = int.from_bytes(self._ports_i[1].data[0]) % self._width if self._width > 0 else 0
                 o: int = ((v << self._width) | v) >> s
@@ -267,11 +279,14 @@ class SIMD_LeftShifter(SIMD_Shifter):
         ports_i: list[InputPort] = [*self._ports_i, self._port_s]
         if self._update_time_and_check_inputs(time, ports_i):
             if (
-                self._ports_i[0].data[0] is None or self._ports_i[1].data[0] is None or
-                self._port_s.data[0] is None or int.from_bytes(self._port_s.data[0]) >= len(self._dsize)
+                any((not isinstance(p.data[0], bytes) for p in ports_i)) or
+                int.from_bytes(cast(bytes, self._port_s.data[0])) >= len(self._dsize)
             ):
-                self._port_o.post((None, self._time))
+                self._port_o.post((Unknown, self._time))
             else:
+                assert isinstance(self._ports_i[0].data[0], bytes)
+                assert isinstance(self._ports_i[1].data[0], bytes)
+                assert isinstance(self._port_s.data[0], bytes)
                 w: int = self._dsize[int.from_bytes(self._port_s.data[0])]
                 m: int = (1 << w) - 1
                 v: int = int.from_bytes(self._ports_i[0].data[0])
@@ -315,11 +330,14 @@ class SIMD_RightShifter(SIMD_Shifter):
         ports_i: list[InputPort] = [*self._ports_i, self._port_s]
         if self._update_time_and_check_inputs(time, ports_i):
             if (
-                self._ports_i[0].data[0] is None or self._ports_i[1].data[0] is None or
-                self._port_s.data[0] is None or int.from_bytes(self._port_s.data[0]) >= len(self._dsize)
+                any((not isinstance(p.data[0], bytes) for p in ports_i)) or
+                int.from_bytes(cast(bytes, self._port_s.data[0])) >= len(self._dsize)
             ):
-                self._port_o.post((None, self._time))
+                self._port_o.post((Unknown, self._time))
             else:
+                assert isinstance(self._ports_i[0].data[0], bytes)
+                assert isinstance(self._ports_i[1].data[0], bytes)
+                assert isinstance(self._port_s.data[0], bytes)
                 w: int = self._dsize[int.from_bytes(self._port_s.data[0])]
                 m: int = (1 << w) - 1
                 v: int = int.from_bytes(self._ports_i[0].data[0])
@@ -363,11 +381,14 @@ class SIMD_ArithmeticRightShifter(SIMD_Shifter):
         ports_i: list[InputPort] = [*self._ports_i, self._port_s]
         if self._update_time_and_check_inputs(time, ports_i):
             if (
-                self._ports_i[0].data[0] is None or self._ports_i[1].data[0] is None or
-                self._port_s.data[0] is None or int.from_bytes(self._port_s.data[0]) >= len(self._dsize)
+                any((not isinstance(p.data[0], bytes) for p in ports_i)) or
+                int.from_bytes(cast(bytes, self._port_s.data[0])) >= len(self._dsize)
             ):
-                self._port_o.post((None, self._time))
+                self._port_o.post((Unknown, self._time))
             else:
+                assert isinstance(self._ports_i[0].data[0], bytes)
+                assert isinstance(self._ports_i[1].data[0], bytes)
+                assert isinstance(self._port_s.data[0], bytes)
                 w: int = self._dsize[int.from_bytes(self._port_s.data[0])]
                 m: int = (1 << w) - 1
                 v: int = int.from_bytes(self._ports_i[0].data[0])
@@ -412,11 +433,14 @@ class SIMD_LeftRotator(SIMD_Shifter):
         ports_i: list[InputPort] = [*self._ports_i, self._port_s]
         if self._update_time_and_check_inputs(time, ports_i):
             if (
-                self._ports_i[0].data[0] is None or self._ports_i[1].data[0] is None or
-                self._port_s.data[0] is None or int.from_bytes(self._port_s.data[0]) >= len(self._dsize)
+                any((not isinstance(p.data[0], bytes) for p in ports_i)) or
+                int.from_bytes(cast(bytes, self._port_s.data[0])) >= len(self._dsize)
             ):
-                self._port_o.post((None, self._time))
+                self._port_o.post((Unknown, self._time))
             else:
+                assert isinstance(self._ports_i[0].data[0], bytes)
+                assert isinstance(self._ports_i[1].data[0], bytes)
+                assert isinstance(self._port_s.data[0], bytes)
                 w: int = self._dsize[int.from_bytes(self._port_s.data[0])]
                 m: int = (1 << w) - 1
                 v: int = int.from_bytes(self._ports_i[0].data[0])
@@ -461,11 +485,14 @@ class SIMD_RightRotator(SIMD_Shifter):
         ports_i: list[InputPort] = [*self._ports_i, self._port_s]
         if self._update_time_and_check_inputs(time, ports_i):
             if (
-                self._ports_i[0].data[0] is None or self._ports_i[1].data[0] is None or
-                self._port_s.data[0] is None or int.from_bytes(self._port_s.data[0]) >= len(self._dsize)
+                any((not isinstance(p.data[0], bytes) for p in ports_i)) or
+                int.from_bytes(cast(bytes, self._port_s.data[0])) >= len(self._dsize)
             ):
-                self._port_o.post((None, self._time))
+                self._port_o.post((Unknown, self._time))
             else:
+                assert isinstance(self._ports_i[0].data[0], bytes)
+                assert isinstance(self._ports_i[1].data[0], bytes)
+                assert isinstance(self._port_s.data[0], bytes)
                 w: int = self._dsize[int.from_bytes(self._port_s.data[0])]
                 m: int = (1 << w) - 1
                 v: int = int.from_bytes(self._ports_i[0].data[0])

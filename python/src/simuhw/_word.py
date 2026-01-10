@@ -20,41 +20,17 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from collections.abc import Sequence
-
-from ..._word import DataWord
-from ._base import ArbitrationPolicy
+from abc import ABCMeta
 
 
-class RoundRobinArbitrationPolicy(ArbitrationPolicy):
-    """A round-robin arbitration policy."""
+class Unknown(metaclass=ABCMeta):
+    """The unknown state."""
+    pass
 
-    def __init__(self, *, initial: int = 0) -> None:
-        """Creates a round-robin arbitration policy.
 
-        Args:
-            initial: The initial index.
+class HighZ(metaclass=ABCMeta):
+    """The high impedance state."""
+    pass
 
-        """
-        self._next: int = initial
-        """The next index."""
 
-    @property
-    def next(self) -> int:
-        """The next index."""
-        return self._next
-
-    def select(self, targets: Sequence[tuple[DataWord, float]]) -> int:
-        """Selects one from the given inputs.
-
-        Args:
-            targets: The attributes of the targets to be selected.
-                     They are specified as (*data word*, *time*).
-
-        Returns:
-            The index of the selected target.
-
-        """
-        i: int = self._next % len(targets)  # in case where the number of the targets varies whenever called
-        self._next = (self._next + 1) % len(targets)
-        return i
+DataWord = bytes | type[Unknown | HighZ]

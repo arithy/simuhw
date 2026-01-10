@@ -57,6 +57,7 @@ import simuhw as hw
       - [`LogicLowSource`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.LogicLowSource)
       - [`LogicHighSource`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.LogicHighSource)
       - [`LogicUnknownSource`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.LogicUnknownSource)
+      - [`LogicHighZSource`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.LogicHighZSource)
       - [`Drain`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.Drain)
       - [`Delay`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.Delay)
       - [`Group`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.Group)

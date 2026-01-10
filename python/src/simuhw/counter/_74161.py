@@ -1,6 +1,6 @@
 # SimuHW: A behavioral hardware simulator provided as a Python module.
 #
-# Copyright (c) 2024-2025 Arihiro Yoshida. All rights reserved.
+# Copyright (c) 2024-2026 Arihiro Yoshida. All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,6 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from .._word import DataWord, Unknown
 from .._base import InputPort
 from ._base import SynchronousBinaryCounter
 
@@ -117,35 +118,35 @@ class SynchronousBinaryCounter74161(SynchronousBinaryCounter):
 
         """
         ports_i: list[InputPort] = [self._port_ck, self._port_clr, self._port_load, self._port_enp, self._port_ent, self._port_d]
-        ck: bytes | None = self._port_ck.data[0]
+        ck: DataWord = self._port_ck.data[0]
         if self._update_time_and_check_inputs(time, ports_i):
-            if self._port_clr.data[0] is None:
-                self._count = None
-                self._port_q.post((None, self._time))
-                self._port_co.post((None, self._time))
+            if not isinstance(self._port_clr.data[0], bytes):
+                self._count = Unknown
+                self._port_q.post((Unknown, self._time))
+                self._port_co.post((Unknown, self._time))
             elif int.from_bytes(self._port_clr.data[0]) == 0:
                 self._count = (0).to_bytes(self._nbytes)
                 self._port_q.post((self._count, self._time))
                 self._port_co.post(((0).to_bytes(1), self._time))
-            elif ck is None or self._prev_ck is None:
-                self._count = None
-                self._port_q.post((None, self._time))
-                self._port_co.post((None, self._time))
+            elif not isinstance(ck, bytes) or not isinstance(self._prev_ck, bytes):
+                self._count = Unknown
+                self._port_q.post((Unknown, self._time))
+                self._port_co.post((Unknown, self._time))
             elif int.from_bytes(ck) - int.from_bytes(self._prev_ck) == 1:
-                if self._port_load.data[0] is None:
-                    self._count = None
-                    self._port_q.post((None, self._time))
-                    self._port_co.post((None, self._time))
+                if not isinstance(self._port_load.data[0], bytes):
+                    self._count = Unknown
+                    self._port_q.post((Unknown, self._time))
+                    self._port_co.post((Unknown, self._time))
                 elif int.from_bytes(self._port_load.data[0]) == 0:
                     self._count = self._port_d.data[0]
                     self._port_q.post((self._count, self._time))
                     self._port_co.post(((0).to_bytes(1), self._time))
                 elif (
-                    self._port_enp.data[0] is not None and
-                    self._port_ent.data[0] is not None and
+                    isinstance(self._port_enp.data[0], bytes) and
+                    isinstance(self._port_ent.data[0], bytes) and
                     int.from_bytes(self._port_enp.data[0]) == 1 and
                     int.from_bytes(self._port_ent.data[0]) == 1 and
-                    self._count is not None
+                    isinstance(self._count, bytes)
                 ):
                     q: int = int.from_bytes(self._count)
                     co: int = 0

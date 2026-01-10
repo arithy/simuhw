@@ -1,6 +1,6 @@
 # SimuHW: A behavioral hardware simulator provided as a Python module.
 #
-# Copyright (c) 2024-2025 Arihiro Yoshida. All rights reserved.
+# Copyright (c) 2024-2026 Arihiro Yoshida. All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,29 +20,32 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from typing import cast
+
 from simuhw import (
-    Source, Drain, Remainder, SignedRemainder, SIMD_Remainder, SIMD_SignedRemainder,
+    DataWord, Unknown, Source, Drain,
+    Remainder, SignedRemainder, SIMD_Remainder, SIMD_SignedRemainder,
     ChannelProbe, Simulator
 )
 
 _EPS: float = 1e-18
 
 
-_test_data: list[tuple[int, list[list[tuple[bytes | None, float]]], list[list[list[tuple[bytes | None, float]]]]]] = [
+_test_data: list[tuple[int, list[list[tuple[DataWord, float]]], list[list[list[tuple[DataWord, float]]]]]] = [
     (
         1,
         [
-            [(b'\x00', 1e-9), (b'\x01', 4e-9), (None, 7e-9)],
-            [(b'\x00', 2e-9), (b'\x01', 3e-9), (None, 5e-9), (b'\x00', 6e-9), (b'\x01', 8e-9), (None, 9e-9)]
+            [(b'\x00', 1e-9), (b'\x01', 4e-9), (Unknown, 7e-9)],
+            [(b'\x00', 2e-9), (b'\x01', 3e-9), (Unknown, 5e-9), (b'\x00', 6e-9), (b'\x01', 8e-9), (Unknown, 9e-9)]
         ],
         [
             [
-                [(b'\x00', 2e-9), (None, 5e-9), (b'\x00', 6e-9), (None, 7e-9)],
-                [(b'\x01', 2e-9), (b'\x00', 3e-9), (None, 5e-9), (b'\x01', 6e-9), (None, 7e-9)]
+                [(b'\x00', 2e-9), (Unknown, 5e-9), (b'\x00', 6e-9), (Unknown, 7e-9)],
+                [(b'\x01', 2e-9), (b'\x00', 3e-9), (Unknown, 5e-9), (b'\x01', 6e-9), (Unknown, 7e-9)]
             ],
             [
-                [(b'\x00', 2e-9), (None, 5e-9), (b'\x00', 6e-9), (None, 7e-9)],
-                [(b'\x01', 2e-9), (b'\x00', 3e-9), (None, 5e-9), (b'\x01', 6e-9), (None, 7e-9)]
+                [(b'\x00', 2e-9), (Unknown, 5e-9), (b'\x00', 6e-9), (Unknown, 7e-9)],
+                [(b'\x01', 2e-9), (b'\x00', 3e-9), (Unknown, 5e-9), (b'\x01', 6e-9), (Unknown, 7e-9)]
             ]
         ]
     ),
@@ -50,39 +53,43 @@ _test_data: list[tuple[int, list[list[tuple[bytes | None, float]]], list[list[li
         8,
         [
             [
-                ([b'\x00', b'\x01', b'\x80', b'\xff', None][i % 5], (1 + 5 * i) * 1e-9) for i in range(5)
+                (cast(list[DataWord], [
+                    b'\x00', b'\x01', b'\x80', b'\xff', Unknown
+                ])[i % 5], (1 + 5 * i) * 1e-9) for i in range(5)
             ],
             [
-                ([b'\x00', b'\x02', b'\x7f', b'\xff', None][i % 5], (1 + i) * 1e-9) for i in range(25)
+                (cast(list[DataWord], [
+                    b'\x00', b'\x02', b'\x7f', b'\xff', Unknown
+                ])[i % 5], (1 + i) * 1e-9) for i in range(25)
             ]
         ],
         [
             [
                 [
-                    (b'\x00', 1e-9), (None, 5e-9),
-                    (b'\x00', 6e-9), (b'\x01', 7e-9), (None, 10e-9),
-                    (b'\x00', 11e-9), (b'\x01', 13e-9), (b'\x80', 14e-9), (None, 15e-9),
-                    (b'\x00', 16e-9), (b'\x01', 17e-9), (b'\x00', 19e-9), (None, 20e-9)
+                    (b'\x00', 1e-9), (Unknown, 5e-9),
+                    (b'\x00', 6e-9), (b'\x01', 7e-9), (Unknown, 10e-9),
+                    (b'\x00', 11e-9), (b'\x01', 13e-9), (b'\x80', 14e-9), (Unknown, 15e-9),
+                    (b'\x00', 16e-9), (b'\x01', 17e-9), (b'\x00', 19e-9), (Unknown, 20e-9)
                 ],
                 [
-                    (b'\x01', 1e-9), (b'\x00', 2e-9), (None, 5e-9),
-                    (b'\x01', 6e-9), (b'\x00', 7e-9), (None, 10e-9),
-                    (b'\x01', 11e-9), (b'\x00', 12e-9), (None, 15e-9),
-                    (b'\x01', 16e-9), (b'\x00', 17e-9), (None, 20e-9)
+                    (b'\x01', 1e-9), (b'\x00', 2e-9), (Unknown, 5e-9),
+                    (b'\x01', 6e-9), (b'\x00', 7e-9), (Unknown, 10e-9),
+                    (b'\x01', 11e-9), (b'\x00', 12e-9), (Unknown, 15e-9),
+                    (b'\x01', 16e-9), (b'\x00', 17e-9), (Unknown, 20e-9)
                 ]
             ],
             [
                 [
-                    (b'\x00', 1e-9), (None, 5e-9),
-                    (b'\x00', 6e-9), (b'\x01', 7e-9), (b'\x00', 9e-9), (None, 10e-9),
-                    (b'\x00', 11e-9), (b'\xff', 13e-9), (b'\x00', 14e-9), (None, 15e-9),
-                    (b'\x00', 16e-9), (b'\xff', 17e-9), (b'\x00', 19e-9), (None, 20e-9)
+                    (b'\x00', 1e-9), (Unknown, 5e-9),
+                    (b'\x00', 6e-9), (b'\x01', 7e-9), (b'\x00', 9e-9), (Unknown, 10e-9),
+                    (b'\x00', 11e-9), (b'\xff', 13e-9), (b'\x00', 14e-9), (Unknown, 15e-9),
+                    (b'\x00', 16e-9), (b'\xff', 17e-9), (b'\x00', 19e-9), (Unknown, 20e-9)
                 ],
                 [
-                    (b'\x01', 1e-9), (b'\x00', 2e-9), (None, 5e-9),
-                    (b'\x01', 6e-9), (b'\x00', 7e-9), (None, 10e-9),
-                    (b'\x01', 11e-9), (b'\x00', 12e-9), (None, 15e-9),
-                    (b'\x01', 16e-9), (b'\x00', 17e-9), (None, 20e-9)
+                    (b'\x01', 1e-9), (b'\x00', 2e-9), (Unknown, 5e-9),
+                    (b'\x01', 6e-9), (b'\x00', 7e-9), (Unknown, 10e-9),
+                    (b'\x01', 11e-9), (b'\x00', 12e-9), (Unknown, 15e-9),
+                    (b'\x01', 16e-9), (b'\x00', 17e-9), (Unknown, 20e-9)
                 ]
             ]
         ]
@@ -92,13 +99,17 @@ _test_data: list[tuple[int, list[list[tuple[bytes | None, float]]], list[list[li
         [
             [
                 (
-                    [b'\x00\x00\x00\x00\x00', b'\x00\x00\x00\x00\x01', b'\x01\x00\x00\x00\x00', b'\x01\xff\xff\xff\xff', None][i % 5],
+                    cast(list[DataWord], [
+                        b'\x00\x00\x00\x00\x00', b'\x00\x00\x00\x00\x01', b'\x01\x00\x00\x00\x00', b'\x01\xff\xff\xff\xff', Unknown
+                    ])[i % 5],
                     (1 + 5 * i) * 1e-9
                 ) for i in range(5)
             ],
             [
                 (
-                    [b'\x00\x00\x00\x00\x00', b'\x00\x00\x00\x00\x02', b'\x00\xff\xff\xff\xff', b'\x01\xff\xff\xff\xff', None][i % 5],
+                    cast(list[DataWord], [
+                        b'\x00\x00\x00\x00\x00', b'\x00\x00\x00\x00\x02', b'\x00\xff\xff\xff\xff', b'\x01\xff\xff\xff\xff', Unknown
+                    ])[i % 5],
                     (1 + i) * 1e-9
                 ) for i in range(25)
             ]
@@ -106,30 +117,30 @@ _test_data: list[tuple[int, list[list[tuple[bytes | None, float]]], list[list[li
         [
             [
                 [
-                    (b'\x00\x00\x00\x00\x00', 1e-9), (None, 5e-9),
-                    (b'\x00\x00\x00\x00\x00', 6e-9), (b'\x00\x00\x00\x00\x01', 7e-9), (None, 10e-9),
-                    (b'\x00\x00\x00\x00\x00', 11e-9), (b'\x00\x00\x00\x00\x01', 13e-9), (b'\x01\x00\x00\x00\x00', 14e-9), (None, 15e-9),
-                    (b'\x00\x00\x00\x00\x00', 16e-9), (b'\x00\x00\x00\x00\x01', 17e-9), (b'\x00\x00\x00\x00\x00', 19e-9), (None, 20e-9)
+                    (b'\x00\x00\x00\x00\x00', 1e-9), (Unknown, 5e-9),
+                    (b'\x00\x00\x00\x00\x00', 6e-9), (b'\x00\x00\x00\x00\x01', 7e-9), (Unknown, 10e-9),
+                    (b'\x00\x00\x00\x00\x00', 11e-9), (b'\x00\x00\x00\x00\x01', 13e-9), (b'\x01\x00\x00\x00\x00', 14e-9), (Unknown, 15e-9),
+                    (b'\x00\x00\x00\x00\x00', 16e-9), (b'\x00\x00\x00\x00\x01', 17e-9), (b'\x00\x00\x00\x00\x00', 19e-9), (Unknown, 20e-9)
                 ],
                 [
-                    (b'\x01', 1e-9), (b'\x00', 2e-9), (None, 5e-9),
-                    (b'\x01', 6e-9), (b'\x00', 7e-9), (None, 10e-9),
-                    (b'\x01', 11e-9), (b'\x00', 12e-9), (None, 15e-9),
-                    (b'\x01', 16e-9), (b'\x00', 17e-9), (None, 20e-9)
+                    (b'\x01', 1e-9), (b'\x00', 2e-9), (Unknown, 5e-9),
+                    (b'\x01', 6e-9), (b'\x00', 7e-9), (Unknown, 10e-9),
+                    (b'\x01', 11e-9), (b'\x00', 12e-9), (Unknown, 15e-9),
+                    (b'\x01', 16e-9), (b'\x00', 17e-9), (Unknown, 20e-9)
                 ]
             ],
             [
                 [
-                    (b'\x00\x00\x00\x00\x00', 1e-9), (None, 5e-9),
-                    (b'\x00\x00\x00\x00\x00', 6e-9), (b'\x00\x00\x00\x00\x01', 7e-9), (b'\x00\x00\x00\x00\x00', 9e-9), (None, 10e-9),
-                    (b'\x00\x00\x00\x00\x00', 11e-9), (b'\x01\xff\xff\xff\xff', 13e-9), (b'\x00\x00\x00\x00\x00', 14e-9), (None, 15e-9),
-                    (b'\x00\x00\x00\x00\x00', 16e-9), (b'\x01\xff\xff\xff\xff', 17e-9), (b'\x00\x00\x00\x00\x00', 19e-9), (None, 20e-9)
+                    (b'\x00\x00\x00\x00\x00', 1e-9), (Unknown, 5e-9),
+                    (b'\x00\x00\x00\x00\x00', 6e-9), (b'\x00\x00\x00\x00\x01', 7e-9), (b'\x00\x00\x00\x00\x00', 9e-9), (Unknown, 10e-9),
+                    (b'\x00\x00\x00\x00\x00', 11e-9), (b'\x01\xff\xff\xff\xff', 13e-9), (b'\x00\x00\x00\x00\x00', 14e-9), (Unknown, 15e-9),
+                    (b'\x00\x00\x00\x00\x00', 16e-9), (b'\x01\xff\xff\xff\xff', 17e-9), (b'\x00\x00\x00\x00\x00', 19e-9), (Unknown, 20e-9)
                 ],
                 [
-                    (b'\x01', 1e-9), (b'\x00', 2e-9), (None, 5e-9),
-                    (b'\x01', 6e-9), (b'\x00', 7e-9), (None, 10e-9),
-                    (b'\x01', 11e-9), (b'\x00', 12e-9), (None, 15e-9),
-                    (b'\x01', 16e-9), (b'\x00', 17e-9), (None, 20e-9)
+                    (b'\x01', 1e-9), (b'\x00', 2e-9), (Unknown, 5e-9),
+                    (b'\x01', 6e-9), (b'\x00', 7e-9), (Unknown, 10e-9),
+                    (b'\x01', 11e-9), (b'\x00', 12e-9), (Unknown, 15e-9),
+                    (b'\x01', 16e-9), (b'\x00', 17e-9), (Unknown, 20e-9)
                 ]
             ]
         ]
@@ -182,29 +193,29 @@ def test_SignedRemainder() -> None:
 
 
 def test_SIMD_Remainder() -> None:
-    test_data: list[tuple[list[int], list[int], list[list[tuple[bytes | None, float]]], list[list[tuple[bytes | None, float]]]]] = [
+    test_data: list[tuple[list[int], list[int], list[list[tuple[DataWord, float]]], list[list[tuple[DataWord, float]]]]] = [
         (
             [32, 2, 8],
             [4, 8, 16, 32],
             [
                 [
-                    (b'\xf2\x80\x3e\x1b', 5e-9), (None, 15e-9)
+                    (b'\xf2\x80\x3e\x1b', 5e-9), (Unknown, 15e-9)
                 ],
                 [
                     (b'\x01\xff\x08\x0c', 10e-9)
                 ],
                 [
-                    ([None, b'\x00', b'\x01', b'\x02', b'\x03'][i % 5], 1e-9 * i) for i in range(20)
+                    (cast(list[DataWord], [Unknown, b'\x00', b'\x01', b'\x02', b'\x03'])[i % 5], 1e-9 * i) for i in range(20)
                 ]
             ],
             [
                 [
                     (b'\x00\x80\x06\x0b', 11e-9), (b'\x00\x80\x06\x03', 12e-9), (b'\x00\xf9\x05\xc7', 13e-9), (b'\x00\xf5\x70\x6f', 14e-9),
-                    (None, 15e-9)
+                    (Unknown, 15e-9)
                 ],
                 [
                     (b'\x8a', 11e-9), (b'\x00', 12e-9),
-                    (None, 15e-9)
+                    (Unknown, 15e-9)
                 ]
             ]
         )
@@ -234,29 +245,29 @@ def test_SIMD_Remainder() -> None:
 
 
 def test_SIMD_SignedRemainder() -> None:
-    test_data: list[tuple[list[int], list[int], list[list[tuple[bytes | None, float]]], list[list[tuple[bytes | None, float]]]]] = [
+    test_data: list[tuple[list[int], list[int], list[list[tuple[DataWord, float]]], list[list[tuple[DataWord, float]]]]] = [
         (
             [32, 2, 8],
             [4, 8, 16, 32],
             [
                 [
-                    (b'\xf2\x80\x3e\x1b', 5e-9), (None, 15e-9)
+                    (b'\xf2\x80\x3e\x1b', 5e-9), (Unknown, 15e-9)
                 ],
                 [
                     (b'\x01\xff\x08\x0c', 10e-9)
                 ],
                 [
-                    ([None, b'\x00', b'\x01', b'\x02', b'\x03'][i % 5], 1e-9 * i) for i in range(20)
+                    (cast(list[DataWord], [Unknown, b'\x00', b'\x01', b'\x02', b'\x03'])[i % 5], 1e-9 * i) for i in range(20)
                 ]
             ],
             [
                 [
                     (b'\x00\x00\x0e\x0f', 11e-9), (b'\x00\x00\x06\x03', 12e-9), (b'\xfe\x7a\x05\xc7', 13e-9), (b'\xfe\x7a\x6e\x63', 14e-9),
-                    (None, 15e-9)
+                    (Unknown, 15e-9)
                 ],
                 [
                     (b'\x8a', 11e-9), (b'\x00', 12e-9),
-                    (None, 15e-9)
+                    (Unknown, 15e-9)
                 ]
             ]
         )

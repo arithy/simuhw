@@ -1,6 +1,6 @@
 # SimuHW: A behavioral hardware simulator provided as a Python module.
 #
-# Copyright (c) 2024-2025 Arihiro Yoshida. All rights reserved.
+# Copyright (c) 2024-2026 Arihiro Yoshida. All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 from simuhw import (
-    Source, Drain,
+    DataWord, Unknown, Source, Drain,
     DataCombiner, DataSplitter, Arbitrator, Multiplexer, Demultiplexer, DataRetainingDemultiplexer, Distributor,
     ChannelProbe, Simulator
 )
@@ -31,25 +31,25 @@ _EPS: float = 1e-18
 
 
 def test_DataCombiner() -> None:
-    test_data: list[tuple[list[int], list[list[tuple[bytes | None, float]]], list[tuple[bytes | None, float]]]] = [
+    test_data: list[tuple[list[int], list[list[tuple[DataWord, float]]], list[tuple[DataWord, float]]]] = [
         (
             [1],
             [
-                [(b'\x01', 1e-9), (b'\x00', 3e-9), (None, 4e-9), (b'\x01', 6e-9)]
+                [(b'\x01', 1e-9), (b'\x00', 3e-9), (Unknown, 4e-9), (b'\x01', 6e-9)]
             ],
-            [(b'\x01', 1e-9), (b'\x00', 3e-9), (None, 4e-9), (b'\x01', 6e-9)]
+            [(b'\x01', 1e-9), (b'\x00', 3e-9), (Unknown, 4e-9), (b'\x01', 6e-9)]
         ),
         (
             [8, 3, 17, 4],
             [
-                [(b'\xfe', 1e-9), (b'\x01', 5e-9), (b'\xfe', 10e-9), (None, 11e-9), (b'\x01', 12e-9)],
+                [(b'\xfe', 1e-9), (b'\x01', 5e-9), (b'\xfe', 10e-9), (Unknown, 11e-9), (b'\x01', 12e-9)],
                 [(b'\x06', 4e-9), (b'\x01', 5e-9), (b'\x06', 14e-9)],
                 [(b'\x01\xff\xfe', 3e-9), (b'\x00\x00\x01', 6e-9), (b'\x01\xff\xfe', 7e-9), (b'\x00\x00\x01', 9e-9)],
                 [(b'\x0e', 2e-9), (b'\x01', 3e-9), (b'\x0e', 7e-9), (b'\x01', 10e-9)]
             ],
             [
                 (b'\xfe\xdf\xff\xe1', 4e-9), (b'\x01\x3f\xff\xe1', 5e-9), (b'\x01\x20\x00\x11', 6e-9), (b'\x01\x3f\xff\xee', 7e-9),
-                (b'\x01\x20\x00\x1e', 9e-9), (b'\xfe\x20\x00\x11', 10e-9), (None, 11e-9), (b'\x01\x20\x00\x11', 12e-9), (b'\x01\xc0\x00\x11', 14e-9)
+                (b'\x01\x20\x00\x1e', 9e-9), (b'\xfe\x20\x00\x11', 10e-9), (Unknown, 11e-9), (b'\x01\x20\x00\x11', 12e-9), (b'\x01\xc0\x00\x11', 14e-9)
             ]
         )
     ]
@@ -64,7 +64,7 @@ def test_DataCombiner() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[bytes | None, float]] = t[2]
+        r: list[tuple[DataWord, float]] = t[2]
         assert len(po.data) == len(r)
         for o, q in zip(po.data, r):
             assert o[0] == q[0]
@@ -72,33 +72,33 @@ def test_DataCombiner() -> None:
 
 
 def test_DataSplitter() -> None:
-    test_data: list[tuple[list[int], list[tuple[bytes | None, float]], list[list[tuple[bytes | None, float]]]]] = [
+    test_data: list[tuple[list[int], list[tuple[DataWord, float]], list[list[tuple[DataWord, float]]]]] = [
         (
             [1],
-            [(b'\x01', 1e-9), (b'\x00', 3e-9), (None, 4e-9), (b'\x01', 6e-9)],
+            [(b'\x01', 1e-9), (b'\x00', 3e-9), (Unknown, 4e-9), (b'\x01', 6e-9)],
             [
-                [(b'\x01', 1e-9), (b'\x00', 3e-9), (None, 4e-9), (b'\x01', 6e-9)]
+                [(b'\x01', 1e-9), (b'\x00', 3e-9), (Unknown, 4e-9), (b'\x01', 6e-9)]
             ]
         ),
         (
             [8, 3, 17, 4],
             [
                 (b'\xfe\xdf\xff\xe1', 4e-9), (b'\x01\x3f\xff\xe1', 5e-9), (b'\x01\x20\x00\x11', 6e-9), (b'\x01\x3f\xff\xee', 7e-9),
-                (b'\x01\x20\x00\x1e', 9e-9), (b'\xfe\x20\x00\x11', 10e-9), (None, 11e-9), (b'\x01\x20\x00\x11', 12e-9), (b'\x01\xc0\x00\x11', 14e-9)
+                (b'\x01\x20\x00\x1e', 9e-9), (b'\xfe\x20\x00\x11', 10e-9), (Unknown, 11e-9), (b'\x01\x20\x00\x11', 12e-9), (b'\x01\xc0\x00\x11', 14e-9)
             ],
             [
                 [
-                    (b'\xfe', 4e-9), (b'\x01', 5e-9), (b'\xfe', 10e-9), (None, 11e-9), (b'\x01', 12e-9)
+                    (b'\xfe', 4e-9), (b'\x01', 5e-9), (b'\xfe', 10e-9), (Unknown, 11e-9), (b'\x01', 12e-9)
                 ],
                 [
-                    (b'\x06', 4e-9), (b'\x01', 5e-9), (None, 11e-9), (b'\x01', 12e-9), (b'\x06', 14e-9)
+                    (b'\x06', 4e-9), (b'\x01', 5e-9), (Unknown, 11e-9), (b'\x01', 12e-9), (b'\x06', 14e-9)
                 ],
                 [
                     (b'\x01\xff\xfe', 4e-9), (b'\x00\x00\x01', 6e-9), (b'\x01\xff\xfe', 7e-9),
-                    (b'\x00\x00\x01', 9e-9), (None, 11e-9), (b'\x00\x00\x01', 12e-9)
+                    (b'\x00\x00\x01', 9e-9), (Unknown, 11e-9), (b'\x00\x00\x01', 12e-9)
                 ],
                 [
-                    (b'\x01', 4e-9), (b'\x0e', 7e-9), (b'\x01', 10e-9), (None, 11e-9), (b'\x01', 12e-9)
+                    (b'\x01', 4e-9), (b'\x0e', 7e-9), (b'\x01', 10e-9), (Unknown, 11e-9), (b'\x01', 12e-9)
                 ]
             ]
         )
@@ -122,19 +122,19 @@ def test_DataSplitter() -> None:
 
 
 def test_Arbitrator() -> None:
-    test_data: list[tuple[int, list[list[tuple[bytes | None, float]]], list[tuple[bytes | None, float]], list[tuple[bytes | None, float]]]] = [
+    test_data: list[tuple[int, list[list[tuple[DataWord, float]]], list[tuple[DataWord, float]], list[tuple[DataWord, float]]]] = [
         (
             1,
             [
-                [(b'\x01', 1e-9), (b'\x00', 3e-9), (None, 4e-9), (b'\x01', 6e-9)]
+                [(b'\x01', 1e-9), (b'\x00', 3e-9), (Unknown, 4e-9), (b'\x01', 6e-9)]
             ],
-            [(b'\x01', 1e-9), (b'\x00', 3e-9), (None, 4e-9), (b'\x01', 6e-9)],
+            [(b'\x01', 1e-9), (b'\x00', 3e-9), (Unknown, 4e-9), (b'\x01', 6e-9)],
             [(b'\x01', 1e-9)]
         ),
         (
             8,
             [
-                [(b'\xfe', 1e-9), (b'\xf1', 5e-9), (b'\xfe', 10e-9), (None, 11e-9), (b'\xf1', 12e-9)],
+                [(b'\xfe', 1e-9), (b'\xf1', 5e-9), (b'\xfe', 10e-9), (Unknown, 11e-9), (b'\xf1', 12e-9)],
                 [(b'\x06', 4e-9), (b'\x01', 5e-9), (b'\x06', 14e-9)],
                 [(b'\x41', 3e-9), (b'\x40', 6e-9), (b'\x41', 7e-9), (b'\x40', 9e-9)],
                 [(b'\x1e', 2e-9), (b'\x11', 3e-9), (b'\x1e', 7e-9), (b'\x11', 10e-9)]
@@ -184,28 +184,28 @@ def test_Arbitrator() -> None:
 
 
 def test_Multiplexer() -> None:
-    test_data: list[tuple[int, list[list[tuple[bytes | None, float]]], list[tuple[bytes | None, float]], list[tuple[bytes | None, float]]]] = [
+    test_data: list[tuple[int, list[list[tuple[DataWord, float]]], list[tuple[DataWord, float]], list[tuple[DataWord, float]]]] = [
         (
             1,
             [
-                [(b'\x01', 1e-9), (b'\x00', 3e-9), (None, 4e-9), (b'\x01', 6e-9)]
+                [(b'\x01', 1e-9), (b'\x00', 3e-9), (Unknown, 4e-9), (b'\x01', 6e-9)]
             ],
-            [(b'\x01', 2e-9), (None, 5e-9), (b'\x01', 6e-9), (b'\x00', 7e-9)],
-            [(b'\x01', 2e-9), (b'\x00', 3e-9), (None, 4e-9), (b'\x01', 6e-9), (None, 7e-9)]
+            [(b'\x01', 2e-9), (Unknown, 5e-9), (b'\x01', 6e-9), (b'\x00', 7e-9)],
+            [(b'\x01', 2e-9), (b'\x00', 3e-9), (Unknown, 4e-9), (b'\x01', 6e-9), (Unknown, 7e-9)]
         ),
         (
             8,
             [
-                [(b'\xfe', 1e-9), (b'\xf1', 5e-9), (b'\xfe', 10e-9), (None, 11e-9), (b'\xf1', 12e-9)],
+                [(b'\xfe', 1e-9), (b'\xf1', 5e-9), (b'\xfe', 10e-9), (Unknown, 11e-9), (b'\xf1', 12e-9)],
                 [(b'\x06', 4e-9), (b'\x01', 5e-9), (b'\x06', 14e-9)],
                 [(b'\x41', 3e-9), (b'\x40', 6e-9), (b'\x41', 7e-9), (b'\x40', 9e-9)],
                 [(b'\x1e', 2e-9), (b'\x11', 3e-9), (b'\x1e', 7e-9), (b'\x11', 10e-9)]
             ],
             [
-                (b'\x01', 2e-9), (None, 6e-9), (b'\x08', 8e-9), (b'\x04', 9e-9), (b'\x00', 13e-9), (b'\x02', 14e-9)
+                (b'\x01', 2e-9), (Unknown, 6e-9), (b'\x08', 8e-9), (b'\x04', 9e-9), (b'\x00', 13e-9), (b'\x02', 14e-9)
             ],
             [
-                (b'\xfe', 2e-9), (b'\xf1', 5e-9), (None, 6e-9), (b'\x1e', 8e-9), (b'\x40', 9e-9), (None, 13e-9), (b'\x06', 14e-9)
+                (b'\xfe', 2e-9), (b'\xf1', 5e-9), (Unknown, 6e-9), (b'\x1e', 8e-9), (b'\x40', 9e-9), (Unknown, 13e-9), (b'\x06', 14e-9)
             ]
         )
     ]
@@ -223,7 +223,7 @@ def test_Multiplexer() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[bytes | None, float]] = t[3]
+        r: list[tuple[DataWord, float]] = t[3]
         assert len(po.data) == len(r)
         for o, q in zip(po.data, r):
             assert o[0] == q[0]
@@ -231,30 +231,30 @@ def test_Multiplexer() -> None:
 
 
 def test_Demultiplexer() -> None:
-    test_data: list[tuple[tuple[int, bytes | None], list[tuple[bytes | None, float]], list[tuple[bytes | None, float]], list[list[tuple[bytes | None, float]]]]] = [
+    test_data: list[tuple[tuple[int, DataWord], list[tuple[DataWord, float]], list[tuple[DataWord, float]], list[list[tuple[DataWord, float]]]]] = [
         (
             (1, b'\x01'),
-            [(b'\x01', 2e-9), (b'\x00', 3e-9), (None, 4e-9), (b'\x01', 5e-9), (b'\x00', 6e-9), (None, 7e-9), (b'\x00', 9e-9), (None, 10e-9), (b'\x01', 11e-9)],
-            [(b'\x01', 1e-9), (None, 6e-9), (b'\x01', 8e-9), (b'\x00', 9e-9)],
+            [(b'\x01', 2e-9), (b'\x00', 3e-9), (Unknown, 4e-9), (b'\x01', 5e-9), (b'\x00', 6e-9), (Unknown, 7e-9), (b'\x00', 9e-9), (Unknown, 10e-9), (b'\x01', 11e-9)],
+            [(b'\x01', 1e-9), (Unknown, 6e-9), (b'\x01', 8e-9), (b'\x00', 9e-9)],
             [
-                [(b'\x01', 2e-9), (b'\x00', 3e-9), (None, 4e-9), (b'\x01', 5e-9), (None, 6e-9), (b'\x01', 9e-9)]
+                [(b'\x01', 2e-9), (b'\x00', 3e-9), (Unknown, 4e-9), (b'\x01', 5e-9), (Unknown, 6e-9), (b'\x01', 9e-9)]
             ]
         ),
         (
             (8, b'\xcd'),
-            [(b'\xf1', 2e-9), (None, 3e-9), (b'\xfe', 5e-9), (b'\xd2', 6e-9), (b'\x1e', 9e-9), (None, 10e-9), (b'\xa1', 11e-9), (b'\x8b', 12e-9)],
-            [(b'\x01', 1e-9), (None, 4e-9), (b'\x08', 6e-9), (b'\x04', 7e-9), (b'\x03', 8e-9), (b'\x00', 9e-9), (b'\x0a', 12e-9)],
+            [(b'\xf1', 2e-9), (Unknown, 3e-9), (b'\xfe', 5e-9), (b'\xd2', 6e-9), (b'\x1e', 9e-9), (Unknown, 10e-9), (b'\xa1', 11e-9), (b'\x8b', 12e-9)],
+            [(b'\x01', 1e-9), (Unknown, 4e-9), (b'\x08', 6e-9), (b'\x04', 7e-9), (b'\x03', 8e-9), (b'\x00', 9e-9), (b'\x0a', 12e-9)],
             [
-                [(b'\xf1', 2e-9), (None, 3e-9), (b'\xcd', 6e-9), (b'\xd2', 8e-9), (b'\xcd', 9e-9)],
-                [(b'\xcd', 1e-9), (None, 4e-9), (b'\xcd', 6e-9), (b'\xd2', 8e-9), (b'\xcd', 9e-9), (b'\x8b', 12e-9)],
-                [(b'\xcd', 1e-9), (None, 4e-9), (b'\xcd', 6e-9), (b'\xd2', 7e-9), (b'\xcd', 8e-9)],
-                [(b'\xcd', 1e-9), (None, 4e-9), (b'\xd2', 6e-9), (b'\xcd', 7e-9), (b'\x8b', 12e-9)]
+                [(b'\xf1', 2e-9), (Unknown, 3e-9), (b'\xcd', 6e-9), (b'\xd2', 8e-9), (b'\xcd', 9e-9)],
+                [(b'\xcd', 1e-9), (Unknown, 4e-9), (b'\xcd', 6e-9), (b'\xd2', 8e-9), (b'\xcd', 9e-9), (b'\x8b', 12e-9)],
+                [(b'\xcd', 1e-9), (Unknown, 4e-9), (b'\xcd', 6e-9), (b'\xd2', 7e-9), (b'\xcd', 8e-9)],
+                [(b'\xcd', 1e-9), (Unknown, 4e-9), (b'\xd2', 6e-9), (b'\xcd', 7e-9), (b'\x8b', 12e-9)]
             ]
         )
     ]
     for t in test_data:
         w: int = t[0][0]
-        d: bytes | None = t[0][1]
+        d: DataWord = t[0][1]
         n: int = len(t[3])
         po: list[ChannelProbe] = [ChannelProbe(f'out{i}', w) for i in range(n)]
         ti: list[Source] = [Source(w, t[1]), Source(n, t[2])]
@@ -275,21 +275,21 @@ def test_Demultiplexer() -> None:
 
 
 def test_DataRetainingDemultiplexer() -> None:
-    test_data: list[tuple[int, list[tuple[bytes | None, float]], list[tuple[bytes | None, float]], list[list[tuple[bytes | None, float]]]]] = [
+    test_data: list[tuple[int, list[tuple[DataWord, float]], list[tuple[DataWord, float]], list[list[tuple[DataWord, float]]]]] = [
         (
             1,
-            [(b'\x01', 2e-9), (b'\x00', 3e-9), (None, 4e-9), (b'\x01', 5e-9), (b'\x00', 6e-9), (None, 7e-9), (b'\x00', 8e-9), (None, 10e-9), (b'\x01', 11e-9)],
-            [(b'\x01', 1e-9), (None, 6e-9), (b'\x01', 8e-9), (b'\x00', 9e-9)],
+            [(b'\x01', 2e-9), (b'\x00', 3e-9), (Unknown, 4e-9), (b'\x01', 5e-9), (b'\x00', 6e-9), (Unknown, 7e-9), (b'\x00', 8e-9), (Unknown, 10e-9), (b'\x01', 11e-9)],
+            [(b'\x01', 1e-9), (Unknown, 6e-9), (b'\x01', 8e-9), (b'\x00', 9e-9)],
             [
-                [(b'\x01', 2e-9), (b'\x00', 3e-9), (None, 4e-9), (b'\x01', 5e-9), (None, 6e-9), (b'\x00', 8e-9)]
+                [(b'\x01', 2e-9), (b'\x00', 3e-9), (Unknown, 4e-9), (b'\x01', 5e-9), (Unknown, 6e-9), (b'\x00', 8e-9)]
             ]
         ),
         (
             8,
-            [(b'\xf1', 2e-9), (None, 3e-9), (b'\xfe', 5e-9), (b'\xd2', 6e-9), (b'\x1e', 9e-9), (None, 10e-9), (b'\xa1', 11e-9), (b'\x8b', 12e-9)],
-            [(b'\x01', 1e-9), (None, 4e-9), (b'\x08', 6e-9), (b'\x04', 7e-9), (b'\x03', 8e-9), (b'\x00', 9e-9), (b'\x0a', 12e-9)],
+            [(b'\xf1', 2e-9), (Unknown, 3e-9), (b'\xfe', 5e-9), (b'\xd2', 6e-9), (b'\x1e', 9e-9), (Unknown, 10e-9), (b'\xa1', 11e-9), (b'\x8b', 12e-9)],
+            [(b'\x01', 1e-9), (Unknown, 4e-9), (b'\x08', 6e-9), (b'\x04', 7e-9), (b'\x03', 8e-9), (b'\x00', 9e-9), (b'\x0a', 12e-9)],
             [
-                [(b'\xf1', 2e-9), (None, 3e-9), (b'\xd2', 8e-9)],
+                [(b'\xf1', 2e-9), (Unknown, 3e-9), (b'\xd2', 8e-9)],
                 [(b'\xd2', 8e-9), (b'\x8b', 12e-9)],
                 [(b'\xd2', 7e-9)],
                 [(b'\xd2', 6e-9), (b'\x8b', 12e-9)]
@@ -318,24 +318,24 @@ def test_DataRetainingDemultiplexer() -> None:
 
 
 def test_Distributor() -> None:
-    test_data: list[tuple[int, list[tuple[bytes | None, float]], list[list[tuple[bytes | None, float]]]]] = [
+    test_data: list[tuple[int, list[tuple[DataWord, float]], list[list[tuple[DataWord, float]]]]] = [
         (
             1,
-            [(b'\x01', 2e-9), (b'\x00', 3e-9), (None, 4e-9), (b'\x01', 5e-9), (b'\x00', 6e-9), (None, 7e-9), (b'\x00', 9e-9)],
+            [(b'\x01', 2e-9), (b'\x00', 3e-9), (Unknown, 4e-9), (b'\x01', 5e-9), (b'\x00', 6e-9), (Unknown, 7e-9), (b'\x00', 9e-9)],
             [
-                [(b'\x01', 2e-9), (b'\x00', 3e-9), (None, 4e-9), (b'\x01', 5e-9), (b'\x00', 6e-9), (None, 7e-9), (b'\x00', 9e-9)]
+                [(b'\x01', 2e-9), (b'\x00', 3e-9), (Unknown, 4e-9), (b'\x01', 5e-9), (b'\x00', 6e-9), (Unknown, 7e-9), (b'\x00', 9e-9)]
             ]
         ),
         (
             8,
             [
-                (b'\xf1', 2e-9), (None, 3e-9), (b'\xfe', 5e-9), (b'\xd2', 6e-9), (b'\x1e', 9e-9)
+                (b'\xf1', 2e-9), (Unknown, 3e-9), (b'\xfe', 5e-9), (b'\xd2', 6e-9), (b'\x1e', 9e-9)
             ],
             [
-                [(b'\xf1', 2e-9), (None, 3e-9), (b'\xfe', 5e-9), (b'\xd2', 6e-9), (b'\x1e', 9e-9)],
-                [(b'\xf1', 2e-9), (None, 3e-9), (b'\xfe', 5e-9), (b'\xd2', 6e-9), (b'\x1e', 9e-9)],
-                [(b'\xf1', 2e-9), (None, 3e-9), (b'\xfe', 5e-9), (b'\xd2', 6e-9), (b'\x1e', 9e-9)],
-                [(b'\xf1', 2e-9), (None, 3e-9), (b'\xfe', 5e-9), (b'\xd2', 6e-9), (b'\x1e', 9e-9)]
+                [(b'\xf1', 2e-9), (Unknown, 3e-9), (b'\xfe', 5e-9), (b'\xd2', 6e-9), (b'\x1e', 9e-9)],
+                [(b'\xf1', 2e-9), (Unknown, 3e-9), (b'\xfe', 5e-9), (b'\xd2', 6e-9), (b'\x1e', 9e-9)],
+                [(b'\xf1', 2e-9), (Unknown, 3e-9), (b'\xfe', 5e-9), (b'\xd2', 6e-9), (b'\x1e', 9e-9)],
+                [(b'\xf1', 2e-9), (Unknown, 3e-9), (b'\xfe', 5e-9), (b'\xd2', 6e-9), (b'\x1e', 9e-9)]
             ]
         )
     ]

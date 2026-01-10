@@ -1,6 +1,6 @@
 # SimuHW: A behavioral hardware simulator provided as a Python module.
 #
-# Copyright (c) 2024-2025 Arihiro Yoshida. All rights reserved.
+# Copyright (c) 2024-2026 Arihiro Yoshida. All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,9 +20,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from typing import cast
 from abc import ABCMeta
 from collections.abc import Iterable
 
+from ._word import Unknown
 from ._base import InputPort
 from ._operator import UnaryOperator, SIMD_UnaryOperator
 
@@ -72,13 +74,13 @@ class PopulationCounter(BitOperator):
 
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
-            if self._ports_i[0].data[0] is None:
-                self._port_o.post((None, self._time))
+            if not isinstance(self._ports_i[0].data[0], bytes):
+                self._port_o.post((Unknown, self._time))
             else:
                 v: int = int.from_bytes(self._ports_i[0].data[0])
                 self._port_o.post((v.bit_count().to_bytes(self._nbytes), self._time))
             self._set_inputs_unchanged(self._ports_i)
-        return (list(self._ports_i), None)
+        return ([*self._ports_i], None)
 
 
 class LeadingZeroCounter(BitOperator):
@@ -105,13 +107,13 @@ class LeadingZeroCounter(BitOperator):
 
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
-            if self._ports_i[0].data[0] is None:
-                self._port_o.post((None, self._time))
+            if not isinstance(self._ports_i[0].data[0], bytes):
+                self._port_o.post((Unknown, self._time))
             else:
                 v: int = int.from_bytes(self._ports_i[0].data[0])
                 self._port_o.post(((self._width - v.bit_length()).to_bytes(self._nbytes), self._time))
             self._set_inputs_unchanged(self._ports_i)
-        return (list(self._ports_i), None)
+        return ([*self._ports_i], None)
 
 
 class TrailingZeroCounter(BitOperator):
@@ -138,13 +140,13 @@ class TrailingZeroCounter(BitOperator):
 
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
-            if self._ports_i[0].data[0] is None:
-                self._port_o.post((None, self._time))
+            if not isinstance(self._ports_i[0].data[0], bytes):
+                self._port_o.post((Unknown, self._time))
             else:
                 v: int = int.from_bytes(self._ports_i[0].data[0])
                 self._port_o.post((((v & -v).bit_length() - 1 if v > 0 else self._width).to_bytes(self._nbytes), self._time))
             self._set_inputs_unchanged(self._ports_i)
-        return (list(self._ports_i), None)
+        return ([*self._ports_i], None)
 
 
 class BitReverser(BitOperator):
@@ -171,13 +173,13 @@ class BitReverser(BitOperator):
 
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
-            if self._ports_i[0].data[0] is None:
-                self._port_o.post((None, self._time))
+            if not isinstance(self._ports_i[0].data[0], bytes):
+                self._port_o.post((Unknown, self._time))
             else:
                 v: int = int.from_bytes(self._ports_i[0].data[0])
                 self._port_o.post((_reverse_bits(self._width, v).to_bytes(self._nbytes), self._time))
             self._set_inputs_unchanged(self._ports_i)
-        return (list(self._ports_i), None)
+        return ([*self._ports_i], None)
 
 
 class SIMD_BitOperator(SIMD_UnaryOperator, metaclass=ABCMeta):
@@ -227,11 +229,13 @@ class SIMD_PopulationCounter(SIMD_BitOperator):
         ports_i: list[InputPort] = [*self._ports_i, self._port_s]
         if self._update_time_and_check_inputs(time, ports_i):
             if (
-                self._ports_i[0].data[0] is None or self._port_s.data[0] is None or
-                int.from_bytes(self._port_s.data[0]) >= len(self._dsize)
+                any((not isinstance(p.data[0], bytes) for p in ports_i)) or
+                int.from_bytes(cast(bytes, self._port_s.data[0])) >= len(self._dsize)
             ):
-                self._port_o.post((None, self._time))
+                self._port_o.post((Unknown, self._time))
             else:
+                assert isinstance(self._ports_i[0].data[0], bytes)
+                assert isinstance(self._port_s.data[0], bytes)
                 w: int = self._dsize[int.from_bytes(self._port_s.data[0])]
                 m: int = (1 << w) - 1
                 v: int = int.from_bytes(self._ports_i[0].data[0])
@@ -274,11 +278,13 @@ class SIMD_LeadingZeroCounter(SIMD_BitOperator):
         ports_i: list[InputPort] = [*self._ports_i, self._port_s]
         if self._update_time_and_check_inputs(time, ports_i):
             if (
-                self._ports_i[0].data[0] is None or self._port_s.data[0] is None or
-                int.from_bytes(self._port_s.data[0]) >= len(self._dsize)
+                any((not isinstance(p.data[0], bytes) for p in ports_i)) or
+                int.from_bytes(cast(bytes, self._port_s.data[0])) >= len(self._dsize)
             ):
-                self._port_o.post((None, self._time))
+                self._port_o.post((Unknown, self._time))
             else:
+                assert isinstance(self._ports_i[0].data[0], bytes)
+                assert isinstance(self._port_s.data[0], bytes)
                 w: int = self._dsize[int.from_bytes(self._port_s.data[0])]
                 m: int = (1 << w) - 1
                 v: int = int.from_bytes(self._ports_i[0].data[0])
@@ -321,11 +327,13 @@ class SIMD_TrailingZeroCounter(SIMD_BitOperator):
         ports_i: list[InputPort] = [*self._ports_i, self._port_s]
         if self._update_time_and_check_inputs(time, ports_i):
             if (
-                self._ports_i[0].data[0] is None or self._port_s.data[0] is None or
-                int.from_bytes(self._port_s.data[0]) >= len(self._dsize)
+                any((not isinstance(p.data[0], bytes) for p in ports_i)) or
+                int.from_bytes(cast(bytes, self._port_s.data[0])) >= len(self._dsize)
             ):
-                self._port_o.post((None, self._time))
+                self._port_o.post((Unknown, self._time))
             else:
+                assert isinstance(self._ports_i[0].data[0], bytes)
+                assert isinstance(self._port_s.data[0], bytes)
                 w: int = self._dsize[int.from_bytes(self._port_s.data[0])]
                 m: int = (1 << w) - 1
                 v: int = int.from_bytes(self._ports_i[0].data[0])
@@ -368,11 +376,13 @@ class SIMD_BitReverser(SIMD_BitOperator):
         ports_i: list[InputPort] = [*self._ports_i, self._port_s]
         if self._update_time_and_check_inputs(time, ports_i):
             if (
-                self._ports_i[0].data[0] is None or self._port_s.data[0] is None or
-                int.from_bytes(self._port_s.data[0]) >= len(self._dsize)
+                any((not isinstance(p.data[0], bytes) for p in ports_i)) or
+                int.from_bytes(cast(bytes, self._port_s.data[0])) >= len(self._dsize)
             ):
-                self._port_o.post((None, self._time))
+                self._port_o.post((Unknown, self._time))
             else:
+                assert isinstance(self._ports_i[0].data[0], bytes)
+                assert isinstance(self._port_s.data[0], bytes)
                 w: int = self._dsize[int.from_bytes(self._port_s.data[0])]
                 m: int = (1 << w) - 1
                 v: int = int.from_bytes(self._ports_i[0].data[0])

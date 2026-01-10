@@ -1,6 +1,6 @@
 # SimuHW: A behavioral hardware simulator provided as a Python module.
 #
-# Copyright (c) 2024-2025 Arihiro Yoshida. All rights reserved.
+# Copyright (c) 2024-2026 Arihiro Yoshida. All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,8 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from collections.abc import Sequence
+from typing import cast
+from collections.abc import Iterable, Sequence
 
+from ..._word import DataWord, Unknown, HighZ
 from ._base import ArbitrationPolicy
 from ._index_order import IndexOrderArbitrationPolicy
 
@@ -31,7 +33,7 @@ class DataOrderArbitrationPolicy(ArbitrationPolicy):
 
     def __init__(
         self, *,
-        select_min: bool = True, prioritize_none: bool = False,
+        select_min: bool = True, priority: Iterable[type[bytes | Unknown | HighZ]] = [bytes, Unknown, HighZ],
         when_same: ArbitrationPolicy = IndexOrderArbitrationPolicy()
     ) -> None:
         """Creates a data word order arbitration policy.
@@ -39,14 +41,19 @@ class DataOrderArbitrationPolicy(ArbitrationPolicy):
         Args:
             select_min: ``True`` if the target with the minimum data word is to be selected.
                         ``False`` if the target with the maximum data word is to be selected.
-            prioritize_none: ``True`` if the target with ``None`` data word is prioritized; ``False`` otherwise.
+            priority: The target types in priority order.
             when_same: The arbitration policy applied when there are multiple targets with the same data word.
 
         """
         self._select_min: bool = select_min
         """``True`` if the target with the minimum data word is to be selected."""
-        self._prioritize_none: bool = prioritize_none
-        """``True`` if the target with ``None`` data word is prioritized."""
+        p: list[type[bytes | Unknown | HighZ]] = [*priority, bytes, Unknown, HighZ]
+        self._priority: tuple[type[bytes | Unknown | HighZ], ...] = tuple(
+            t for i, t in enumerate(p) if t not in p[:i]
+        )  # has always 3 different elements
+        """The target types in priority order."""
+        assert len(self._priority) == 3
+        assert len(set(self._priority)) == 3
         self._when_same: ArbitrationPolicy = when_same
         """The arbitration policy applied when there are multiple targets with the same data word."""
 
@@ -56,16 +63,16 @@ class DataOrderArbitrationPolicy(ArbitrationPolicy):
         return self._select_min
 
     @property
-    def prioritize_none(self) -> bool:
-        """``True`` if the target with ``None`` data word is prioritized."""
-        return self._prioritize_none
+    def priority(self) -> tuple[type[bytes | Unknown | HighZ], ...]:
+        """The target types in priority order."""
+        return self._priority
 
     @property
     def when_same(self) -> ArbitrationPolicy:
         """The arbitration policy applied when there are multiple targets with the same data word."""
         return self._when_same
 
-    def select(self, targets: Sequence[tuple[bytes | None, float]]) -> int:
+    def select(self, targets: Sequence[tuple[DataWord, float]]) -> int:
         """Selects one from the given inputs.
 
         Args:
@@ -74,16 +81,24 @@ class DataOrderArbitrationPolicy(ArbitrationPolicy):
 
         Returns:
             The index of the selected target.
+            -1 if ``targets`` is empty.
 
         """
-        en: list[tuple[int, tuple[bytes | None, float]]] = [(i, t) for i, t in enumerate(targets) if t[0] is None]
-        if len(en) == len(targets) or (len(en) > 0 and self._prioritize_none):
-            return en[self._when_same.select([e[1] for e in en]) if len(en) > 1 else 0][0]
-        bm: int = (
-            min([int.from_bytes(t[0]) for t in targets if t[0] is not None]) if self._select_min else
-            max([int.from_bytes(t[0]) for t in targets if t[0] is not None])
-        )
-        em: list[tuple[int, tuple[bytes | None, float]]] = [
-            (i, t) for i, t in enumerate(targets) if t[0] is not None and int.from_bytes(t[0]) == bm
-        ]
-        return em[self._when_same.select([e[1] for e in em]) if len(em) > 1 else 0][0]
+        for p in self._priority:
+            s: list[tuple[int, tuple[DataWord, float]]] = [
+                (i, t)
+                for i, t in enumerate(targets) if (
+                    (t[0] is Unknown) if p is Unknown else
+                    (t[0] is HighZ) if p is HighZ else
+                    isinstance(t[0], bytes)
+                )
+            ]
+            if len(s) > 0 and p is bytes:
+                l: list[bytes] = [d[1][0] for d in cast(list[tuple[int, tuple[bytes, float]]], s)]
+                m: bytes = min(l) if self._select_min else max(l)
+                s = [d for d in s if d[1][0] == m]
+            if len(s) == 1:
+                return s[0][0]
+            if len(s) > 1:
+                return s[self._when_same.select([d[1] for d in s])][0]
+        return -1

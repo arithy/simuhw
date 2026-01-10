@@ -1,6 +1,6 @@
 # SimuHW: A behavioral hardware simulator provided as a Python module.
 #
-# Copyright (c) 2024-2025 Arihiro Yoshida. All rights reserved.
+# Copyright (c) 2024-2026 Arihiro Yoshida. All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,7 @@
 
 from abc import ABCMeta
 
+from .._word import DataWord, Unknown
 from .._base import InputPort, OutputPort, Device
 from .._analyzer import MemoryProbe
 from .model._base import MemorizingModel
@@ -121,13 +122,13 @@ class Memory(Device, metaclass=ABCMeta):
         """Removes all memory probes."""
         self._probes.clear()
 
-    def _initialize_probes(self, exclude: bytes | None = None) -> None:
+    def _initialize_probes(self, exclude: DataWord = Unknown) -> None:
         for p in self._probes:
             if self._probes[p] != exclude:
                 p.data.append((self._model.read(self._probes[p]), 0.0))
 
-    def _update_probes(self, address: bytes | None, data: tuple[bytes | None, float]) -> None:
-        if address is not None:
+    def _update_probes(self, address: DataWord, data: tuple[DataWord, float]) -> None:
+        if isinstance(address, bytes):
             for p in self._probes:
                 if self._probes[p] == address:
                     p.data.append(data)

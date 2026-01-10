@@ -1,6 +1,6 @@
 # SimuHW: A behavioral hardware simulator provided as a Python module.
 #
-# Copyright (c) 2024-2025 Arihiro Yoshida. All rights reserved.
+# Copyright (c) 2024-2026 Arihiro Yoshida. All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,9 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from typing import cast
 from collections.abc import Callable
 
-from simuhw import Source, Drain, ChannelProbe, MemoryProbe, Simulator
+from simuhw import DataWord, Unknown, Source, Drain, ChannelProbe, MemoryProbe, Simulator
 from simuhw.memory import EdgeTriggeredMemory
 from simuhw.memory.model import MockMemorizingModel, RealMemorizingModel
 
@@ -30,16 +31,17 @@ _EPS: float = 1e-18
 
 
 def test_EdgeTriggeredMemory_Mock() -> None:
-    test_data: list[tuple[tuple[int, int, Callable[[bytes | None], bytes | None], bool, bytes], list[list[tuple[bytes | None, float]]]]] = [
+    test_data: list[tuple[tuple[int, int, Callable[[DataWord], DataWord], bool, bytes], list[list[tuple[DataWord, float]]]]] = [
         (
-            (8, 4, lambda x: None if x is None else (int.from_bytes(x) + 0xf0).to_bytes(1), False, b'\x0c'),
+            (8, 4, lambda x: Unknown if not isinstance(x, bytes) else (int.from_bytes(x) + 0xf0).to_bytes(1), False, b'\x0c'),
             [
-                [([None, b'\x00', b'\x01', b'\x00'][i % 4], 1e-9 * (2 * i + 1)) for i in range(36 * 2)],
-                [([b'\x01', b'\x00'][(i // 36) % 2], 1e-9 * (2 * i)) for i in range(0, 36 * 2, 36)],
-                [([None, b'\x0c', b'\x02'][(i // 12) % 3], 1e-9 * (2 * i)) for i in range(0, 36 * 2, 12)],
-                [(None if i % 3 == 0 else (0xa0 + i).to_bytes(1), 1e-9 * (2 * i)) for i in range(36 * 2)],
+                [(cast(list[DataWord], [Unknown, b'\x00', b'\x01', b'\x00'])[i % 4], 1e-9 * (2 * i + 1)) for i in range(36 * 2)],
+                [(cast(list[DataWord], [b'\x01', b'\x00'])[(i // 36) % 2], 1e-9 * (2 * i)) for i in range(0, 36 * 2, 36)],
+                [(cast(list[DataWord], [Unknown, b'\x0c', b'\x02'])[(i // 12) % 3], 1e-9 * (2 * i)) for i in range(0, 36 * 2, 12)],
+                [(Unknown if i % 3 == 0 else (0xa0 + i).to_bytes(1), 1e-9 * (2 * i)) for i in range(36 * 2)],
                 [
-                    (None, 1e-9 * (2 * i)) if i % 36 == 0 else (None if i % 4 == 0 else [None, b'\xfc', b'\xf2'][(i // 12) % 3], 1e-9 * (2 * i + 1))
+                    (Unknown, 1e-9 * (2 * i)) if i % 36 == 0 else
+                    (Unknown if i % 4 == 0 else cast(list[DataWord], [Unknown, b'\xfc', b'\xf2'])[(i // 12) % 3], 1e-9 * (2 * i + 1))
                     for i in [14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 50, 52, 54, 56, 58, 60, 62, 64, 66, 68, 70]
                 ],
                 [
@@ -49,14 +51,15 @@ def test_EdgeTriggeredMemory_Mock() -> None:
             ]
         ),
         (
-            (8, 4, lambda x: None if x is None else (int.from_bytes(x) + 0xf0).to_bytes(1), True, b'\x0c'),
+            (8, 4, lambda x: Unknown if not isinstance(x, bytes) else (int.from_bytes(x) + 0xf0).to_bytes(1), True, b'\x0c'),
             [
-                [([None, b'\x01', b'\x00', b'\x01'][i % 4], 1e-9 * (2 * i + 1)) for i in range(36 * 2)],
-                [([b'\x01', b'\x00'][(i // 36) % 2], 1e-9 * (2 * i)) for i in range(0, 36 * 2, 36)],
-                [([None, b'\x0c', b'\x02'][(i // 12) % 3], 1e-9 * (2 * i)) for i in range(0, 36 * 2, 12)],
-                [(None if i % 3 == 0 else (0xa0 + i).to_bytes(1), 1e-9 * (2 * i)) for i in range(36 * 2)],
+                [(cast(list[DataWord], [Unknown, b'\x01', b'\x00', b'\x01'])[i % 4], 1e-9 * (2 * i + 1)) for i in range(36 * 2)],
+                [(cast(list[DataWord], [b'\x01', b'\x00'])[(i // 36) % 2], 1e-9 * (2 * i)) for i in range(0, 36 * 2, 36)],
+                [(cast(list[DataWord], [Unknown, b'\x0c', b'\x02'])[(i // 12) % 3], 1e-9 * (2 * i)) for i in range(0, 36 * 2, 12)],
+                [(Unknown if i % 3 == 0 else (0xa0 + i).to_bytes(1), 1e-9 * (2 * i)) for i in range(36 * 2)],
                 [
-                    (None, 1e-9 * (2 * i)) if i % 36 == 0 else (None if i % 4 == 0 else [None, b'\xfc', b'\xf2'][(i // 12) % 3], 1e-9 * (2 * i + 1))
+                    (Unknown, 1e-9 * (2 * i)) if i % 36 == 0 else
+                    (Unknown if i % 4 == 0 else cast(list[DataWord], [Unknown, b'\xfc', b'\xf2'])[(i // 12) % 3], 1e-9 * (2 * i + 1))
                     for i in [14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 50, 52, 54, 56, 58, 60, 62, 64, 66, 68, 70]
                 ],
                 [
@@ -91,24 +94,24 @@ def test_EdgeTriggeredMemory_Mock() -> None:
 
 
 def test_EdgeTriggeredMemory_Real() -> None:
-    test_data: list[tuple[tuple[int, int, bytes, bool, bytes], list[list[tuple[bytes | None, float]]]]] = [
+    test_data: list[tuple[tuple[int, int, bytes, bool, bytes], list[list[tuple[DataWord, float]]]]] = [
         (
             (8, 4, b'\xa5', False, b'\x0c'),
             [
-                [([None, b'\x00', b'\x01', b'\x00'][i % 4], 1e-9 * (2 * i + 1)) for i in range(36 * 2)],
-                [([b'\x01', b'\x00'][(i // 36) % 2], 1e-9 * (2 * i)) for i in range(0, 36 * 2, 36)],
-                [([None, b'\x0c', b'\x02'][(i // 12) % 3], 1e-9 * (2 * i)) for i in range(0, 36 * 2, 12)],
-                [(None if i % 3 == 0 else (0xa0 + i).to_bytes(1), 1e-9 * (2 * i)) for i in range(36 * 2)],
+                [(cast(list[DataWord], [Unknown, b'\x00', b'\x01', b'\x00'])[i % 4], 1e-9 * (2 * i + 1)) for i in range(36 * 2)],
+                [(cast(list[DataWord], [b'\x01', b'\x00'])[(i // 36) % 2], 1e-9 * (2 * i)) for i in range(0, 36 * 2, 36)],
+                [(cast(list[DataWord], [Unknown, b'\x0c', b'\x02'])[(i // 12) % 3], 1e-9 * (2 * i)) for i in range(0, 36 * 2, 12)],
+                [(Unknown if i % 3 == 0 else (0xa0 + i).to_bytes(1), 1e-9 * (2 * i)) for i in range(36 * 2)],
                 [
-                    (None, 1e-9 * (2 * i)) if i % 36 == 0 else
-                    (None if i % 4 == 0 or (i // 12) % 3 == 0 else (0xa0 + i).to_bytes(1), 1e-9 * (2 * i + 1)) if i >= 0 else
-                    (None if ~i % 4 == 0 or (~i // 12) % 3 == 0 else (0xa0 + [0, 22, 34][(~i // 12) % 3]).to_bytes(1), 1e-9 * (2 * ~i + 1))
+                    (Unknown, 1e-9 * (2 * i)) if i % 36 == 0 else
+                    (Unknown if i % 4 == 0 or (i // 12) % 3 == 0 else (0xa0 + i).to_bytes(1), 1e-9 * (2 * i + 1)) if i >= 0 else
+                    (Unknown if ~i % 4 == 0 or (~i // 12) % 3 == 0 else (0xa0 + [0, 22, 34][(~i // 12) % 3]).to_bytes(1), 1e-9 * (2 * ~i + 1))
                     for i in [14, 16, 22, 24, 26, 28, 34, 36, ~50, 52, ~54, 56, ~58, 60, ~62, 64, ~66, 68, ~70]
                 ],
                 [
                     (b'\xa5', 0e-9),
                     *(
-                        (None if i % 3 == 0 else (0xa0 + i).to_bytes(1), 1e-9 * (2 * i + 1))
+                        (Unknown if i % 3 == 0 else (0xa0 + i).to_bytes(1), 1e-9 * (2 * i + 1))
                         for i in [14, 18, 22]
                     )
                 ]
@@ -117,20 +120,20 @@ def test_EdgeTriggeredMemory_Real() -> None:
         (
             (8, 4, b'\xa5', True, b'\x0c'),
             [
-                [([None, b'\x01', b'\x00', b'\x01'][i % 4], 1e-9 * (2 * i + 1)) for i in range(36 * 2)],
-                [([b'\x01', b'\x00'][(i // 36) % 2], 1e-9 * (2 * i)) for i in range(0, 36 * 2, 36)],
-                [([None, b'\x0c', b'\x02'][(i // 12) % 3], 1e-9 * (2 * i)) for i in range(0, 36 * 2, 12)],
-                [(None if i % 3 == 0 else (0xa0 + i).to_bytes(1), 1e-9 * (2 * i)) for i in range(36 * 2)],
+                [(cast(list[DataWord], [Unknown, b'\x01', b'\x00', b'\x01'])[i % 4], 1e-9 * (2 * i + 1)) for i in range(36 * 2)],
+                [(cast(list[DataWord], [b'\x01', b'\x00'])[(i // 36) % 2], 1e-9 * (2 * i)) for i in range(0, 36 * 2, 36)],
+                [(cast(list[DataWord], [Unknown, b'\x0c', b'\x02'])[(i // 12) % 3], 1e-9 * (2 * i)) for i in range(0, 36 * 2, 12)],
+                [(Unknown if i % 3 == 0 else (0xa0 + i).to_bytes(1), 1e-9 * (2 * i)) for i in range(36 * 2)],
                 [
-                    (None, 1e-9 * (2 * i)) if i % 36 == 0 else
-                    (None if i % 4 == 0 or (i // 12) % 3 == 0 else (0xa0 + i).to_bytes(1), 1e-9 * (2 * i + 1)) if i >= 0 else
-                    (None if ~i % 4 == 0 or (~i // 12) % 3 == 0 else (0xa0 + [0, 22, 34][(~i // 12) % 3]).to_bytes(1), 1e-9 * (2 * ~i + 1))
+                    (Unknown, 1e-9 * (2 * i)) if i % 36 == 0 else
+                    (Unknown if i % 4 == 0 or (i // 12) % 3 == 0 else (0xa0 + i).to_bytes(1), 1e-9 * (2 * i + 1)) if i >= 0 else
+                    (Unknown if ~i % 4 == 0 or (~i // 12) % 3 == 0 else (0xa0 + [0, 22, 34][(~i // 12) % 3]).to_bytes(1), 1e-9 * (2 * ~i + 1))
                     for i in [14, 16, 22, 24, 26, 28, 34, 36, ~50, 52, ~54, 56, ~58, 60, ~62, 64, ~66, 68, ~70]
                 ],
                 [
                     (b'\xa5', 0e-9),
                     *(
-                        (None if i % 3 == 0 else (0xa0 + i).to_bytes(1), 1e-9 * (2 * i + 1))
+                        (Unknown if i % 3 == 0 else (0xa0 + i).to_bytes(1), 1e-9 * (2 * i + 1))
                         for i in [14, 18, 22]
                     )
                 ]

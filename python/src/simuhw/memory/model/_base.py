@@ -1,6 +1,6 @@
 # SimuHW: A behavioral hardware simulator provided as a Python module.
 #
-# Copyright (c) 2024-2025 Arihiro Yoshida. All rights reserved.
+# Copyright (c) 2024-2026 Arihiro Yoshida. All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,8 @@
 
 from abc import ABCMeta, abstractmethod
 
+from ..._word import DataWord
+
 
 class MemorizingModel(metaclass=ABCMeta):
     """The super class for all memorizing models."""
@@ -32,7 +34,7 @@ class MemorizingModel(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def read(self, address: bytes | None) -> bytes | None:
+    def read(self, address: DataWord) -> DataWord:
         """Reads the data word from the memory device.
 
         Args:
@@ -45,7 +47,7 @@ class MemorizingModel(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def write(self, address: bytes | None, data: bytes | None) -> None:
+    def write(self, address: DataWord, data: DataWord) -> None:
         """Writes the data word to the memory device.
 
         Args:

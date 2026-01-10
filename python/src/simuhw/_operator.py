@@ -194,7 +194,7 @@ class SIMD_Operator(Operator, metaclass=ABCMeta):
         """The input port to select the input data word width."""
 
     def __str__(self) -> str:
-        return f'{self.__class__.__name__}({self._width_i} bits: {list(self._dsize_i)} -> {self._width_o} bits: {list(self._dsize_o)})'
+        return f'{self.__class__.__name__}({self._width_i} bits: {[*self._dsize_i]} -> {self._width_o} bits: {[*self._dsize_o]})'
 
     @property
     def multi(self) -> tuple[int, ...]:

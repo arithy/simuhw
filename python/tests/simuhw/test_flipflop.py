@@ -1,6 +1,6 @@
 # SimuHW: A behavioral hardware simulator provided as a Python module.
 #
-# Copyright (c) 2024-2025 Arihiro Yoshida. All rights reserved.
+# Copyright (c) 2024-2026 Arihiro Yoshida. All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,16 +20,16 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simuhw import Source, Drain, DFlipFlop, ChannelProbe, Simulator
+from simuhw import DataWord, Unknown, Source, Drain, DFlipFlop, ChannelProbe, Simulator
 
 _EPS: float = 1e-18
 
 
 def test_DFlipFlop() -> None:
-    test_data: list[tuple[tuple[int, bool], list[tuple[bytes | None, float]], list[tuple[bytes | None, float]], list[tuple[bytes | None, float]]]] = [
+    test_data: list[tuple[tuple[int, bool], list[tuple[DataWord, float]], list[tuple[DataWord, float]], list[tuple[DataWord, float]]]] = [
         (
             (8, False),
-            [(b'\x01', 3e-9), (b'\x00', 6e-9), (None, 9e-9), (b'\x00', 12e-9), (b'\x01', 15e-9), (b'\x00', 18e-9), (b'\x01', 21e-9)],
+            [(b'\x01', 3e-9), (b'\x00', 6e-9), (Unknown, 9e-9), (b'\x00', 12e-9), (b'\x01', 15e-9), (b'\x00', 18e-9), (b'\x01', 21e-9)],
             [
                 (b'\xc1', 1e-9), (b'\xc2', 2e-9),
                 (b'\xc3', 4e-9), (b'\xc4', 5e-9),
@@ -46,7 +46,7 @@ def test_DFlipFlop() -> None:
         ),
         (
             (8, True),
-            [(b'\x00', 3e-9), (b'\x01', 6e-9), (None, 9e-9), (b'\x01', 12e-9), (b'\x00', 15e-9), (b'\x01', 18e-9), (b'\x00', 21e-9)],
+            [(b'\x00', 3e-9), (b'\x01', 6e-9), (Unknown, 9e-9), (b'\x01', 12e-9), (b'\x00', 15e-9), (b'\x01', 18e-9), (b'\x00', 21e-9)],
             [
                 (b'\xc1', 1e-9), (b'\xc2', 2e-9),
                 (b'\xc3', 4e-9), (b'\xc4', 5e-9),
@@ -74,7 +74,7 @@ def test_DFlipFlop() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[bytes | None, float]] = t[3]
+        r: list[tuple[DataWord, float]] = t[3]
         assert len(po.data) == len(r)
         for o, q in zip(po.data, r):
             assert o[0] == q[0]

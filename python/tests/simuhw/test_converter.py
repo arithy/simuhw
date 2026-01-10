@@ -20,10 +20,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from typing import cast
 from functools import reduce
 
 from simuhw import (
-    Source, Drain,
+    DataWord, Unknown, Source, Drain,
     IntegerConverter, SignedIntegerConverter, SIMD_IntegerConverter, SIMD_SignedIntegerConverter,
     ChannelProbe, Simulator
 )
@@ -32,39 +33,39 @@ _EPS: float = 1e-18
 
 
 def test_IntegerConverter() -> None:
-    test_data: list[tuple[int, int, list[tuple[bytes | None, float]], list[tuple[bytes | None, float]]]] = [
+    test_data: list[tuple[int, int, list[tuple[DataWord, float]], list[tuple[DataWord, float]]]] = [
         (
             7, 33,
             [
-                (d, (1 + i) * 1e-9) for i, d in enumerate([
+                (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
                     b'\x00', b'\x01', b'\x3e', b'\x3f',
                     b'\x40', b'\x41', b'\x7e', b'\x7f',
-                    None
-                ])
+                    Unknown
+                ]))
             ],
             [
-                (d, (1 + i) * 1e-9) for i, d in enumerate([
+                (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
                     b'\x00\x00\x00\x00\x00', b'\x00\x00\x00\x00\x01', b'\x00\x00\x00\x00\x3e', b'\x00\x00\x00\x00\x3f',
                     b'\x00\x00\x00\x00\x40', b'\x00\x00\x00\x00\x41', b'\x00\x00\x00\x00\x7e', b'\x00\x00\x00\x00\x7f',
-                    None
-                ])
+                    Unknown
+                ]))
             ]
         ),
         (
             33, 7,
             [
-                (d, (1 + i) * 1e-9) for i, d in enumerate([
+                (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
                     b'\x01\xff\xff\xff\x80', b'\x01\xff\xff\xff\x81', b'\x01\xff\xff\xff\xbe', b'\x01\xff\xff\xff\xbf',
                     b'\x01\xff\xff\xff\xc0', b'\x01\xff\xff\xff\xc1', b'\x01\xff\xff\xff\xfe', b'\x01\xff\xff\xff\xff',
-                    None
-                ])
+                    Unknown
+                ]))
             ],
             [
-                (d, (1 + i) * 1e-9) for i, d in enumerate([
+                (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
                     b'\x00', b'\x01', b'\x3e', b'\x3f',
                     b'\x40', b'\x41', b'\x7e', b'\x7f',
-                    None
-                ])
+                    Unknown
+                ]))
             ]
         )
     ]
@@ -80,7 +81,7 @@ def test_IntegerConverter() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[bytes | None, float]] = t[3]
+        r: list[tuple[DataWord, float]] = t[3]
         assert len(po.data) == len(r)
         for o, q in zip(po.data, r):
             assert o[0] == q[0]
@@ -88,39 +89,39 @@ def test_IntegerConverter() -> None:
 
 
 def test_SignedIntegerConverter() -> None:
-    test_data: list[tuple[int, int, list[tuple[bytes | None, float]], list[tuple[bytes | None, float]]]] = [
+    test_data: list[tuple[int, int, list[tuple[DataWord, float]], list[tuple[DataWord, float]]]] = [
         (
             7, 33,
             [
-                (d, (1 + i) * 1e-9) for i, d in enumerate([
+                (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
                     b'\x00', b'\x01', b'\x3e', b'\x3f',
                     b'\x40', b'\x41', b'\x7e', b'\x7f',
-                    None
-                ])
+                    Unknown
+                ]))
             ],
             [
-                (d, (1 + i) * 1e-9) for i, d in enumerate([
+                (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
                     b'\x00\x00\x00\x00\x00', b'\x00\x00\x00\x00\x01', b'\x00\x00\x00\x00\x3e', b'\x00\x00\x00\x00\x3f',
                     b'\x01\xff\xff\xff\xc0', b'\x01\xff\xff\xff\xc1', b'\x01\xff\xff\xff\xfe', b'\x01\xff\xff\xff\xff',
-                    None
-                ])
+                    Unknown
+                ]))
             ]
         ),
         (
             33, 7,
             [
-                (d, (1 + i) * 1e-9) for i, d in enumerate([
+                (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
                     b'\x01\xff\xff\xff\x80', b'\x01\xff\xff\xff\x81', b'\x01\xff\xff\xff\xbe', b'\x01\xff\xff\xff\xbf',
                     b'\x00\x00\x00\x00\x40', b'\x00\x00\x00\x00\x41', b'\x00\x00\x00\x00\x7e', b'\x00\x00\x00\x00\x7f',
-                    None
-                ])
+                    Unknown
+                ]))
             ],
             [
-                (d, (1 + i) * 1e-9) for i, d in enumerate([
+                (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
                     b'\x00', b'\x01', b'\x3e', b'\x3f',
                     b'\x40', b'\x41', b'\x7e', b'\x7f',
-                    None
-                ])
+                    Unknown
+                ]))
             ]
         )
     ]
@@ -136,7 +137,7 @@ def test_SignedIntegerConverter() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[bytes | None, float]] = t[3]
+        r: list[tuple[DataWord, float]] = t[3]
         assert len(po.data) == len(r)
         for o, q in zip(po.data, r):
             assert o[0] == q[0]
@@ -144,11 +145,11 @@ def test_SignedIntegerConverter() -> None:
 
 
 def test_SIMD_IntegerConverter() -> None:
-    test_data: list[tuple[int, int, int, list[tuple[bytes | None, float]], list[tuple[bytes | None, float]]]] = [
+    test_data: list[tuple[int, int, int, list[tuple[DataWord, float]], list[tuple[DataWord, float]]]] = [
         (
             4, 7, 9,
             [
-                (d, (1 + i) * 1e-9) for i, d in enumerate([
+                (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
                     reduce(
                         lambda x, y: x | y,
                         (int.from_bytes(d) << (7 * i) for i, d in enumerate([b'\x00', b'\x01', b'\x3e', b'\x3f'])),
@@ -159,11 +160,11 @@ def test_SIMD_IntegerConverter() -> None:
                         (int.from_bytes(d) << (7 * i) for i, d in enumerate([b'\x40', b'\x41', b'\x7e', b'\x7f'])),
                         0
                     ).to_bytes(4),
-                    None
-                ])
+                    Unknown
+                ]))
             ],
             [
-                (d, (1 + i) * 1e-9) for i, d in enumerate([
+                (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
                     reduce(
                         lambda x, y: x | y,
                         (int.from_bytes(d) << (9 * i) for i, d in enumerate([b'\x00\x00', b'\x00\x01', b'\x00\x3e', b'\x00\x3f'])),
@@ -174,14 +175,14 @@ def test_SIMD_IntegerConverter() -> None:
                         (int.from_bytes(d) << (9 * i) for i, d in enumerate([b'\x00\x40', b'\x00\x41', b'\x00\x7e', b'\x00\x7f'])),
                         0
                     ).to_bytes(5),
-                    None
-                ])
+                    Unknown
+                ]))
             ]
         ),
         (
             4, 9, 7,
             [
-                (d, (1 + i) * 1e-9) for i, d in enumerate([
+                (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
                     reduce(
                         lambda x, y: x | y,
                         (int.from_bytes(d) << (9 * i) for i, d in enumerate([b'\x01\x80', b'\x01\x81', b'\x01\xbe', b'\x01\xbf'])),
@@ -192,11 +193,11 @@ def test_SIMD_IntegerConverter() -> None:
                         (int.from_bytes(d) << (9 * i) for i, d in enumerate([b'\x01\xc0', b'\x01\xc1', b'\x01\xfe', b'\x01\xff'])),
                         0
                     ).to_bytes(5),
-                    None
-                ])
+                    Unknown
+                ]))
             ],
             [
-                (d, (1 + i) * 1e-9) for i, d in enumerate([
+                (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
                     reduce(
                         lambda x, y: x | y,
                         (int.from_bytes(d) << (7 * i) for i, d in enumerate([b'\x00', b'\x01', b'\x3e', b'\x3f'])),
@@ -207,8 +208,8 @@ def test_SIMD_IntegerConverter() -> None:
                         (int.from_bytes(d) << (7 * i) for i, d in enumerate([b'\x40', b'\x41', b'\x7e', b'\x7f'])),
                         0
                     ).to_bytes(4),
-                    None
-                ])
+                    Unknown
+                ]))
             ]
         )
     ]
@@ -225,7 +226,7 @@ def test_SIMD_IntegerConverter() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[bytes | None, float]] = t[4]
+        r: list[tuple[DataWord, float]] = t[4]
         assert len(po.data) == len(r)
         for o, q in zip(po.data, r):
             assert o[0] == q[0]
@@ -233,11 +234,11 @@ def test_SIMD_IntegerConverter() -> None:
 
 
 def test_SIMD_SignedIntegerConverter() -> None:
-    test_data: list[tuple[int, int, int, list[tuple[bytes | None, float]], list[tuple[bytes | None, float]]]] = [
+    test_data: list[tuple[int, int, int, list[tuple[DataWord, float]], list[tuple[DataWord, float]]]] = [
         (
             4, 7, 9,
             [
-                (d, (1 + i) * 1e-9) for i, d in enumerate([
+                (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
                     reduce(
                         lambda x, y: x | y,
                         (int.from_bytes(d) << (7 * i) for i, d in enumerate([b'\x00', b'\x01', b'\x3e', b'\x3f'])),
@@ -248,11 +249,11 @@ def test_SIMD_SignedIntegerConverter() -> None:
                         (int.from_bytes(d) << (7 * i) for i, d in enumerate([b'\x40', b'\x41', b'\x7e', b'\x7f'])),
                         0
                     ).to_bytes(4),
-                    None
-                ])
+                    Unknown
+                ]))
             ],
             [
-                (d, (1 + i) * 1e-9) for i, d in enumerate([
+                (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
                     reduce(
                         lambda x, y: x | y,
                         (int.from_bytes(d) << (9 * i) for i, d in enumerate([b'\x00\x00', b'\x00\x01', b'\x00\x3e', b'\x00\x3f'])),
@@ -263,14 +264,14 @@ def test_SIMD_SignedIntegerConverter() -> None:
                         (int.from_bytes(d) << (9 * i) for i, d in enumerate([b'\x01\xc0', b'\x01\xc1', b'\x01\xfe', b'\x01\xff'])),
                         0
                     ).to_bytes(5),
-                    None
-                ])
+                    Unknown
+                ]))
             ]
         ),
         (
             4, 9, 7,
             [
-                (d, (1 + i) * 1e-9) for i, d in enumerate([
+                (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
                     reduce(
                         lambda x, y: x | y,
                         (int.from_bytes(d) << (9 * i) for i, d in enumerate([b'\x01\x80', b'\x01\x81', b'\x01\xbe', b'\x01\xbf'])),
@@ -281,11 +282,11 @@ def test_SIMD_SignedIntegerConverter() -> None:
                         (int.from_bytes(d) << (9 * i) for i, d in enumerate([b'\x00\x40', b'\x00\x41', b'\x00\x7e', b'\x00\x7f'])),
                         0
                     ).to_bytes(5),
-                    None
-                ])
+                    Unknown
+                ]))
             ],
             [
-                (d, (1 + i) * 1e-9) for i, d in enumerate([
+                (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
                     reduce(
                         lambda x, y: x | y,
                         (int.from_bytes(d) << (7 * i) for i, d in enumerate([b'\x00', b'\x01', b'\x3e', b'\x3f'])),
@@ -296,8 +297,8 @@ def test_SIMD_SignedIntegerConverter() -> None:
                         (int.from_bytes(d) << (7 * i) for i, d in enumerate([b'\x40', b'\x41', b'\x7e', b'\x7f'])),
                         0
                     ).to_bytes(4),
-                    None
-                ])
+                    Unknown
+                ]))
             ]
         )
     ]
@@ -314,7 +315,7 @@ def test_SIMD_SignedIntegerConverter() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[bytes | None, float]] = t[4]
+        r: list[tuple[DataWord, float]] = t[4]
         assert len(po.data) == len(r)
         for o, q in zip(po.data, r):
             assert o[0] == q[0]

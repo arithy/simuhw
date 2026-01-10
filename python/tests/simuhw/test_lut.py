@@ -1,6 +1,6 @@
 # SimuHW: A behavioral hardware simulator provided as a Python module.
 #
-# Copyright (c) 2024-2025 Arihiro Yoshida. All rights reserved.
+# Copyright (c) 2024-2026 Arihiro Yoshida. All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -22,13 +22,13 @@
 
 import math
 
-from simuhw import Source, Drain, LookupTable, ChannelProbe, Simulator
+from simuhw import DataWord, Source, Drain, LookupTable, ChannelProbe, Simulator
 
 _EPS: float = 1e-18
 
 
 def test_LookupTable() -> None:
-    test_data: list[tuple[tuple[int, int], list[bytes], list[tuple[bytes | None, float]], list[tuple[bytes | None, float]]]] = [
+    test_data: list[tuple[tuple[int, int], list[bytes], list[tuple[DataWord, float]], list[tuple[DataWord, float]]]] = [
         (
             (6, 11),
             [
@@ -57,7 +57,7 @@ def test_LookupTable() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[bytes | None, float]] = t[3]
+        r: list[tuple[DataWord, float]] = t[3]
         assert len(po.data) == len(r)
         for o, q in zip(po.data, r):
             assert o[0] == q[0]

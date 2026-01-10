@@ -21,8 +21,9 @@
 # SOFTWARE.
 
 __all__ = [
-    'LogicAnalyzer',
+    'DataWord', 'Unknown', 'HighZ',
     'Probe', 'ChannelProbe', 'MemoryProbe',
+    'LogicAnalyzer',
     'Simulator',
     'InputPort', 'OutputPort',
     'Device', 'Source', 'LogicLowSource', 'LogicHighSource', 'LogicUnknownSource', 'Drain',
@@ -53,6 +54,7 @@ __all__ = [
 
 from ._version import __version__  # noqa:F401
 
+from ._word import DataWord, Unknown, HighZ
 from ._analyzer import Probe, ChannelProbe, MemoryProbe, LogicAnalyzer
 from ._simulator import Simulator
 from ._base import InputPort, OutputPort, Device, Source, LogicLowSource, LogicHighSource, LogicUnknownSource, Drain

@@ -22,7 +22,7 @@
 
 from functools import reduce
 
-from simuhw import Source, Drain, ChannelProbe, Simulator
+from simuhw import DataWord, Source, Drain, ChannelProbe, Simulator
 import simuhw.fp as hwf
 import simuhw.fp.riscv as rv
 
@@ -574,7 +574,7 @@ def test_FRSqrt7() -> None:
     sf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
     sf.set_rounding_mode(hwf.RoundingMode.MIN)
     sf.set_exception_flags(0)
-    test_i: list[tuple[type, list[int], list[list[tuple[bytes | None, float]]]]] = [
+    test_i: list[tuple[type, list[int], list[list[tuple[DataWord, float]]]]] = [
         (
             f,
             [f.size(), 1, 3, 5],  # type: ignore[attr-defined]
@@ -596,7 +596,7 @@ def test_FRSqrt7() -> None:
         )
         for f in [hwf.Float16, hwf.Float32, hwf.Float64]
     ]
-    test_o: list[list[list[tuple[bytes | None, float]]]] = [
+    test_o: list[list[list[tuple[DataWord, float]]]] = [
         [
             [
                 (u[1], 1e-9 * (1 + i))
@@ -637,7 +637,7 @@ def test_SIMD_FRSqrt7() -> None:
     sf.set_exception_flags(0)
     test_w: int = 256
     test_f: list[hwf.Float] = [hwf.Float16, hwf.Float32, hwf.Float64]
-    test_i: list[tuple[list[int], list[hwf.Float], list[list[tuple[bytes | None, float]]]]] = [
+    test_i: list[tuple[list[int], list[hwf.Float], list[list[tuple[DataWord, float]]]]] = [
         (
             [test_w, 2, 1, 3, 5],
             test_f,
@@ -669,7 +669,7 @@ def test_SIMD_FRSqrt7() -> None:
             ]
         )
     ]
-    test_o: list[list[list[tuple[bytes | None, float]]]] = [
+    test_o: list[list[list[tuple[DataWord, float]]]] = [
         [
             [
                 (

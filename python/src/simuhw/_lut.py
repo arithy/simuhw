@@ -22,6 +22,7 @@
 
 from collections.abc import Iterable
 
+from ._word import Unknown
 from ._base import InputPort
 from ._operator import UnaryOperator
 
@@ -52,7 +53,7 @@ class LookupTable(UnaryOperator):
 
         """
         super().__init__(width_i, width_o)
-        self._table: list[bytes] = list(table)
+        self._table: list[bytes] = [*table]
         """The table data."""
         if len(self._table) != 2**self._width_i:
             raise ValueError(f'Inconsistent table size for input data word width {self._width_i}: {len(self._table)} != {2**self._width_i}')
@@ -69,7 +70,7 @@ class LookupTable(UnaryOperator):
             ValueError: If the size of the table data and ``width_i`` are inconsistent.
 
         """
-        self._table = list(table)
+        self._table = [*table]
         if len(self._table) != 2**self._width_i:
             raise ValueError(f'Inconsistent table size for input data word width {self._width_i}: {len(self._table)} != {2**self._width_i}')
 
@@ -86,8 +87,8 @@ class LookupTable(UnaryOperator):
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
             self._port_o.post((
-                self._table[int.from_bytes(self._ports_i[0].data[0])] if self._ports_i[0].data[0] is not None else None,
+                self._table[int.from_bytes(self._ports_i[0].data[0])] if isinstance(self._ports_i[0].data[0], bytes) else Unknown,
                 self._time
             ))
             self._set_inputs_unchanged(self._ports_i)
-        return (list(self._ports_i), None)
+        return ([*self._ports_i], None)

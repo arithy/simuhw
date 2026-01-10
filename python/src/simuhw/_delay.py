@@ -1,6 +1,6 @@
 # SimuHW: A behavioral hardware simulator provided as a Python module.
 #
-# Copyright (c) 2024-2025 Arihiro Yoshida. All rights reserved.
+# Copyright (c) 2024-2026 Arihiro Yoshida. All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,6 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from ._word import DataWord
 from ._base import InputPort, OutputPort, Device
 
 
@@ -48,7 +49,7 @@ class Delay(Device):
         """The input port."""
         self._port_o: OutputPort = OutputPort(width)
         """The output port."""
-        self._queue: list[tuple[bytes | None, float]] = []
+        self._queue: list[tuple[DataWord, float]] = []
         """The queue of data words to be output later."""
 
     @property

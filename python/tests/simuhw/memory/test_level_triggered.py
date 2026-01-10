@@ -1,6 +1,6 @@
 # SimuHW: A behavioral hardware simulator provided as a Python module.
 #
-# Copyright (c) 2024-2025 Arihiro Yoshida. All rights reserved.
+# Copyright (c) 2024-2026 Arihiro Yoshida. All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,9 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from typing import cast
 from collections.abc import Callable
 
-from simuhw import Source, Drain, ChannelProbe, MemoryProbe, Simulator
+from simuhw import DataWord, Unknown, Source, Drain, ChannelProbe, MemoryProbe, Simulator
 from simuhw.memory import LevelTriggeredMemory
 from simuhw.memory.model import MockMemorizingModel, RealMemorizingModel
 
@@ -30,15 +31,15 @@ _EPS: float = 1e-18
 
 
 def test_LevelTriggeredMemory_Mock() -> None:
-    test_data: list[tuple[tuple[int, int, Callable[[bytes | None], bytes | None], bool, bytes], list[list[tuple[bytes | None, float]]]]] = [
+    test_data: list[tuple[tuple[int, int, Callable[[DataWord], DataWord], bool, bytes], list[list[tuple[DataWord, float]]]]] = [
         (
-            (8, 4, lambda x: None if x is None else (int.from_bytes(x) + 0xf0).to_bytes(1), False, b'\x0c'),
+            (8, 4, lambda x: Unknown if not isinstance(x, bytes) else (int.from_bytes(x) + 0xf0).to_bytes(1), False, b'\x0c'),
             [
-                [([None, b'\x00', b'\x01'][(i // 9) % 3], 1e-9 * i) for i in range(0, 27 * 2, 9)],
-                [([None, b'\x0c', b'\x02'][(i // 3) % 3], 1e-9 * i) for i in range(0, 27 * 2, 3)],
-                [(None if i % 3 == 0 else (0xc0 + i).to_bytes(1), 1e-9 * i) for i in range(27 * 2)],
+                [(cast(list[DataWord], [Unknown, b'\x00', b'\x01'])[(i // 9) % 3], 1e-9 * i) for i in range(0, 27 * 2, 9)],
+                [(cast(list[DataWord], [Unknown, b'\x0c', b'\x02'])[(i // 3) % 3], 1e-9 * i) for i in range(0, 27 * 2, 3)],
+                [(Unknown if i % 3 == 0 else (0xc0 + i).to_bytes(1), 1e-9 * i) for i in range(27 * 2)],
                 [
-                    (None if (i // 9) % 3 == 0 else [None, b'\xfc', b'\xf2'][(i // 3) % 3], 1e-9 * i)
+                    (Unknown if (i // 9) % 3 == 0 else cast(list[DataWord], [Unknown, b'\xfc', b'\xf2'])[(i // 3) % 3], 1e-9 * i)
                     for i in [12, 15, 18, 21, 24, 27, 39, 42, 45, 48, 51]
                 ],
                 [
@@ -48,13 +49,13 @@ def test_LevelTriggeredMemory_Mock() -> None:
             ]
         ),
         (
-            (8, 4, lambda x: None if x is None else (int.from_bytes(x) + 0xf0).to_bytes(1), True, b'\x0c'),
+            (8, 4, lambda x: Unknown if not isinstance(x, bytes) else (int.from_bytes(x) + 0xf0).to_bytes(1), True, b'\x0c'),
             [
-                [([None, b'\x01', b'\x00'][(i // 9) % 3], 1e-9 * i) for i in range(0, 27 * 2, 9)],
-                [([None, b'\x0c', b'\x02'][(i // 3) % 3], 1e-9 * i) for i in range(0, 27 * 2, 3)],
-                [(None if i % 3 == 0 else (0xc0 + i).to_bytes(1), 1e-9 * i) for i in range(27 * 2)],
+                [(cast(list[DataWord], [Unknown, b'\x01', b'\x00'])[(i // 9) % 3], 1e-9 * i) for i in range(0, 27 * 2, 9)],
+                [(cast(list[DataWord], [Unknown, b'\x0c', b'\x02'])[(i // 3) % 3], 1e-9 * i) for i in range(0, 27 * 2, 3)],
+                [(Unknown if i % 3 == 0 else (0xc0 + i).to_bytes(1), 1e-9 * i) for i in range(27 * 2)],
                 [
-                    (None if (i // 9) % 3 == 0 else [None, b'\xfc', b'\xf2'][(i // 3) % 3], 1e-9 * i)
+                    (Unknown if (i // 9) % 3 == 0 else cast(list[DataWord], [Unknown, b'\xfc', b'\xf2'])[(i // 3) % 3], 1e-9 * i)
                     for i in [12, 15, 18, 21, 24, 27, 39, 42, 45, 48, 51]
                 ],
                 [
@@ -88,36 +89,36 @@ def test_LevelTriggeredMemory_Mock() -> None:
 
 
 def test_LevelTriggeredMemory_Real() -> None:
-    test_data: list[tuple[tuple[int, int, bytes, bool, bytes], list[list[tuple[bytes | None, float]]]]] = [
+    test_data: list[tuple[tuple[int, int, bytes, bool, bytes], list[list[tuple[DataWord, float]]]]] = [
         (
             (8, 4, b'\xa5', False, b'\x0c'),
             [
-                [([None, b'\x00', b'\x01'][(i // 9) % 3], 1e-9 * i) for i in range(0, 27 * 2, 9)],
-                [([None, b'\x0c', b'\x02'][(i // 3) % 3], 1e-9 * i) for i in range(0, 27 * 2, 3)],
-                [(None if i % 3 == 0 else (0xc0 + i).to_bytes(1), 1e-9 * i) for i in range(27 * 2)],
+                [(cast(list[DataWord], [Unknown, b'\x00', b'\x01'])[(i // 9) % 3], 1e-9 * i) for i in range(0, 27 * 2, 9)],
+                [(cast(list[DataWord], [Unknown, b'\x0c', b'\x02'])[(i // 3) % 3], 1e-9 * i) for i in range(0, 27 * 2, 3)],
+                [(Unknown if i % 3 == 0 else (0xc0 + i).to_bytes(1), 1e-9 * i) for i in range(27 * 2)],
                 [
-                    (None if i % 3 == 0 else (0xc0 + i).to_bytes(1), 1e-9 * i) if i >= 0 else
-                    (None if (~i // 3) % 3 == 0 else b'\xa5' if ~i // 27 == 0 else (0xc0 + (~i - 9 - 7)).to_bytes(1), 1e-9 * ~i)
+                    (Unknown if i % 3 == 0 else (0xc0 + i).to_bytes(1), 1e-9 * i) if i >= 0 else
+                    (Unknown if (~i // 3) % 3 == 0 else b'\xa5' if ~i // 27 == 0 else (0xc0 + (~i - 9 - 7)).to_bytes(1), 1e-9 * ~i)
                     for i in [~12, 18, 22, 23, 24, 25, 26, 27, ~39, ~42, 45, 49, 50, 51, 52, 53]
                 ],
                 [
-                    (b'\xa5', 0e-9), *((None if i % 3 == 0 else (0xc0 + i).to_bytes(1), 1e-9 * i) for i in [21, 22, 23, 48, 49, 50])
+                    (b'\xa5', 0e-9), *((Unknown if i % 3 == 0 else (0xc0 + i).to_bytes(1), 1e-9 * i) for i in [21, 22, 23, 48, 49, 50])
                 ]
             ]
         ),
         (
             (8, 4, b'\xa5', True, b'\x0c'),
             [
-                [([None, b'\x01', b'\x00'][(i // 9) % 3], 1e-9 * i) for i in range(0, 27 * 2, 9)],
-                [([None, b'\x0c', b'\x02'][(i // 3) % 3], 1e-9 * i) for i in range(0, 27 * 2, 3)],
-                [(None if i % 3 == 0 else (0xc0 + i).to_bytes(1), 1e-9 * i) for i in range(27 * 2)],
+                [(cast(list[DataWord], [Unknown, b'\x01', b'\x00'])[(i // 9) % 3], 1e-9 * i) for i in range(0, 27 * 2, 9)],
+                [(cast(list[DataWord], [Unknown, b'\x0c', b'\x02'])[(i // 3) % 3], 1e-9 * i) for i in range(0, 27 * 2, 3)],
+                [(Unknown if i % 3 == 0 else (0xc0 + i).to_bytes(1), 1e-9 * i) for i in range(27 * 2)],
                 [
-                    (None if i % 3 == 0 else (0xc0 + i).to_bytes(1), 1e-9 * i) if i >= 0 else
-                    (None if (~i // 3) % 3 == 0 else b'\xa5' if ~i // 27 == 0 else (0xc0 + (~i - 9 - 7)).to_bytes(1), 1e-9 * ~i)
+                    (Unknown if i % 3 == 0 else (0xc0 + i).to_bytes(1), 1e-9 * i) if i >= 0 else
+                    (Unknown if (~i // 3) % 3 == 0 else b'\xa5' if ~i // 27 == 0 else (0xc0 + (~i - 9 - 7)).to_bytes(1), 1e-9 * ~i)
                     for i in [~12, 18, 22, 23, 24, 25, 26, 27, ~39, ~42, 45, 49, 50, 51, 52, 53]
                 ],
                 [
-                    (b'\xa5', 0e-9), *((None if i % 3 == 0 else (0xc0 + i).to_bytes(1), 1e-9 * i) for i in [21, 22, 23, 48, 49, 50])
+                    (b'\xa5', 0e-9), *((Unknown if i % 3 == 0 else (0xc0 + i).to_bytes(1), 1e-9 * i) for i in [21, 22, 23, 48, 49, 50])
                 ]
             ]
         )
