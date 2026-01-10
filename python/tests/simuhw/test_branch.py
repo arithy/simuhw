@@ -22,10 +22,9 @@
 
 from simuhw import (
     DataWord, Unknown, Source, Drain,
-    DataCombiner, DataSplitter, Arbitrator, Multiplexer, Demultiplexer, DataRetainingDemultiplexer, Distributor,
+    DataCombiner, DataSplitter, Multiplexer, Demultiplexer, DataRetainingDemultiplexer, Distributor,
     ChannelProbe, Simulator
 )
-from simuhw.arbitrate.policy import IndexOrderArbitrationPolicy, TimeOrderArbitrationPolicy
 
 _EPS: float = 1e-18
 
@@ -115,68 +114,6 @@ def test_DataSplitter() -> None:
         sim: Simulator = Simulator([ti, *to, dev])
         sim.start(show_time=True)
         for p, r in zip(po, t[2]):
-            assert len(p.data) == len(r)
-            for o, q in zip(p.data, r):
-                assert o[0] == q[0]
-                assert abs(o[1] - q[1]) <= _EPS
-
-
-def test_Arbitrator() -> None:
-    test_data: list[tuple[int, list[list[tuple[DataWord, float]]], list[tuple[DataWord, float]], list[tuple[DataWord, float]]]] = [
-        (
-            1,
-            [
-                [(b'\x01', 1e-9), (b'\x00', 3e-9), (Unknown, 4e-9), (b'\x01', 6e-9)]
-            ],
-            [(b'\x01', 1e-9), (b'\x00', 3e-9), (Unknown, 4e-9), (b'\x01', 6e-9)],
-            [(b'\x01', 1e-9)]
-        ),
-        (
-            8,
-            [
-                [(b'\xfe', 1e-9), (b'\xf1', 5e-9), (b'\xfe', 10e-9), (Unknown, 11e-9), (b'\xf1', 12e-9)],
-                [(b'\x06', 4e-9), (b'\x01', 5e-9), (b'\x06', 14e-9)],
-                [(b'\x41', 3e-9), (b'\x40', 6e-9), (b'\x41', 7e-9), (b'\x40', 9e-9)],
-                [(b'\x1e', 2e-9), (b'\x11', 3e-9), (b'\x1e', 7e-9), (b'\x11', 10e-9)]
-            ],
-            [
-                (b'\xfe', 4e-9), (b'\x11', 5e-9), (b'\x01', 7e-9), (b'\x40', 14e-9)
-            ],
-            [
-                (b'\x08', 1e-9), (b'\x04', 2e-9), (b'\x02', 3e-9),
-                (b'\x01', 4e-9), (b'\x08', 5e-9), (b'\x02', 7e-9), (b'\x04', 14e-9)
-            ]
-        ),
-        (
-            33,
-            [
-                [(b'\x00\x00\x00\x00\x00', 0e-9), (b'\x01\x55\x55\xaa\xaa', 1e-9 * (17 - i)), (b'\x01\xff\xff\xff\xff', 18e-9)]
-                for i in range(17)
-            ],
-            [
-                (b'\x00\x00\x00\x00\x00', 0e-9), (b'\x01\x55\x55\xaa\xaa', 17e-9), (b'\x01\xff\xff\xff\xff', 18e-9)
-            ],
-            [
-                (b'\x01\x00\x00', 0e-9), *(((1 << (15 - i)).to_bytes(3), 1e-9 * (1 + i)) for i in range(16)), (b'\x01\x00\x00', 17e-9)
-            ]
-        )
-    ]
-    for t in test_data:
-        po: list[ChannelProbe] = [ChannelProbe('out', t[0]), ChannelProbe('sel', len(t[1]))]
-        ti: list[Source] = [Source(t[0], t[1][i]) for i in range(len(t[1]))]
-        to: list[Drain] = [Drain(t[0]), Drain(len(t[1]))]
-        dev: Arbitrator = Arbitrator(
-            t[0], len(t[1]), policy=TimeOrderArbitrationPolicy(when_same=IndexOrderArbitrationPolicy(select_min=False))
-        )
-        dev.port_o.connect(to[0].port_i)
-        dev.port_s.connect(to[1].port_i)
-        for i in range(len(t[1])):
-            ti[i].port_o.connect(dev.ports_i[i])
-        dev.port_o.add_probe(po[0])
-        dev.port_s.add_probe(po[1])
-        sim: Simulator = Simulator([*ti, *to, dev])
-        sim.start(show_time=True)
-        for p, r in zip(po, t[2:4]):
             assert len(p.data) == len(r)
             for o, q in zip(p.data, r):
                 assert o[0] == q[0]

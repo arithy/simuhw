@@ -26,7 +26,6 @@ from functools import reduce
 
 from ._word import DataWord, Unknown
 from ._base import InputPort, OutputPort, Device, combine_bits, extract_bits
-from .arbitrate.policy import ArbitrationPolicy, IndexOrderArbitrationPolicy, TimeOrderArbitrationPolicy
 
 
 class DataCombiner(Device):
@@ -153,90 +152,6 @@ class DataSplitter(Device):
                     p.post((extract_bits(self._port_i.width, b, s, p.width), self._time))
             self._set_inputs_unchanged(ports_i)
         return (ports_i, None)
-
-
-class Arbitrator(Device):
-    """An arbitrator."""
-
-    def __init__(
-        self, width: int, ninputs: int, *,
-        policy: ArbitrationPolicy = TimeOrderArbitrationPolicy(when_same=IndexOrderArbitrationPolicy())
-    ) -> None:
-        """Creates an arbitrator.
-
-        Args:
-            width: The data word width in bits.
-            ninputs: The number of the input ports.
-            policy: The arbitration policy.
-
-        """
-        super().__init__()
-        self._width: int = width
-        """The data word width in bits."""
-        self._nbytes_s: int = (ninputs + 7) >> 3
-        """The number of bytes required to represent the selection bit flags."""
-        self._policy: ArbitrationPolicy = policy
-        """The arbitration policy."""
-        self._ports_i: tuple[InputPort, ...] = tuple(InputPort(width) for _ in range(ninputs))
-        """The input ports."""
-        self._port_o: OutputPort = OutputPort(width)
-        """The output port for the data word from the selected input port."""
-        self._port_s: OutputPort = OutputPort(ninputs)
-        """The output port for the selection bit flags of the input ports."""
-
-    @property
-    def width(self) -> int:
-        """The data word width in bits."""
-        return self._width
-
-    @property
-    def policy(self) -> ArbitrationPolicy:
-        """The arbitration policy."""
-        return self._policy
-
-    @property
-    def ports_i(self) -> tuple[InputPort, ...]:
-        """The input ports."""
-        return self._ports_i
-
-    @property
-    def port_o(self) -> OutputPort:
-        """The output port for the data word from the selected input port."""
-        return self._port_o
-
-    @property
-    def port_s(self) -> OutputPort:
-        """The output port for the selection bit flags of the input ports."""
-        return self._port_s
-
-    def reset(self) -> None:
-        """Resets the states."""
-        super().reset()
-        for p in self._ports_i:
-            p.reset()
-        self._port_o.reset()
-        self._port_s.reset()
-
-    def work(self, time: float | None) -> tuple[list[InputPort], float | None]:
-        """Makes the device work.
-
-        Args:
-            time: The current time in seconds. ``None`` when starting to make the device work.
-
-        Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
-            The next resuming time can be ``None`` if resumable anytime.
-
-        """
-        if self._update_time_and_check_inputs(time, self._ports_i):
-            i: int = self._policy.select([p.data for p in self._ports_i])
-            self._port_s.post(((1 << i).to_bytes(self._nbytes_s), self._time))
-            self._port_o.post((
-                self._ports_i[i].data[0],
-                self._time
-            ))
-            self._set_inputs_unchanged(self._ports_i)
-        return ([*self._ports_i], None)
 
 
 class Multiplexer(Device):

@@ -22,10 +22,6 @@
 
 from ._word import DataWord, Unknown
 from ._base import InputPort, OutputPort, Device
-from ._group import Group
-from ._branch import DataCombiner, DataSplitter, Arbitrator, DataRetainingDemultiplexer
-from .arbitrate.policy._base import ArbitrationPolicy
-from .arbitrate.policy._time_order import TimeOrderArbitrationPolicy
 
 
 class Channel(Device):
@@ -110,90 +106,3 @@ class Channel(Device):
             self._port_o.post((self._queue[0][0], self._queue[0][1] + self._latency))
             self._queue.pop(0)
         return (ports_i, self._queue[0][1] + self._latency if len(self._queue) > 0 else None)
-
-
-class MultiplexChannel(Device):
-    """A multiplex channel."""
-
-    def __init__(
-        self, width: int, multi: int, *,
-        latency: float, throughput: float,
-        policy: ArbitrationPolicy = TimeOrderArbitrationPolicy(select_min=False)
-    ) -> None:
-        """Creates a multiplex channel.
-
-        Args:
-            width: The data word width in bits.
-            multi: The multiplexity.
-            latency: The latency in seconds.
-            throughput: The throughput in words per second.
-
-        """
-        super().__init__()
-        self._width: int = width
-        """The data word width in bits."""
-        self._latency: float = latency
-        """The latency in seconds."""
-        self._throughput: float = throughput
-        """The throughput in words per second."""
-        self._channel: Channel = Channel(width + multi, latency=latency, throughput=throughput * ((width + multi) / width))
-        """The channel."""
-        self._arbitrator: Arbitrator = Arbitrator(width, multi, policy=policy)
-        """The arbitrator."""
-        self._combiner: DataCombiner = DataCombiner([width, multi])
-        """The data word combiner."""
-        self._splitter: DataSplitter = DataSplitter([width, multi])
-        """The data word splitter."""
-        self._demultiplexer: DataRetainingDemultiplexer = DataRetainingDemultiplexer(width, multi)
-        """The data retaining demultiplexer."""
-        self._group: Group = Group([self._arbitrator, self._combiner, self._channel, self._splitter, self._demultiplexer])
-        """The grouped devices."""
-        self._arbitrator.port_o.connect(self._combiner.ports_i[0])
-        self._arbitrator.port_s.connect(self._combiner.ports_i[1])
-        self._combiner.port_o.connect(self._channel.port_i)
-        self._channel.port_o.connect(self._splitter.port_i)
-        self._splitter.ports_o[0].connect(self._demultiplexer.port_i)
-        self._splitter.ports_o[1].connect(self._demultiplexer.port_s)
-
-    @property
-    def width(self) -> int:
-        """The data word width in bits."""
-        return self._width
-
-    @property
-    def latency(self) -> float:
-        """The latency in seconds."""
-        return self._latency
-
-    @property
-    def throughput(self) -> float:
-        """The throughput in words per second."""
-        return self._throughput
-
-    @property
-    def ports_i(self) -> tuple[InputPort, ...]:
-        """The input ports."""
-        return self._arbitrator.ports_i
-
-    @property
-    def ports_o(self) -> tuple[OutputPort, ...]:
-        """The output ports."""
-        return self._demultiplexer.ports_o
-
-    def reset(self) -> None:
-        """Resets the states."""
-        super().reset()
-        self._group.reset()
-
-    def work(self, time: float | None) -> tuple[list[InputPort], float | None]:
-        """Makes the device work.
-
-        Args:
-            time: The current time in seconds. ``None`` when starting to make the device work.
-
-        Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
-            The next resuming time can be ``None`` if resumable anytime.
-
-        """
-        return self._group.work(time)
