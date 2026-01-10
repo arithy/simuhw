@@ -25,73 +25,7 @@ from functools import reduce
 
 from ._word import Unknown
 from ._base import InputPort
-from ._operator import Operator, UnaryOperator
-
-
-class BufferGate(UnaryOperator):
-    """A buffer gate."""
-
-    def __init__(self, width: int) -> None:
-        """Creates a buffer gate.
-
-        Args:
-            width: The data word width in bits.
-
-        """
-        super().__init__(width)
-
-    def work(self, time: float | None) -> tuple[list[InputPort], float | None]:
-        """Makes the device work.
-
-        Args:
-            time: The current time in seconds. ``None`` when starting to make the device work.
-
-        Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
-            The next resuming time can be ``None`` if resumable anytime.
-
-        """
-        if self._update_time_and_check_inputs(time, self._ports_i):
-            self._port_o.post((
-                Unknown if not isinstance(self._ports_i[0].data[0], bytes) else self._ports_i[0].data[0],
-                self._time
-            ))
-            self._set_inputs_unchanged(self._ports_i)
-        return ([*self._ports_i], None)
-
-
-class NOTGate(UnaryOperator):
-    """A NOT gate."""
-
-    def __init__(self, width: int) -> None:
-        """Creates a NOT gate.
-
-        Args:
-            width: The data word width in bits.
-
-        """
-        super().__init__(width)
-
-    def work(self, time: float | None) -> tuple[list[InputPort], float | None]:
-        """Makes the device work.
-
-        Args:
-            time: The current time in seconds. ``None`` when starting to make the device work.
-
-        Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
-            The next resuming time can be ``None`` if resumable anytime.
-
-        """
-        if self._update_time_and_check_inputs(time, self._ports_i):
-            self._port_o.post((
-                Unknown if not isinstance(self._ports_i[0].data[0], bytes) else (
-                    ~int.from_bytes(self._ports_i[0].data[0]) & self._mask
-                ).to_bytes(self._nbytes),
-                self._time
-            ))
-            self._set_inputs_unchanged(self._ports_i)
-        return ([*self._ports_i], None)
+from ._operator import Operator
 
 
 class ANDGate(Operator):

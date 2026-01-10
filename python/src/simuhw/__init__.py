@@ -34,7 +34,8 @@ __all__ = [
     'Channel',
     'Operator', 'UnaryOperator', 'BinaryOperator', 'TernaryOperator',
     'SIMD_Operator', 'SIMD_UnaryOperator', 'SIMD_BinaryOperator', 'SIMD_TernaryOperator',
-    'BufferGate', 'NOTGate', 'ANDGate', 'ORGate', 'XORGate', 'NANDGate', 'NORGate', 'XNORGate',
+    'Buffer', 'Inverter',
+    'ANDGate', 'ORGate', 'XORGate', 'NANDGate', 'NORGate', 'XNORGate',
     'DLatch',
     'DFlipFlop',
     'Shifter', 'LeftShifter', 'RightShifter', 'ArithmeticRightShifter', 'LeftRotator', 'RightRotator',
@@ -67,7 +68,8 @@ from ._operator import (
     Operator, UnaryOperator, BinaryOperator, TernaryOperator,
     SIMD_Operator, SIMD_UnaryOperator, SIMD_BinaryOperator, SIMD_TernaryOperator
 )
-from ._gate import BufferGate, NOTGate, ANDGate, ORGate, XORGate, NANDGate, NORGate, XNORGate
+from ._buffer import Buffer, Inverter
+from ._gate import ANDGate, ORGate, XORGate, NANDGate, NORGate, XNORGate
 from ._latch import DLatch
 from ._flipflop import DFlipFlop
 from ._shifter import (

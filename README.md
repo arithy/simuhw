@@ -73,8 +73,8 @@ import simuhw as hw
       - [`DataRetainDemultiplexer`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.DataRetainDemultiplexer)
       - [`Distributor`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.Distributor)
     - Elementary Combinational Circuit
-      - [`BufferGate`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.BufferGate)
-      - [`NOTGate`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.NOTGate)
+      - [`Buffer`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.Buffer)
+      - [`Inverter`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.Inverter)
       - [`ANDGate`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.ANDGate)
       - [`ORGate`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.ORGate)
       - [`XORGate`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.XORGate)

@@ -22,7 +22,7 @@
 
 from simuhw import (
     DataWord, Unknown, Source, Drain,
-    BufferGate, NOTGate, ANDGate, ORGate, XORGate, NANDGate, NORGate, XNORGate,
+    ANDGate, ORGate, XORGate, NANDGate, NORGate, XNORGate,
     ChannelProbe, Simulator
 )
 
@@ -36,12 +36,6 @@ _test_data: list[tuple[tuple[int, int], list[list[tuple[DataWord, float]]], dict
             [(b'\x01', 1e-9), (b'\x00', 3e-9), (Unknown, 4e-9), (b'\x01', 6e-9)]
         ],
         {
-            BufferGate: [
-                (b'\x01', 1e-9), (b'\x00', 3e-9), (Unknown, 4e-9), (b'\x01', 6e-9)
-            ],
-            NOTGate: [
-                (b'\x00', 1e-9), (b'\x01', 3e-9), (Unknown, 4e-9), (b'\x00', 6e-9)
-            ],
             ANDGate: [
                 (b'\x01', 1e-9), (b'\x00', 3e-9), (Unknown, 4e-9), (b'\x01', 6e-9)
             ],
@@ -71,12 +65,6 @@ _test_data: list[tuple[tuple[int, int], list[list[tuple[DataWord, float]]], dict
             [(b'\x0e', 2e-9), (b'\x03', 3e-9), (b'\x0e', 7e-9), (Unknown, 8e-9), (b'\x01', 10e-9)]
         ],
         {
-            BufferGate: [
-                (b'\xfe', 1e-9), (b'\xab', 5e-9), (Unknown, 8e-9), (b'\xcd', 10e-9), (b'\x01', 12e-9)
-            ],
-            NOTGate: [
-                (b'\x01', 1e-9), (b'\x54', 5e-9), (Unknown, 8e-9), (b'\x32', 10e-9), (b'\xfe', 12e-9)
-            ],
             ANDGate: [
                 (b'\x02', 4e-9), (b'\x01', 5e-9), (b'\x00', 6e-9), (Unknown, 8e-9), (b'\x00', 10e-9)
             ],
@@ -108,12 +96,6 @@ _test_data: list[tuple[tuple[int, int], list[list[tuple[DataWord, float]]], dict
             for i in range(17)
         ],
         {
-            BufferGate: [
-                (b'\x00\x00\x00\x00\x00', 0e-9), (b'\x01\x55\x55\xaa\xaa', 1e-9), (b'\x01\xff\xff\xff\xff', 18e-9)
-            ],
-            NOTGate: [
-                (b'\x01\xff\xff\xff\xff', 0e-9), (b'\x00\xaa\xaa\x55\x55', 1e-9), (b'\x00\x00\x00\x00\x00', 18e-9)
-            ],
             ANDGate: [
                 (b'\x00\x00\x00\x00\x00', 0e-9), (b'\x01\x55\x55\xaa\xaa', 17e-9), (b'\x01\xff\xff\xff\xff', 18e-9)
             ],
@@ -139,44 +121,6 @@ _test_data: list[tuple[tuple[int, int], list[list[tuple[DataWord, float]]], dict
         }
     )
 ]
-
-
-def test_BufferGate() -> None:
-    for t in _test_data:
-        w: int = t[0][0]
-        po: ChannelProbe = ChannelProbe('out', w)
-        ti: Source = Source(w, t[1][0])
-        to: Drain = Drain(w)
-        dev: BufferGate = BufferGate(w)
-        dev.port_o.connect(to.port_i)
-        ti.port_o.connect(dev.port_i)
-        dev.port_o.add_probe(po)
-        sim: Simulator = Simulator([ti, to, dev])
-        sim.start(show_time=True)
-        r: list[tuple[DataWord, float]] = t[2][BufferGate]
-        assert len(po.data) == len(r)
-        for o, q in zip(po.data, r):
-            assert o[0] == q[0]
-            assert abs(o[1] - q[1]) <= _EPS
-
-
-def test_NOTGate() -> None:
-    for t in _test_data:
-        w: int = t[0][0]
-        po: ChannelProbe = ChannelProbe('out', w)
-        ti: Source = Source(w, t[1][0])
-        to: Drain = Drain(w)
-        dev: NOTGate = NOTGate(w)
-        dev.port_o.connect(to.port_i)
-        ti.port_o.connect(dev.port_i)
-        dev.port_o.add_probe(po)
-        sim: Simulator = Simulator([ti, to, dev])
-        sim.start(show_time=True)
-        r: list[tuple[DataWord, float]] = t[2][NOTGate]
-        assert len(po.data) == len(r)
-        for o, q in zip(po.data, r):
-            assert o[0] == q[0]
-            assert abs(o[1] - q[1]) <= _EPS
 
 
 def test_ANDGate() -> None:
