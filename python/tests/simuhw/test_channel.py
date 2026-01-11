@@ -29,13 +29,26 @@ def test_Channel() -> None:
     test_data: list[tuple[tuple[int, float, float], list[tuple[DataWord, float]], list[tuple[DataWord, float]]]] = [
         (
             (1, 2e-9, 1 / 3e-9),
-            [(b'\x01', 1e-9), (b'\x00', 4e-9), (Unknown, 7e-9), (b'\x01', 10e-9), (b'\x00', 11e-9), (b'\x01', 12e-9), (b'\x00', 15e-9), (b'\x00', 16e-9)],
-            [(b'\x01', 6e-9), (b'\x00', 9e-9), (Unknown, 12e-9), (b'\x01', 15e-9), (Unknown, 16e-9), (b'\x00', 20e-9)]
+            [
+                (b'\x01', 1e-9), (b'\x00', 4e-9), (Unknown, 7e-9), (b'\x01', 10e-9), (b'\x00', 11e-9), (b'\x01', 12e-9),
+                (b'\x00', 15e-9), (b'\x00', 16e-9), (b'\x01', 17e-9), (b'\x00', 24e-9)
+
+            ],
+            [
+                (b'\x01', 6e-9), (b'\x00', 9e-9), (Unknown, 12e-9), (b'\x01', 15e-9), (Unknown, 16e-9),
+                (b'\x00', 20e-9), (Unknown, 22e-9), (b'\x01', 25e-9), (b'\x00', 29e-9)
+            ]
         ),
         (
-            (8, 2e-9, 8 / 3e-9),
-            [(b'\xf1', 1e-9), (b'\xf2', 4e-9), (Unknown, 7e-9), (b'\xf3', 10e-9), (b'\xf4', 11e-9), (b'\xf5', 12e-9), (b'\xf6', 15e-9), (b'\xf6', 16e-9)],
-            [(b'\xf1', 6e-9), (b'\xf2', 9e-9), (Unknown, 12e-9), (b'\xf3', 15e-9), (Unknown, 16e-9), (b'\xf6', 20e-9)]
+            (9, 2e-9, 9 / 3e-9),
+            [
+                (b'\x01\xf1', 1e-9), (b'\x01\xf2', 4e-9), (Unknown, 7e-9), (b'\x01\xf3', 10e-9), (b'\x01\xf4', 11e-9), (b'\x01\xf5', 12e-9),
+                (b'\x01\xf6', 15e-9), (b'\x01\xf6', 16e-9), (b'\x01\xf7', 17e-9), (b'\x01\xf8', 24e-9)
+            ],
+            [
+                (b'\x01\xf1', 6e-9), (b'\x01\xf2', 9e-9), (Unknown, 12e-9), (b'\x01\xf3', 15e-9), (Unknown, 16e-9),
+                (b'\x01\xf6', 20e-9), (Unknown, 22e-9), (b'\x01\xf7', 25e-9), (b'\x01\xf8', 29e-9)
+            ]
         )
     ]
     for t in test_data:

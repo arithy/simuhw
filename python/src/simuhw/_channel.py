@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from ._word import DataWord, Unknown
+from ._word import DataWord, Unknown, HighZ
 from ._base import InputPort, OutputPort, Device
 
 
@@ -51,6 +51,8 @@ class Channel(Device):
         """The output port."""
         self._queue: list[tuple[DataWord, float]] = []
         """The queue of data words to be output later."""
+        self._restore_time: float | None = None
+        """The time to restore a stable state."""
 
     @property
     def width(self) -> int:
@@ -97,12 +99,23 @@ class Channel(Device):
         """
         ports_i: list[InputPort] = [self._port_i]
         if self._update_time_and_check_inputs(time, ports_i):
-            self._queue.append((
-                Unknown if len(self._queue) > 0 and self._queue[-1][1] > self._time and self._queue[-1][0] != self._port_i.data[0] else self._port_i.data[0],
-                self._time + self._word_delay
-            ))
+            if len(self._queue) > 0 and self._queue[-1][1] > self._time and self._queue[-1][0] != self._port_i.data[0]:
+                self._queue.append((Unknown, self._time + self._word_delay))
+                self._restore_time = self._time + self._word_delay
+            else:
+                self._queue.append((self._port_i.data[0], self._time + self._word_delay))
+                self._restore_time = None
             self._set_inputs_unchanged(ports_i)
+        elif self._restore_time is not None and self._restore_time <= self._time:
+            self._queue.append((self._port_i.data[0], self._time + self._word_delay))
+            self._restore_time = None
+        elif time is None and not self._port_i.connected:  # if the input port is dangling
+            self._port_o.post((HighZ, self._time))  # outputs immediately
         while len(self._queue) > 0 and self._queue[0][1] + self._latency <= self._time:
             self._port_o.post((self._queue[0][0], self._queue[0][1] + self._latency))
             self._queue.pop(0)
-        return (ports_i, self._queue[0][1] + self._latency if len(self._queue) > 0 else None)
+        return (
+            ports_i,
+            self._queue[0][1] + self._latency if len(self._queue) > 0 else
+            self._restore_time if self._restore_time is not None else None
+        )
