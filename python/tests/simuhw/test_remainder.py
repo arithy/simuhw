@@ -195,7 +195,7 @@ def test_SignedRemainder() -> None:
 def test_SIMD_Remainder() -> None:
     test_data: list[tuple[list[int], list[int], list[list[tuple[DataWord, float]]], list[list[tuple[DataWord, float]]]]] = [
         (
-            [32, 2, 8],
+            [32, 2],
             [4, 8, 16, 32],
             [
                 [
@@ -214,7 +214,7 @@ def test_SIMD_Remainder() -> None:
                     (Unknown, 15e-9)
                 ],
                 [
-                    (b'\x8a', 11e-9), (b'\x00', 12e-9),
+                    (b'\x01', 11e-9), (b'\x00', 12e-9),
                     (Unknown, 15e-9)
                 ]
             ]
@@ -223,10 +223,9 @@ def test_SIMD_Remainder() -> None:
     for t in test_data:
         w: int = t[0][0]
         s: int = t[0][1]
-        e: int = t[0][2]
-        po: list[ChannelProbe] = [ChannelProbe('out', w), ChannelProbe('overflow', e)]
+        po: list[ChannelProbe] = [ChannelProbe('out', w), ChannelProbe('overflow', 1)]
         ti: list[Source] = [Source(u, d) for u, d in zip([w, w, s], t[2])]
-        to: list[Drain] = [Drain(w), Drain(e)]
+        to: list[Drain] = [Drain(w), Drain(1)]
         dev: SIMD_Remainder = SIMD_Remainder(w, t[1])
         dev.port_o.connect(to[0].port_i)
         dev.port_e.connect(to[1].port_i)
@@ -247,7 +246,7 @@ def test_SIMD_Remainder() -> None:
 def test_SIMD_SignedRemainder() -> None:
     test_data: list[tuple[list[int], list[int], list[list[tuple[DataWord, float]]], list[list[tuple[DataWord, float]]]]] = [
         (
-            [32, 2, 8],
+            [32, 2],
             [4, 8, 16, 32],
             [
                 [
@@ -266,7 +265,7 @@ def test_SIMD_SignedRemainder() -> None:
                     (Unknown, 15e-9)
                 ],
                 [
-                    (b'\x8a', 11e-9), (b'\x00', 12e-9),
+                    (b'\x01', 11e-9), (b'\x00', 12e-9),
                     (Unknown, 15e-9)
                 ]
             ]
@@ -275,10 +274,9 @@ def test_SIMD_SignedRemainder() -> None:
     for t in test_data:
         w: int = t[0][0]
         s: int = t[0][1]
-        e: int = t[0][2]
-        po: list[ChannelProbe] = [ChannelProbe('out', w), ChannelProbe('overflow', e)]
+        po: list[ChannelProbe] = [ChannelProbe('out', w), ChannelProbe('overflow', 1)]
         ti: list[Source] = [Source(u, d) for u, d in zip([w, w, s], t[2])]
-        to: list[Drain] = [Drain(w), Drain(e)]
+        to: list[Drain] = [Drain(w), Drain(1)]
         dev: SIMD_SignedRemainder = SIMD_SignedRemainder(w, t[1])
         dev.port_o.connect(to[0].port_i)
         dev.port_e.connect(to[1].port_i)

@@ -154,10 +154,8 @@ class SIMD_Divider(SIMD_BinaryOperator):
 
         """
         super().__init__(width, dsize)
-        self._port_e: OutputPort = OutputPort(width // min(self._dsize))
+        self._port_e: OutputPort = OutputPort(1)
         """The output port to emit overflow exception."""
-        self._nbytes_e: int = (self._port_e.width + 7) >> 3
-        """The number of bytes required to represent the overflow exceptions."""
 
     @property
     def port_e(self) -> OutputPort:
@@ -198,17 +196,17 @@ class SIMD_Divider(SIMD_BinaryOperator):
                 v1: int = int.from_bytes(self._ports_i[1].data[0])
                 o: int = 0
                 e: int = 0
-                for i, j in enumerate(range(0, self._width, w)):
-                    w0: int = (v0 >> j) & m
-                    w1: int = (v1 >> j) & m
+                for i in range(0, self._width, w):
+                    w0: int = (v0 >> i) & m
+                    w1: int = (v1 >> i) & m
                     if w1 == 0:
-                        e |= 1 << i
+                        e |= 1
                     else:
                         r: int = w0 // w1
-                        o |= (r & m) << j
-                        e |= (0 if (r >> w) == 0 else 1) << i
+                        o |= (r & m) << i
+                        e |= 0 if (r >> w) == 0 else 1
                 self._port_o.post((o.to_bytes(self._nbytes), self._time))
-                self._port_e.post((e.to_bytes(self._nbytes_e), self._time))
+                self._port_e.post((e.to_bytes(1), self._time))
             self._set_inputs_unchanged(ports_i)
         return (ports_i, None)
 
@@ -262,16 +260,16 @@ class SIMD_SignedDivider(SIMD_Divider):
                 v1: int = int.from_bytes(self._ports_i[1].data[0])
                 o: int = 0
                 e: int = 0
-                for i, j in enumerate(range(0, self._width, w)):
-                    w0: int = to_signed_int(w, (v0 >> j) & m)
-                    w1: int = to_signed_int(w, (v1 >> j) & m)
+                for i in range(0, self._width, w):
+                    w0: int = to_signed_int(w, (v0 >> i) & m)
+                    w1: int = to_signed_int(w, (v1 >> i) & m)
                     if w1 == 0:
-                        e |= 1 << i
+                        e |= 1
                     else:
                         r: int = (abs(w0) // abs(w1)) * (1 if w0 >= 0 else -1) * (1 if w1 >= 0 else -1)
-                        o |= (r & m) << j
-                        e |= (0 if (r >> (w - 1)) == (0 if r >= 0 else -1) else 1) << i
+                        o |= (r & m) << i
+                        e |= 0 if (r >> (w - 1)) == (0 if r >= 0 else -1) else 1
                 self._port_o.post((o.to_bytes(self._nbytes), self._time))
-                self._port_e.post((e.to_bytes(self._nbytes_e), self._time))
+                self._port_e.post((e.to_bytes(1), self._time))
             self._set_inputs_unchanged(ports_i)
         return (ports_i, None)

@@ -171,14 +171,14 @@ def test_SignedMultiplier() -> None:
 def test_SIMD_Multiplier() -> None:
     test_data: list[tuple[list[int], list[int], list[list[tuple[DataWord, float]]], list[list[tuple[DataWord, float]]]]] = [
         (
-            [32, 2, 8],
+            [32, 2],
             [4, 8, 16, 32],
             [
                 [
-                    (b'\xf2\xd4\x3e\x1b', 5e-9), (Unknown, 15e-9)
+                    (b'\xf2\x54\x13\x3e', 5e-9), (Unknown, 15e-9)
                 ],
                 [
-                    (b'\x01\x02\x08\x0c', 10e-9)
+                    (b'\x01\x02\x02\x01', 10e-9)
                 ],
                 [
                     (cast(list[DataWord], [Unknown, b'\x00', b'\x01', b'\x02', b'\x03'])[i % 5], 1e-9 * i) for i in range(20)
@@ -186,11 +186,11 @@ def test_SIMD_Multiplier() -> None:
             ],
             [
                 [
-                    (b'\x02\x08\x00\x04', 11e-9), (b'\xf2\xa8\xf0\x44', 12e-9), (b'\xb9\xa8\xc1\x44', 13e-9), (b'\x9B\x19\xc1\x44', 14e-9),
+                    (b'\x02\x08\x06\x0e', 11e-9), (b'\xf2\xa8\x26\x3e', 12e-9), (b'\x38\xa8\x8f\x3e', 13e-9), (b'\xfe\xf6\x8f\x3e', 14e-9),
                     (Unknown, 15e-9)
                 ],
                 [
-                    (b'\x05', 11e-9), (b'\x07', 12e-9), (b'\x03', 13e-9), (b'\x01', 14e-9),
+                    (b'\x00', 11e-9), (b'\x01', 13e-9),
                     (Unknown, 15e-9)
                 ]
             ]
@@ -199,10 +199,9 @@ def test_SIMD_Multiplier() -> None:
     for t in test_data:
         w: int = t[0][0]
         s: int = t[0][1]
-        e: int = t[0][2]
-        po: list[ChannelProbe] = [ChannelProbe('out', w), ChannelProbe('overflow', e)]
+        po: list[ChannelProbe] = [ChannelProbe('out', w), ChannelProbe('overflow', 1)]
         ti: list[Source] = [Source(u, d) for u, d in zip([w, w, s], t[2])]
-        to: list[Drain] = [Drain(w), Drain(e)]
+        to: list[Drain] = [Drain(w), Drain(1)]
         dev: SIMD_Multiplier = SIMD_Multiplier(w, t[1])
         dev.port_o.connect(to[0].port_i)
         dev.port_e.connect(to[1].port_i)
@@ -223,14 +222,14 @@ def test_SIMD_Multiplier() -> None:
 def test_SIMD_SignedMultiplier() -> None:
     test_data: list[tuple[list[int], list[int], list[list[tuple[DataWord, float]]], list[list[tuple[DataWord, float]]]]] = [
         (
-            [32, 2, 8],
+            [32, 2],
             [4, 8, 16, 32],
             [
                 [
-                    (b'\xf2\xd4\x3e\x1b', 5e-9), (Unknown, 15e-9)
+                    (b'\xf2\xd4\x13\x3e', 5e-9), (Unknown, 15e-9)
                 ],
                 [
-                    (b'\x01\x02\x08\x0c', 10e-9)
+                    (b'\x01\x02\x03\x02', 10e-9)
                 ],
                 [
                     (cast(list[DataWord], [Unknown, b'\x00', b'\x01', b'\x02', b'\x03'])[i % 5], 1e-9 * i) for i in range(20)
@@ -238,11 +237,11 @@ def test_SIMD_SignedMultiplier() -> None:
             ],
             [
                 [
-                    (b'\x02\x08\x00\x04', 11e-9), (b'\xf2\xa8\xf0\x44', 12e-9), (b'\xb9\xa8\xc1\x44', 13e-9), (b'\x9B\x19\xc1\x44', 14e-9),
+                    (b'\x02\x08\x09\x0c', 11e-9), (b'\xf2\xa8\x39\x7c', 12e-9), (b'\xb9\xa8\xe0\x7c', 13e-9), (b'\xc6\x5d\xe0\x7c', 14e-9),
                     (Unknown, 15e-9)
                 ],
                 [
-                    (b'\x15', 11e-9), (b'\x03', 12e-9), (b'\x01', 14e-9),
+                    (b'\x01', 11e-9), (b'\x00', 12e-9), (b'\x01', 13e-9),
                     (Unknown, 15e-9)
                 ]
             ]
@@ -251,10 +250,9 @@ def test_SIMD_SignedMultiplier() -> None:
     for t in test_data:
         w: int = t[0][0]
         s: int = t[0][1]
-        e: int = t[0][2]
-        po: list[ChannelProbe] = [ChannelProbe('out', w), ChannelProbe('overflow', e)]
+        po: list[ChannelProbe] = [ChannelProbe('out', w), ChannelProbe('overflow', 1)]
         ti: list[Source] = [Source(u, d) for u, d in zip([w, w, s], t[2])]
-        to: list[Drain] = [Drain(w), Drain(e)]
+        to: list[Drain] = [Drain(w), Drain(1)]
         dev: SIMD_SignedMultiplier = SIMD_SignedMultiplier(w, t[1])
         dev.port_o.connect(to[0].port_i)
         dev.port_e.connect(to[1].port_i)
