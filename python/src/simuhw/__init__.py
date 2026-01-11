@@ -30,7 +30,7 @@ __all__ = [
     'Group',
     'Delay',
     'Clock',
-    'DataCombiner', 'DataSplitter', 'Multiplexer', 'Demultiplexer', 'DataRetainingDemultiplexer', 'Distributor',
+    'DataCombiner', 'DataSplitter', 'Multiplexer', 'Demultiplexer', 'DataRetainingDemultiplexer', 'Junction', 'Distributor',
     'Channel',
     'Operator', 'UnaryOperator', 'BinaryOperator', 'TernaryOperator',
     'SIMD_Operator', 'SIMD_UnaryOperator', 'SIMD_BinaryOperator', 'SIMD_TernaryOperator',
@@ -62,7 +62,7 @@ from ._base import InputPort, OutputPort, Device, Source, LogicLowSource, LogicH
 from ._group import Group
 from ._delay import Delay
 from ._clock import Clock
-from ._branch import DataCombiner, DataSplitter, Multiplexer, Demultiplexer, DataRetainingDemultiplexer, Distributor
+from ._branch import DataCombiner, DataSplitter, Multiplexer, Demultiplexer, DataRetainingDemultiplexer, Junction, Distributor
 from ._channel import Channel
 from ._operator import (
     Operator, UnaryOperator, BinaryOperator, TernaryOperator,

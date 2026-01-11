@@ -344,6 +344,78 @@ class DataRetainingDemultiplexer(Demultiplexer):
         return (ports_i, None)
 
 
+class Junction(Device):
+    """A junction.
+
+    This device merges multiple inputs.
+    Its behavior is that of directly connected multiple input wires.
+
+    """
+
+    def __init__(self, width: int, ninputs: int) -> None:
+        """Creates a junction.
+
+        Args:
+            width: The data word width in bits.
+            ninputs: The number of the input ports.
+
+        """
+        super().__init__()
+        self._width: int = width
+        """The data word width in bits."""
+        self._ports_i: tuple[InputPort, ...] = tuple(InputPort(width) for _ in range(ninputs))
+        """The input ports."""
+        self._port_o: OutputPort = OutputPort(width)
+        """The output port."""
+
+    @property
+    def width(self) -> int:
+        """The data word width in bits."""
+        return self._width
+
+    @property
+    def ports_i(self) -> tuple[InputPort, ...]:
+        """The input ports."""
+        return self._ports_i
+
+    @property
+    def port_o(self) -> OutputPort:
+        """The output port."""
+        return self._port_o
+
+    def reset(self) -> None:
+        """Resets the states."""
+        super().reset()
+        for p in self._ports_i:
+            p.reset()
+        self._port_o.reset()
+
+    def work(self, time: float | None) -> tuple[list[InputPort], float | None]:
+        """Makes the device work.
+
+        Args:
+            time: The current time in seconds. ``None`` when starting to make the device work.
+
+        Returns:
+            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            The next resuming time can be ``None`` if resumable anytime.
+
+        """
+        ports_i: list[InputPort] = [*self._ports_i]
+        if self._update_time_and_check_inputs(time, ports_i):
+            bs: list[DataWord] = [p.data[0] for p in self._ports_i if p.connected and p.data[0] is not HighZ]
+            if len(bs) == 0:
+                self._port_o.post((HighZ, self._time))
+            elif all((b == bs[0] for b in bs)):
+                self._port_o.post((bs[0], self._time))
+            else:
+                self._port_o.post((Unknown, self._time))
+            self._set_inputs_unchanged(ports_i)
+        elif time is None and all((not p.connected for p in self._ports_i)):  # if all input ports are dangling or no input port exists
+            self._port_o.post((HighZ, self._time))
+        return (ports_i, None)
+
+
 class Distributor(Device):
     """A distributor.
 

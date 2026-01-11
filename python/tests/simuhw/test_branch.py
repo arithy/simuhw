@@ -20,9 +20,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from typing import cast
+
 from simuhw import (
     DataWord, HighZ, Unknown, Source, Drain,
-    DataCombiner, DataSplitter, Multiplexer, Demultiplexer, DataRetainingDemultiplexer, Distributor,
+    DataCombiner, DataSplitter, Multiplexer, Demultiplexer, DataRetainingDemultiplexer, Junction, Distributor,
     ChannelProbe, Simulator
 )
 
@@ -252,6 +254,53 @@ def test_DataRetainingDemultiplexer() -> None:
             for o, q in zip(p.data, r):
                 assert o[0] == q[0]
                 assert abs(o[1] - q[1]) <= _EPS
+
+
+def test_Junction() -> None:
+    test_data: list[tuple[int, list[list[tuple[DataWord, float]]], list[tuple[DataWord, float]]]] = [
+        (
+            9,
+            [],
+            [(HighZ, 0.0)]
+        ),
+        (
+            9,
+            [
+                [],
+                [(cast(list[DataWord], [b'\x01\x03', HighZ, Unknown])[i % 3], (1 + i) * 1e-9) for i in range(9)],
+                [(HighZ, 0.0)],
+                [(cast(list[DataWord], [b'\x01\x03', HighZ, Unknown])[i % 3], (1 + 3 * i) * 1e-9) for i in range(3)],
+                [(cast(list[DataWord], [b'\x01\x03', HighZ, Unknown])[i % 3], (1 + i) * 1e-9) for i in range(9)],
+                [],
+                [(HighZ, 0.0)]
+            ],
+            [
+                *((cast(list[DataWord], [b'\x01\x03', b'\x01\x03', Unknown])[i % 3], (1 + i) * 1e-9) for i in range(0, 3)),
+                *((cast(list[DataWord], [b'\x01\x03', HighZ, Unknown])[i % 3], (1 + i) * 1e-9) for i in range(3, 6)),
+                *((cast(list[DataWord], [Unknown, Unknown, Unknown])[i % 3], (1 + i) * 1e-9) for i in range(6, 9))
+            ]
+        )
+    ]
+    for t in test_data:
+        w: int = t[0]
+        n: int = len(t[1])
+        po: ChannelProbe = ChannelProbe('out', w)
+        ti: list[Source] = [Source(u, d) for u, d in zip([w] * n, t[1])]
+        to: Drain = Drain(w)
+        dev: Junction = Junction(w, n)
+        for i, p in enumerate(dev.ports_i):
+            if len(t[1][i]) > 0:
+                ti[i].port_o.connect(p)
+        dev.port_o.connect(to.port_i)
+        dev.port_o.add_probe(po)
+        sim: Simulator = Simulator([*ti, to, dev])
+        sim.start(show_time=True)
+        a: list[tuple[DataWord, float]] = t[2]
+        r: list[tuple[DataWord, float]] = [a[i] for i in range(len(a)) if i == 0 or a[i][0] != a[i - 1][0]]
+        assert len(po.data) == len(r)
+        for o, q in zip(po.data, r):
+            assert o[0] == q[0]
+            assert abs(o[1] - q[1]) <= _EPS
 
 
 def test_Distributor() -> None:

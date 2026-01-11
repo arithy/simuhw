@@ -71,6 +71,7 @@ import simuhw as hw
       - [`Multiplexer`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.Multiplexer)
       - [`Demultiplexer`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.Demultiplexer)
       - [`DataRetainDemultiplexer`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.DataRetainDemultiplexer)
+      - [`Junction`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.Junction)
       - [`Distributor`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.Distributor)
     - Elementary Combinational Circuit
       - [`Buffer`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.Buffer)
