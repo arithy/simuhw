@@ -23,6 +23,7 @@
 from typing import cast
 from collections.abc import Iterable
 from functools import reduce
+import math
 
 from ._word import DataWord, Unknown, HighZ
 from ._base import InputPort, OutputPort, Device, combine_bits, extract_bits
@@ -168,10 +169,12 @@ class Multiplexer(Device):
         super().__init__()
         self._width: int = width
         """The data word width in bits."""
+        self._width_s: int = math.ceil(math.log2(ninputs)) if ninputs > 0 else 0
+        """The selection word width in bits."""
         self._ports_i: tuple[InputPort, ...] = tuple(InputPort(width) for _ in range(ninputs))
         """The input ports for the data word."""
-        self._port_s: InputPort = InputPort(ninputs)
-        """The input port for the selection bit flags of the input ports for the data word."""
+        self._port_s: InputPort = InputPort(self._width_s)
+        """The input port for selection of the input ports for the data word."""
         self._port_o: OutputPort = OutputPort(width)
         """The output port."""
 
@@ -181,13 +184,18 @@ class Multiplexer(Device):
         return self._width
 
     @property
+    def width_s(self) -> int:
+        """The selection word width in bits."""
+        return self._width_s
+
+    @property
     def ports_i(self) -> tuple[InputPort, ...]:
         """The input ports for the data word."""
         return self._ports_i
 
     @property
     def port_s(self) -> InputPort:
-        """The input port for the selection bit flags of the input ports for the data word."""
+        """The input port for selection of the input ports for the data word."""
         return self._port_s
 
     @property
@@ -219,9 +227,9 @@ class Multiplexer(Device):
             if not isinstance(self._port_s.data[0], bytes):
                 self._port_o.post((Unknown, self._time))
             else:
-                i: int = int.from_bytes(self._port_s.data[0]).bit_length() - 1
+                i: int = int.from_bytes(self._port_s.data[0])
                 self._port_o.post((
-                    self._ports_i[i].data[0] if i >= 0 else Unknown,
+                    self._ports_i[i].data[0] if i < len(self._ports_i) else Unknown,
                     self._time
                 ))
             self._set_inputs_unchanged(ports_i)
@@ -242,12 +250,14 @@ class Demultiplexer(Device):
         super().__init__()
         self._width: int = width
         """The data word width in bits."""
+        self._width_s: int = math.ceil(math.log2(noutputs)) if noutputs > 0 else 0
+        """The selection word width in bits."""
         self._deselected: DataWord = deselected
         """The data word when not selected."""
         self._port_i: InputPort = InputPort(width)
         """The input port for the data word."""
-        self._port_s: InputPort = InputPort(noutputs)
-        """The input port for the selection bit flags of the output ports."""
+        self._port_s: InputPort = InputPort(self._width_s)
+        """The input port for selection of the output ports."""
         self._ports_o: tuple[OutputPort, ...] = tuple(OutputPort(width) for _ in range(noutputs))
         """The output ports."""
 
@@ -257,13 +267,18 @@ class Demultiplexer(Device):
         return self._width
 
     @property
+    def width_s(self) -> int:
+        """The selection word width in bits."""
+        return self._width_s
+
+    @property
     def port_i(self) -> InputPort:
         """The input port for the data word."""
         return self._port_i
 
     @property
     def port_s(self) -> InputPort:
-        """The input port for the selection bit flags of the output ports."""
+        """The input port for selection of the output ports."""
         return self._port_s
 
     @property
@@ -295,7 +310,7 @@ class Demultiplexer(Device):
             if isinstance(self._port_s.data[0], bytes):
                 s: int = int.from_bytes(self._port_s.data[0])
                 for i, p in enumerate(self._ports_o):
-                    if ((s >> i) & 1) == 1:
+                    if i == s:
                         p.post((self._port_i.data[0], self._time))
                     else:
                         p.post((self._deselected, self._time))
@@ -335,7 +350,7 @@ class DataRetainingDemultiplexer(Demultiplexer):
             if isinstance(self._port_s.data[0], bytes):
                 s: int = int.from_bytes(self._port_s.data[0])
                 for i, p in enumerate(self._ports_o):
-                    if ((s >> i) & 1) == 1:
+                    if i == s:
                         p.post((self._port_i.data[0], self._time))
             else:
                 for i, p in enumerate(self._ports_o):

@@ -123,46 +123,43 @@ def test_DataSplitter() -> None:
 
 
 def test_Multiplexer() -> None:
-    test_data: list[tuple[int, list[list[tuple[DataWord, float]]], list[tuple[DataWord, float]], list[tuple[DataWord, float]]]] = [
+    test_data: list[tuple[tuple[int, int], list[list[tuple[DataWord, float]]], list[tuple[DataWord, float]], list[tuple[DataWord, float]]]] = [
         (
-            1,
+            (1, 0),
             [
                 [(b'\x01', 1e-9), (b'\x00', 3e-9), (Unknown, 4e-9), (b'\x01', 6e-9)]
             ],
-            [(b'\x01', 2e-9), (Unknown, 5e-9), (b'\x01', 6e-9), (b'\x00', 7e-9)],
-            [(b'\x01', 2e-9), (b'\x00', 3e-9), (Unknown, 4e-9), (b'\x01', 6e-9), (Unknown, 7e-9)]
+            [(b'', 2e-9)],
+            [(b'\x01', 2e-9), (b'\x00', 3e-9), (Unknown, 4e-9), (b'\x01', 6e-9)]
         ),
         (
-            8,
+            (8, 2),
             [
                 [(b'\xfe', 1e-9), (b'\xf1', 5e-9), (b'\xfe', 10e-9), (Unknown, 11e-9), (b'\xf1', 12e-9)],
                 [(b'\x06', 4e-9), (b'\x01', 5e-9), (b'\x06', 14e-9)],
                 [(b'\x41', 3e-9), (b'\x40', 6e-9), (b'\x41', 7e-9), (b'\x40', 9e-9)],
                 [(b'\x1e', 2e-9), (b'\x11', 3e-9), (b'\x1e', 7e-9), (b'\x11', 10e-9)]
             ],
-            [
-                (b'\x01', 2e-9), (Unknown, 6e-9), (b'\x08', 8e-9), (b'\x04', 9e-9), (b'\x00', 13e-9), (b'\x02', 14e-9)
-            ],
-            [
-                (b'\xfe', 2e-9), (b'\xf1', 5e-9), (Unknown, 6e-9), (b'\x1e', 8e-9), (b'\x40', 9e-9), (Unknown, 13e-9), (b'\x06', 14e-9)
-            ]
+            [(b'\x00', 2e-9), (Unknown, 6e-9), (b'\x03', 8e-9), (b'\x02', 9e-9), (HighZ, 13e-9), (b'\x01', 14e-9)],
+            [(b'\xfe', 2e-9), (b'\xf1', 5e-9), (Unknown, 6e-9), (b'\x1e', 8e-9), (b'\x40', 9e-9), (Unknown, 13e-9), (b'\x06', 14e-9)]
         )
     ]
     for t in test_data:
-        w: int = t[0]
+        w: int = t[0][0]
+        s: int = t[0][1]
         n: int = len(t[1])
         po: ChannelProbe = ChannelProbe('out', w)
-        ti: list[Source] = [Source(u, d) for u, d in zip([*([w] * n), n], [*t[1], t[2]])]
+        ti: list[Source] = [Source(u, d) for u, d in zip([*([w] * n), s], [*t[1], t[2]])]
         to: Drain = Drain(w)
         dev: Multiplexer = Multiplexer(w, n)
+        for i, p in enumerate([*dev.ports_i, dev.port_s]):
+            ti[i].port_o.connect(p)
         dev.port_o.connect(to.port_i)
-        for i in range(n):
-            ti[i].port_o.connect(dev.ports_i[i])
-        ti[n].port_o.connect(dev.port_s)
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[DataWord, float]] = t[3]
+        a: list[tuple[DataWord, float]] = t[3]
+        r: list[tuple[DataWord, float]] = [a[i] for i in range(len(a)) if i == 0 or a[i][0] != a[i - 1][0]]
         assert len(po.data) == len(r)
         for o, q in zip(po.data, r):
             assert o[0] == q[0]
@@ -170,33 +167,34 @@ def test_Multiplexer() -> None:
 
 
 def test_Demultiplexer() -> None:
-    test_data: list[tuple[tuple[int, DataWord], list[tuple[DataWord, float]], list[tuple[DataWord, float]], list[list[tuple[DataWord, float]]]]] = [
+    test_data: list[tuple[tuple[int, int, DataWord], list[tuple[DataWord, float]], list[tuple[DataWord, float]], list[list[tuple[DataWord, float]]]]] = [
         (
-            (1, b'\x01'),
-            [(b'\x01', 2e-9), (b'\x00', 3e-9), (Unknown, 4e-9), (b'\x01', 5e-9), (b'\x00', 6e-9), (Unknown, 7e-9), (b'\x00', 9e-9), (Unknown, 10e-9), (b'\x01', 11e-9)],
-            [(b'\x01', 1e-9), (Unknown, 6e-9), (b'\x01', 8e-9), (b'\x00', 9e-9)],
+            (1, 0, b'\x01'),
+            [(b'\x01', 1e-9), (b'\x00', 3e-9), (Unknown, 4e-9), (b'\x01', 5e-9), (b'\x00', 6e-9), (Unknown, 10e-9), (b'\x01', 11e-9)],
+            [(b'', 2e-9)],
             [
-                [(b'\x01', 2e-9), (b'\x00', 3e-9), (Unknown, 4e-9), (b'\x01', 5e-9), (Unknown, 6e-9), (b'\x01', 9e-9)]
+                [(b'\x01', 2e-9), (b'\x00', 3e-9), (Unknown, 4e-9), (b'\x01', 5e-9), (b'\x00', 6e-9), (Unknown, 10e-9), (b'\x01', 11e-9)]
             ]
         ),
         (
-            (8, b'\xcd'),
+            (8, 2, b'\xcd'),
             [(b'\xf1', 2e-9), (Unknown, 3e-9), (b'\xfe', 5e-9), (b'\xd2', 6e-9), (b'\x1e', 9e-9), (Unknown, 10e-9), (b'\xa1', 11e-9), (b'\x8b', 12e-9)],
-            [(b'\x01', 1e-9), (Unknown, 4e-9), (b'\x08', 6e-9), (b'\x04', 7e-9), (b'\x03', 8e-9), (b'\x00', 9e-9), (b'\x0a', 12e-9)],
+            [(b'\x00', 1e-9), (Unknown, 4e-9), (b'\x03', 6e-9), (b'\x02', 7e-9), (b'\x01', 8e-9), (b'\x03', 9e-9), (b'\x00', 12e-9)],
             [
-                [(b'\xf1', 2e-9), (Unknown, 3e-9), (b'\xcd', 6e-9), (b'\xd2', 8e-9), (b'\xcd', 9e-9)],
-                [(b'\xcd', 1e-9), (Unknown, 4e-9), (b'\xcd', 6e-9), (b'\xd2', 8e-9), (b'\xcd', 9e-9), (b'\x8b', 12e-9)],
+                [(b'\xf1', 2e-9), (Unknown, 3e-9), (b'\xcd', 6e-9), (b'\x8b', 12e-9)],
+                [(b'\xcd', 1e-9), (Unknown, 4e-9), (b'\xcd', 6e-9), (b'\xd2', 8e-9), (b'\xcd', 9e-9)],
                 [(b'\xcd', 1e-9), (Unknown, 4e-9), (b'\xcd', 6e-9), (b'\xd2', 7e-9), (b'\xcd', 8e-9)],
-                [(b'\xcd', 1e-9), (Unknown, 4e-9), (b'\xd2', 6e-9), (b'\xcd', 7e-9), (b'\x8b', 12e-9)]
+                [(b'\xcd', 1e-9), (Unknown, 4e-9), (b'\xd2', 6e-9), (b'\xcd', 7e-9), (b'\x1e', 9e-9), (Unknown, 10e-9), (b'\xa1', 11e-9), (b'\xcd', 12e-9)]
             ]
         )
     ]
     for t in test_data:
         w: int = t[0][0]
-        d: DataWord = t[0][1]
+        s: int = t[0][1]
+        d: DataWord = t[0][2]
         n: int = len(t[3])
         po: list[ChannelProbe] = [ChannelProbe(f'out{i}', w) for i in range(n)]
-        ti: list[Source] = [Source(w, t[1]), Source(n, t[2])]
+        ti: list[Source] = [Source(w, t[1]), Source(s, t[2])]
         to: list[Drain] = [Drain(w) for _ in range(n)]
         dev: Demultiplexer = Demultiplexer(w, n, deselected=d)
         ti[0].port_o.connect(dev.port_i)
@@ -206,7 +204,8 @@ def test_Demultiplexer() -> None:
             dev.ports_o[i].add_probe(po[i])
         sim: Simulator = Simulator([*ti, *to, dev])
         sim.start(show_time=True)
-        for p, r in zip(po, t[3]):
+        for p, a in zip(po, t[3]):
+            r: list[tuple[DataWord, float]] = [a[i] for i in range(len(a)) if i == 0 or a[i][0] != a[i - 1][0]]
             assert len(p.data) == len(r)
             for o, q in zip(p.data, r):
                 assert o[0] == q[0]
@@ -214,32 +213,33 @@ def test_Demultiplexer() -> None:
 
 
 def test_DataRetainingDemultiplexer() -> None:
-    test_data: list[tuple[int, list[tuple[DataWord, float]], list[tuple[DataWord, float]], list[list[tuple[DataWord, float]]]]] = [
+    test_data: list[tuple[tuple[int, int], list[tuple[DataWord, float]], list[tuple[DataWord, float]], list[list[tuple[DataWord, float]]]]] = [
         (
-            1,
-            [(b'\x01', 2e-9), (b'\x00', 3e-9), (Unknown, 4e-9), (b'\x01', 5e-9), (b'\x00', 6e-9), (Unknown, 7e-9), (b'\x00', 8e-9), (Unknown, 10e-9), (b'\x01', 11e-9)],
-            [(b'\x01', 1e-9), (Unknown, 6e-9), (b'\x01', 8e-9), (b'\x00', 9e-9)],
+            (1, 0),
+            [(b'\x01', 1e-9), (b'\x00', 3e-9), (Unknown, 4e-9), (b'\x01', 5e-9), (b'\x00', 6e-9), (Unknown, 10e-9), (b'\x01', 11e-9)],
+            [(b'', 2e-9)],
             [
-                [(b'\x01', 2e-9), (b'\x00', 3e-9), (Unknown, 4e-9), (b'\x01', 5e-9), (Unknown, 6e-9), (b'\x00', 8e-9)]
+                [(b'\x01', 2e-9), (b'\x00', 3e-9), (Unknown, 4e-9), (b'\x01', 5e-9), (b'\x00', 6e-9), (Unknown, 10e-9), (b'\x01', 11e-9)]
             ]
         ),
         (
-            8,
+            (8, 2),
             [(b'\xf1', 2e-9), (Unknown, 3e-9), (b'\xfe', 5e-9), (b'\xd2', 6e-9), (b'\x1e', 9e-9), (Unknown, 10e-9), (b'\xa1', 11e-9), (b'\x8b', 12e-9)],
-            [(b'\x01', 1e-9), (Unknown, 4e-9), (b'\x08', 6e-9), (b'\x04', 7e-9), (b'\x03', 8e-9), (b'\x00', 9e-9), (b'\x0a', 12e-9)],
+            [(b'\x00', 1e-9), (Unknown, 4e-9), (b'\x03', 6e-9), (b'\x02', 7e-9), (b'\x01', 8e-9), (b'\x03', 9e-9), (b'\x00', 12e-9)],
             [
-                [(b'\xf1', 2e-9), (Unknown, 3e-9), (b'\xd2', 8e-9)],
-                [(b'\xd2', 8e-9), (b'\x8b', 12e-9)],
+                [(b'\xf1', 2e-9), (Unknown, 3e-9), (b'\x8b', 12e-9)],
+                [(b'\xd2', 8e-9)],
                 [(b'\xd2', 7e-9)],
-                [(b'\xd2', 6e-9), (b'\x8b', 12e-9)]
+                [(b'\xd2', 6e-9), (b'\x1e', 9e-9), (Unknown, 10e-9), (b'\xa1', 11e-9)]
             ]
         )
     ]
     for t in test_data:
-        w: int = t[0]
+        w: int = t[0][0]
+        s: int = t[0][1]
         n: int = len(t[3])
         po: list[ChannelProbe] = [ChannelProbe(f'out{i}', w) for i in range(n)]
-        ti: list[Source] = [Source(w, t[1]), Source(n, t[2])]
+        ti: list[Source] = [Source(w, t[1]), Source(s, t[2])]
         to: list[Drain] = [Drain(w) for _ in range(n)]
         dev: DataRetainingDemultiplexer = DataRetainingDemultiplexer(w, n)
         ti[0].port_o.connect(dev.port_i)
@@ -249,7 +249,8 @@ def test_DataRetainingDemultiplexer() -> None:
             dev.ports_o[i].add_probe(po[i])
         sim: Simulator = Simulator([*ti, *to, dev])
         sim.start(show_time=True)
-        for p, r in zip(po, t[3]):
+        for p, a in zip(po, t[3]):
+            r: list[tuple[DataWord, float]] = [a[i] for i in range(len(a)) if i == 0 or a[i][0] != a[i - 1][0]]
             assert len(p.data) == len(r)
             for o, q in zip(p.data, r):
                 assert o[0] == q[0]

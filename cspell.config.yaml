@@ -7,8 +7,9 @@ words:
   - Arihiro
   - arithy
   - bysource
-  - Combinational
-  - Demultiplexer
+  - combinational
+  - demultiplexer
+  - demultiplexers
   - DIVBYZERO
   - docstrings
   - doctest
