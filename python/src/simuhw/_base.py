@@ -311,7 +311,7 @@ class Source(Device):
         super().__init__()
         self._width: int = width
         """The word width in bits."""
-        self._signals: list[Signal] = sorted([g if isinstance(g, Signal) else Signal(g[0], g[1]) for g in signals], key=lambda d: d.time)
+        self._signals: list[Signal] = [g if isinstance(g, Signal) else Signal(g[0], g[1]) for g in signals]
         """The signals to be emitted."""
         self._port_o: OutputPort = OutputPort(width)
         """The output port."""
