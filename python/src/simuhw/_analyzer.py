@@ -82,7 +82,7 @@ class Probe(metaclass=ABCMeta):
         return self._signals.__iter__()
 
     def __str__(self) -> str:
-        return f'{self.__class__.__name__}(\'{self._name}\', {self._width}, [{', '.join((str(g) for g in self._signals))}])'
+        return f'{self.__class__.__name__}(\'{self._name}\', {self._width}, [{", ".join((str(g) for g in self._signals))}])'
 
 
 class ChannelProbe(Probe):
