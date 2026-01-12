@@ -112,10 +112,8 @@ class EdgeTriggeredMemory(Memory):
                 assert isinstance(enable, bytes)
                 if int.from_bytes(enable) == (0 if self._neg_enable else 1):
                     self._model.write(addr, self._port_i.signal.word)
-                g: Signal = Signal(self._model.read(addr), self._time)
-                self._port_o.post(g)
-                if int.from_bytes(enable) == (0 if self._neg_enable else 1):
-                    self._update_probes(addr, g)
+                    self._update_probes(addr, Signal(self._port_i.signal.word, self._time))
+                self._port_o.post(Signal(self._model.read(addr), self._time))
             self._prev_c = clock
             self._set_inputs_unchanged(ports_i)
         return (ports_i, None)

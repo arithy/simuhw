@@ -82,21 +82,18 @@ class LevelTriggeredMemory(Memory):
         addr: Word = self._port_a.signal.word
         gate: Word = self._port_g.signal.word
         if time is None:
-            if any((not isinstance(d, bytes) for d in [gate, addr])):
+            if any((not isinstance(d, bytes) for d in [gate, addr])) or int.from_bytes(cast(bytes, gate)) == 0:
                 self._initialize_probes()
-            elif int.from_bytes(cast(bytes, gate)) != 0:
-                self._initialize_probes(addr)
             else:
-                self._initialize_probes()
+                self._initialize_probes(addr)
         if self._update_time_and_check_inputs(time, ports_i):
             if any((not isinstance(d, bytes) for d in [gate, addr])):
                 self._port_o.post(Signal(Unknown, self._time))
-            elif int.from_bytes(cast(bytes, gate)) == (0 if self._neg_leveled else 1):
-                self._model.write(addr, self._port_i.signal.word)
-                g: Signal = Signal(self._model.read(addr), self._time)
-                self._port_o.post(g)
-                self._update_probes(addr, g)
             else:
+                assert isinstance(gate, bytes)
+                if int.from_bytes(gate) == (0 if self._neg_leveled else 1):
+                    self._model.write(addr, self._port_i.signal.word)
+                    self._update_probes(addr, Signal(self._port_i.signal.word, self._time))
                 self._port_o.post(Signal(self._model.read(addr), self._time))
             self._set_inputs_unchanged(ports_i)
         return (ports_i, None)
