@@ -148,8 +148,8 @@ def test_Subtractor() -> None:
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[Word, float]] = t[1][1][0]
-        assert len(po.signals) == len(r)
-        for o, q in zip(po.signals, r):
+        assert len(po) == len(r)
+        for o, q in zip(po, r):
             assert o.word == q[0]
             assert abs(o.time - q[1]) <= _EPS
 
@@ -170,8 +170,8 @@ def test_HalfSubtractor() -> None:
         sim: Simulator = Simulator([*ti, *to, dev])
         sim.start(show_time=True)
         for p, r in zip(po, t[1][1]):
-            assert len(p.signals) == len(r)
-            for o, q in zip(p.signals, r):
+            assert len(p) == len(r)
+            for o, q in zip(p, r):
                 assert o.word == q[0]
                 assert abs(o.time - q[1]) <= _EPS
 
@@ -194,8 +194,8 @@ def test_FullSubtractor() -> None:
             sim: Simulator = Simulator([*ti, *to, dev])
             sim.start(show_time=True)
             for p, r in zip(po, t[1][1 + j]):
-                assert len(p.signals) == len(r)
-                for o, q in zip(p.signals, r):
+                assert len(p) == len(r)
+                for o, q in zip(p, r):
                     assert o.word == q[0]
                     assert abs(o.time - q[1]) <= _EPS
 
@@ -237,7 +237,7 @@ def test_SIMD_Subtractor() -> None:
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[Word, float]] = t[3]
-        assert len(po.signals) == len(r)
-        for o, q in zip(po.signals, r):
+        assert len(po) == len(r)
+        for o, q in zip(po, r):
             assert o.word == q[0]
             assert abs(o.time - q[1]) <= _EPS

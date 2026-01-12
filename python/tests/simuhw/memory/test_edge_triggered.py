@@ -87,8 +87,8 @@ def test_EdgeTriggeredMemory_Mock() -> None:
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         for p, r in zip([po, pm], t[1][4:6]):
-            assert len(p.signals) == len(r)
-            for o, q in zip(p.signals, r):
+            assert len(p) == len(r)
+            for o, q in zip(p, r):
                 assert o.word == q[0]
                 assert abs(o.time - q[1]) <= _EPS
 
@@ -158,7 +158,7 @@ def test_EdgeTriggeredMemory_Real() -> None:
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         for p, r in zip([po, pm], t[1][4:6]):
-            assert len(p.signals) == len(r)
-            for o, q in zip(p.signals, r):
+            assert len(p) == len(r)
+            for o, q in zip(p, r):
                 assert o.word == q[0]
                 assert abs(o.time - q[1]) <= _EPS

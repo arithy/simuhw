@@ -125,10 +125,10 @@ class Memory(Device, metaclass=ABCMeta):
     def _initialize_probes(self, exclude: Word = Unknown) -> None:
         for p in self._probes:
             if self._probes[p] != exclude:
-                p.signals.append(Signal(self._model.read(self._probes[p]), 0.0))
+                p.append(Signal(self._model.read(self._probes[p]), 0.0))
 
     def _update_probes(self, address: Word, signal: Signal) -> None:
         if isinstance(address, bytes):
             for p in self._probes:
                 if self._probes[p] == address:
-                    p.signals.append(signal)
+                    p.append(signal)

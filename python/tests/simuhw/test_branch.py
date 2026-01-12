@@ -66,8 +66,8 @@ def test_WordCombiner() -> None:
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[Word, float]] = t[2]
-        assert len(po.signals) == len(r)
-        for o, q in zip(po.signals, r):
+        assert len(po) == len(r)
+        for o, q in zip(po, r):
             assert o.word == q[0]
             assert abs(o.time - q[1]) <= _EPS
 
@@ -116,8 +116,8 @@ def test_WordSplitter() -> None:
         sim: Simulator = Simulator([ti, *to, dev])
         sim.start(show_time=True)
         for p, r in zip(po, t[2]):
-            assert len(p.signals) == len(r)
-            for o, q in zip(p.signals, r):
+            assert len(p) == len(r)
+            for o, q in zip(p, r):
                 assert o.word == q[0]
                 assert abs(o.time - q[1]) <= _EPS
 
@@ -160,8 +160,8 @@ def test_Multiplexer() -> None:
         sim.start(show_time=True)
         a: list[tuple[Word, float]] = t[3]
         r: list[tuple[Word, float]] = [a[i] for i in range(len(a)) if i == 0 or a[i][0] != a[i - 1][0]]
-        assert len(po.signals) == len(r)
-        for o, q in zip(po.signals, r):
+        assert len(po) == len(r)
+        for o, q in zip(po, r):
             assert o.word == q[0]
             assert abs(o.time - q[1]) <= _EPS
 
@@ -206,8 +206,8 @@ def test_Demultiplexer() -> None:
         sim.start(show_time=True)
         for p, a in zip(po, t[3]):
             r: list[tuple[Word, float]] = [a[i] for i in range(len(a)) if i == 0 or a[i][0] != a[i - 1][0]]
-            assert len(p.signals) == len(r)
-            for o, q in zip(p.signals, r):
+            assert len(p) == len(r)
+            for o, q in zip(p, r):
                 assert o.word == q[0]
                 assert abs(o.time - q[1]) <= _EPS
 
@@ -251,8 +251,8 @@ def test_WordRetainingDemultiplexer() -> None:
         sim.start(show_time=True)
         for p, a in zip(po, t[3]):
             r: list[tuple[Word, float]] = [a[i] for i in range(len(a)) if i == 0 or a[i][0] != a[i - 1][0]]
-            assert len(p.signals) == len(r)
-            for o, q in zip(p.signals, r):
+            assert len(p) == len(r)
+            for o, q in zip(p, r):
                 assert o.word == q[0]
                 assert abs(o.time - q[1]) <= _EPS
 
@@ -298,8 +298,8 @@ def test_Junction() -> None:
         sim.start(show_time=True)
         a: list[tuple[Word, float]] = t[2]
         r: list[tuple[Word, float]] = [a[i] for i in range(len(a)) if i == 0 or a[i][0] != a[i - 1][0]]
-        assert len(po.signals) == len(r)
-        for o, q in zip(po.signals, r):
+        assert len(po) == len(r)
+        for o, q in zip(po, r):
             assert o.word == q[0]
             assert abs(o.time - q[1]) <= _EPS
 
@@ -337,9 +337,9 @@ def test_Distributor() -> None:
         sim: Simulator = Simulator([*to, dev])
         sim.start(show_time=True)
         for p in po:
-            assert len(p.signals) == 1
-            assert p.signals[0].word == HighZ
-            assert p.signals[0].time == 0.0
+            assert len(p) == 1
+            assert p[0].word == HighZ
+            assert p[0].time == 0.0
     for t in test_data:
         n: int = len(t[2])  # type: ignore[no-redef]
         po: list[ChannelProbe] = [ChannelProbe(f'out{i}', t[0]) for i in range(n)]  # type: ignore[no-redef]
@@ -353,7 +353,7 @@ def test_Distributor() -> None:
         sim: Simulator = Simulator([ti, *to, dev])  # type: ignore[no-redef]
         sim.start(show_time=True)
         for p, r in zip(po, t[2]):
-            assert len(p.signals) == len(r)
-            for o, q in zip(p.signals, r):
+            assert len(p) == len(r)
+            for o, q in zip(p, r):
                 assert o.word == q[0]
                 assert abs(o.time - q[1]) <= _EPS

@@ -221,8 +221,8 @@ def test_LeftShifter() -> None:
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[Word, float]] = t[2][LeftShifter]
-        assert len(po.signals) == len(r)
-        for o, q in zip(po.signals, r):
+        assert len(po) == len(r)
+        for o, q in zip(po, r):
             assert o.word == q[0]
             assert abs(o.time - q[1]) <= _EPS
 
@@ -241,8 +241,8 @@ def test_RightShifter() -> None:
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[Word, float]] = t[2][RightShifter]
-        assert len(po.signals) == len(r)
-        for o, q in zip(po.signals, r):
+        assert len(po) == len(r)
+        for o, q in zip(po, r):
             assert o.word == q[0]
             assert abs(o.time - q[1]) <= _EPS
 
@@ -261,8 +261,8 @@ def test_ArithmeticRightShifter() -> None:
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[Word, float]] = t[2][ArithmeticRightShifter]
-        assert len(po.signals) == len(r)
-        for o, q in zip(po.signals, r):
+        assert len(po) == len(r)
+        for o, q in zip(po, r):
             assert o.word == q[0]
             assert abs(o.time - q[1]) <= _EPS
 
@@ -281,8 +281,8 @@ def test_LeftRotator() -> None:
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[Word, float]] = t[2][LeftRotator]
-        assert len(po.signals) == len(r)
-        for o, q in zip(po.signals, r):
+        assert len(po) == len(r)
+        for o, q in zip(po, r):
             assert o.word == q[0]
             assert abs(o.time - q[1]) <= _EPS
 
@@ -301,8 +301,8 @@ def test_RightRotator() -> None:
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[Word, float]] = t[2][RightRotator]
-        assert len(po.signals) == len(r)
-        for o, q in zip(po.signals, r):
+        assert len(po) == len(r)
+        for o, q in zip(po, r):
             assert o.word == q[0]
             assert abs(o.time - q[1]) <= _EPS
 
@@ -348,8 +348,8 @@ def test_SIMD_LeftShifter() -> None:
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[Word, float]] = t[3]
-        assert len(po.signals) == len(r)
-        for o, q in zip(po.signals, r):
+        assert len(po) == len(r)
+        for o, q in zip(po, r):
             assert o.word == q[0]
             assert abs(o.time - q[1]) <= _EPS
 
@@ -395,8 +395,8 @@ def test_SIMD_RightShifter() -> None:
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[Word, float]] = t[3]
-        assert len(po.signals) == len(r)
-        for o, q in zip(po.signals, r):
+        assert len(po) == len(r)
+        for o, q in zip(po, r):
             assert o.word == q[0]
             assert abs(o.time - q[1]) <= _EPS
 
@@ -442,8 +442,8 @@ def test_SIMD_ArithmeticRightShifter() -> None:
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[Word, float]] = t[3]
-        assert len(po.signals) == len(r)
-        for o, q in zip(po.signals, r):
+        assert len(po) == len(r)
+        for o, q in zip(po, r):
             assert o.word == q[0]
             assert abs(o.time - q[1]) <= _EPS
 
@@ -489,8 +489,8 @@ def test_SIMD_LeftRotator() -> None:
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[Word, float]] = t[3]
-        assert len(po.signals) == len(r)
-        for o, q in zip(po.signals, r):
+        assert len(po) == len(r)
+        for o, q in zip(po, r):
             assert o.word == q[0]
             assert abs(o.time - q[1]) <= _EPS
 
@@ -536,7 +536,7 @@ def test_SIMD_RightRotator() -> None:
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[Word, float]] = t[3]
-        assert len(po.signals) == len(r)
-        for o, q in zip(po.signals, r):
+        assert len(po) == len(r)
+        for o, q in zip(po, r):
             assert o.word == q[0]
             assert abs(o.time - q[1]) <= _EPS

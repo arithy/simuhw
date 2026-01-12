@@ -20,8 +20,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from abc import ABCMeta, abstractmethod
 from typing import IO
+from abc import ABCMeta, abstractmethod
+from collections.abc import Iterator
 import heapq
 
 from ._type import Word, Unknown, HighZ, Signal
@@ -61,14 +62,24 @@ class Probe(metaclass=ABCMeta):
         """The word width in bits."""
         return self._width
 
-    @property
-    def signals(self) -> list[Signal]:
-        """The list of the signals recorded."""
-        return self._signals
-
     def reset(self) -> None:
         """Resets the states."""
         self._signals.clear()
+
+    def append(self, item: Signal) -> None:
+        if len(self._signals) > 0 and item.time == self[-1].time:
+            self._signals.pop()
+        if len(self._signals) == 0 or (item.time > self._signals[-1].time and item.word != self._signals[-1].word):
+            self._signals.append(item)
+
+    def __len__(self) -> int:
+        return len(self._signals)
+
+    def __getitem__(self, index: int) -> Signal:
+        return self._signals[index]
+
+    def __iter__(self) -> Iterator[Signal]:
+        return self._signals.__iter__()
 
 
 class ChannelProbe(Probe):
@@ -161,7 +172,7 @@ class LogicAnalyzer:
         file.write('$end\n')
         q: list[tuple[int, tuple[int, int, Word]]] = []
         for i, p in enumerate(self._probe):
-            for d in p.signals:
+            for d in p:
                 heapq.heappush(q, (int(d.time * 1e12), (i, p.width, d.word)))
         t: int | None = None
         for i in range(len(q)):

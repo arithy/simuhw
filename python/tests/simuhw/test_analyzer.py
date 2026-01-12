@@ -44,13 +44,13 @@ def test_LogicAnalyzer() -> None:
         la.add_probe(mp)
     for icp, cp in enumerate(lcp):
         for iwd, wd in enumerate(lwd):
-            cp.signals.append(Signal(
+            cp.append(Signal(
                 (wd & ((1 << cp.width) - 1)).to_bytes((cp.width + 7) >> 3, byteorder='big') if isinstance(wd, int) else wd,
                 (icp + iwd) * 1e-9
             ))
     for imp, mp in enumerate(lmp):
         for iwd, wd in enumerate(reversed(lwd)):
-            mp.signals.append(Signal((
+            mp.append(Signal((
                 wd & ((1 << mp.width) - 1)).to_bytes((mp.width + 7) >> 3, byteorder='big') if isinstance(wd, int) else wd,
                 (imp + iwd + 1) * 1e-9
             ))

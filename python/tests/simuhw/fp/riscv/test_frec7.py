@@ -624,8 +624,8 @@ def test_FRec7() -> None:
         sim: Simulator = Simulator([*ti, *to, dev])
         sim.start(show_time=True)
         for p, r in zip(po, [[o[i] for i in range(len(o)) if i == 0 or o[i][0] != o[i - 1][0]] for o in s]):
-            assert len(p.signals) == len(r)
-            for o, q in zip(p.signals, r):
+            assert len(p) == len(r)
+            for o, q in zip(p, r):
                 assert o.word == q[0]
                 assert abs(o.time - q[1]) <= _EPS
 
@@ -708,7 +708,7 @@ def test_SIMD_FRec7() -> None:
         sim: Simulator = Simulator([*ti, *to, dev])
         sim.start(show_time=True)
         for p, r in zip(po, [[o[i] for i in range(len(o)) if i == 0 or o[i][0] != o[i - 1][0]] for o in s]):
-            assert len(p.signals) == len(r)
-            for o, q in zip(p.signals, r):
+            assert len(p) == len(r)
+            for o, q in zip(p, r):
                 assert o.word == q[0]
                 assert abs(o.time - q[1]) <= _EPS

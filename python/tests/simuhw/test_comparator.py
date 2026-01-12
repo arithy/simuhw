@@ -102,8 +102,8 @@ def test_Comparator() -> None:
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[Word, float]] = t[1][1][0]
-        assert len(po.signals) == len(r)
-        for o, q in zip(po.signals, r):
+        assert len(po) == len(r)
+        for o, q in zip(po, r):
             assert o.word == q[0]
             assert abs(o.time - q[1]) <= _EPS
 
@@ -180,8 +180,8 @@ def test_SignedComparator() -> None:
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[Word, float]] = t[1][1][0]
-        assert len(po.signals) == len(r)
-        for o, q in zip(po.signals, r):
+        assert len(po) == len(r)
+        for o, q in zip(po, r):
             assert o.word == q[0]
             assert abs(o.time - q[1]) <= _EPS
 
@@ -223,8 +223,8 @@ def test_SIMD_Comparator() -> None:
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[Word, float]] = t[3]
-        assert len(po.signals) == len(r)
-        for o, q in zip(po.signals, r):
+        assert len(po) == len(r)
+        for o, q in zip(po, r):
             assert o.word == q[0]
             assert abs(o.time - q[1]) <= _EPS
 
@@ -266,7 +266,7 @@ def test_SIMD_SignedComparator() -> None:
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[Word, float]] = t[3]
-        assert len(po.signals) == len(r)
-        for o, q in zip(po.signals, r):
+        assert len(po) == len(r)
+        for o, q in zip(po, r):
             assert o.word == q[0]
             assert abs(o.time - q[1]) <= _EPS

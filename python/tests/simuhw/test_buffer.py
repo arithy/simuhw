@@ -178,8 +178,8 @@ def test_Buffer() -> None:
         sim.start(show_time=True)
         a: list[tuple[Word, float]] = t[2][Buffer][0]
         r: list[tuple[Word, float]] = [a[i] for i in range(len(a)) if i == 0 or a[i][0] != a[i - 1][0]]
-        assert len(po.signals) == len(r)
-        for o, q in zip(po.signals, r):
+        assert len(po) == len(r)
+        for o, q in zip(po, r):
             assert o.word == q[0]
             assert abs(o.time - q[1]) <= _EPS
 
@@ -198,8 +198,8 @@ def test_Inverter() -> None:
         sim.start(show_time=True)
         a: list[tuple[Word, float]] = t[2][Inverter][0]
         r: list[tuple[Word, float]] = [a[i] for i in range(len(a)) if i == 0 or a[i][0] != a[i - 1][0]]
-        assert len(po.signals) == len(r)
-        for o, q in zip(po.signals, r):
+        assert len(po) == len(r)
+        for o, q in zip(po, r):
             assert o.word == q[0]
             assert abs(o.time - q[1]) <= _EPS
 
@@ -220,8 +220,8 @@ def test_TriStateBuffer() -> None:
             sim.start(show_time=True)
             a: list[tuple[Word, float]] = t[2][TriStateBuffer][j]
             r: list[tuple[Word, float]] = [a[i] for i in range(len(a)) if i == 0 or a[i][0] != a[i - 1][0]]
-            assert len(po.signals) == len(r)
-            for o, q in zip(po.signals, r):
+            assert len(po) == len(r)
+            for o, q in zip(po, r):
                 assert o.word == q[0]
                 assert abs(o.time - q[1]) <= _EPS
 
@@ -242,7 +242,7 @@ def test_TriStateInverter() -> None:
             sim.start(show_time=True)
             a: list[tuple[Word, float]] = t[2][TriStateInverter][j]
             r: list[tuple[Word, float]] = [a[i] for i in range(len(a)) if i == 0 or a[i][0] != a[i - 1][0]]
-            assert len(po.signals) == len(r)
-            for o, q in zip(po.signals, r):
+            assert len(po) == len(r)
+            for o, q in zip(po, r):
                 assert o.word == q[0]
                 assert abs(o.time - q[1]) <= _EPS

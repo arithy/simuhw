@@ -72,8 +72,8 @@ def test_Source_and_Drain() -> None:
     to.port_i.add_probe(po)
     sim: Simulator = Simulator([ti, to])
     sim.start(show_time=True)
-    assert len(po.signals) == len(d)
-    for o, q in zip(po.signals, d):
+    assert len(po) == len(d)
+    for o, q in zip(po, d):
         assert o.word == q[0]
         assert o.time == q[1]
 
@@ -88,8 +88,8 @@ def test_LogicLowSource() -> None:
     to.port_i.add_probe(po)
     sim: Simulator = Simulator([ti, to])
     sim.start(show_time=True)
-    assert len(po.signals) == len(d)
-    for o, q in zip(po.signals, d):
+    assert len(po) == len(d)
+    for o, q in zip(po, d):
         assert o.word == q[0]
         assert o.time == q[1]
 
@@ -104,8 +104,8 @@ def test_LogicHighSource() -> None:
     to.port_i.add_probe(po)
     sim: Simulator = Simulator([ti, to])
     sim.start(show_time=True)
-    assert len(po.signals) == len(d)
-    for o, q in zip(po.signals, d):
+    assert len(po) == len(d)
+    for o, q in zip(po, d):
         assert o.word == q[0]
         assert o.time == q[1]
 
@@ -120,8 +120,8 @@ def test_LogicUnknownSource() -> None:
     to.port_i.add_probe(po)
     sim: Simulator = Simulator([ti, to])
     sim.start(show_time=True)
-    assert len(po.signals) == len(d)
-    for o, q in zip(po.signals, d):
+    assert len(po) == len(d)
+    for o, q in zip(po, d):
         assert o.word == q[0]
         assert o.time == q[1]
 
@@ -136,7 +136,7 @@ def test_HighZSource() -> None:
     to.port_i.add_probe(po)
     sim: Simulator = Simulator([ti, to])
     sim.start(show_time=True)
-    assert len(po.signals) == len(d)
-    for o, q in zip(po.signals, d):
+    assert len(po) == len(d)
+    for o, q in zip(po, d):
         assert o.word == q[0]
         assert o.time == q[1]

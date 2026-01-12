@@ -192,7 +192,7 @@ class InputPort(Port):
         if self._signal.word != signal.word:
             self._signal = signal
             for p in self._probes:
-                p.signals.append(signal)
+                p.append(signal)
             self._changed = True
 
 
@@ -250,7 +250,7 @@ class OutputPort(Port):
         if self._signal.word != signal.word:
             self._signal = signal
             for p in self._probes:
-                p.signals.append(signal)
+                p.append(signal)
             if self._peer is not None:
                 self._peer.post(signal)
 

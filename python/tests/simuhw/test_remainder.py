@@ -164,8 +164,8 @@ def test_Remainder() -> None:
         sim: Simulator = Simulator([*ti, *to, dev])
         sim.start(show_time=True)
         for p, r in zip(po, t[2][0]):
-            assert len(p.signals) == len(r)
-            for o, q in zip(p.signals, r):
+            assert len(p) == len(r)
+            for o, q in zip(p, r):
                 assert o.word == q[0]
                 assert abs(o.time - q[1]) <= _EPS
 
@@ -186,8 +186,8 @@ def test_SignedRemainder() -> None:
         sim: Simulator = Simulator([*ti, *to, dev])
         sim.start(show_time=True)
         for p, r in zip(po, t[2][1]):
-            assert len(p.signals) == len(r)
-            for o, q in zip(p.signals, r):
+            assert len(p) == len(r)
+            for o, q in zip(p, r):
                 assert o.word == q[0]
                 assert abs(o.time - q[1]) <= _EPS
 
@@ -237,8 +237,8 @@ def test_SIMD_Remainder() -> None:
         sim: Simulator = Simulator([*ti, *to, dev])
         sim.start(show_time=True)
         for p, r in zip(po, t[3]):
-            assert len(p.signals) == len(r)
-            for o, q in zip(p.signals, r):
+            assert len(p) == len(r)
+            for o, q in zip(p, r):
                 assert o.word == q[0]
                 assert abs(o.time - q[1]) <= _EPS
 
@@ -288,7 +288,7 @@ def test_SIMD_SignedRemainder() -> None:
         sim: Simulator = Simulator([*ti, *to, dev])
         sim.start(show_time=True)
         for p, r in zip(po, t[3]):
-            assert len(p.signals) == len(r)
-            for o, q in zip(p.signals, r):
+            assert len(p) == len(r)
+            for o, q in zip(p, r):
                 assert o.word == q[0]
                 assert abs(o.time - q[1]) <= _EPS
