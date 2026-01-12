@@ -24,7 +24,7 @@ from typing import cast
 from functools import reduce
 import math
 
-from simuhw import DataWord, Unknown, Source, Drain, ChannelProbe, Simulator
+from simuhw import Word, Unknown, Source, Drain, ChannelProbe, Simulator
 import simuhw.fp as hwf
 
 from .skipif import skipif_unavailable
@@ -70,10 +70,10 @@ def test_FPToIntegerConverter() -> None:
     for fi in [hwf.Float16, hwf.Float32, hwf.Float64, hwf.Float128]:
         for wo in [7, 33]:
             print(f'fi: {fi}, wo: {wo}')
-            t: tuple[list[list[tuple[DataWord, float]]], list[list[tuple[DataWord, float]]]] = (
+            t: tuple[list[list[tuple[Word, float]]], list[list[tuple[Word, float]]]] = (
                 [
                     [
-                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
+                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[Word], [
                             *(fi.from_float(v).to_bytes() for v in _float_data),  # type: ignore[attr-defined]
                             Unknown
                         ]))
@@ -90,7 +90,7 @@ def test_FPToIntegerConverter() -> None:
                 ],
                 [
                     [
-                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
+                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[Word], [
                             *(
                                 (fi.from_float(v).to_ui64(hwf.RoundingMode.MIN).to_int() & ((1 << wo) - 1)).to_bytes((wo + 7) >> 3)  # type: ignore[attr-defined]
                                 for v in _float_data
@@ -99,7 +99,7 @@ def test_FPToIntegerConverter() -> None:
                         ]))
                     ],
                     [
-                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
+                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[Word], [
                             *(
                                 e.to_bytes(1) for e in [
                                     hwf.ExceptionFlag.INVALID, hwf.ExceptionFlag.INVALID, hwf.ExceptionFlag.INVALID,
@@ -125,10 +125,10 @@ def test_FPToIntegerConverter() -> None:
             sim: Simulator = Simulator([*ti, *to, dev])
             sim.start(show_time=True)
             for p, r in zip(po, [[o[i] for i in range(len(o)) if i == 0 or o[i][0] != o[i - 1][0]] for o in t[1]]):
-                assert len(p.data) == len(r)
-                for o, q in zip(p.data, r):
-                    assert o[0] == q[0]
-                    assert abs(o[1] - q[1]) <= _EPS
+                assert len(p.signals) == len(r)
+                for o, q in zip(p.signals, r):
+                    assert o.word == q[0]
+                    assert abs(o.time - q[1]) <= _EPS
 
 
 @skipif_unavailable
@@ -139,10 +139,10 @@ def test_FPFromIntegerConverter() -> None:
     for fo in [hwf.Float16, hwf.Float32, hwf.Float64, hwf.Float128]:
         for wi in [7, 33]:
             print(f'wi: {wi}, fo: {fo}')
-            t: tuple[list[list[tuple[DataWord, float]]], list[list[tuple[DataWord, float]]]] = (
+            t: tuple[list[list[tuple[Word, float]]], list[list[tuple[Word, float]]]] = (
                 [
                     [
-                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
+                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[Word], [
                             *((abs(v) & ((1 << wi) - 1)).to_bytes((wi + 7) >> 3) for v in _int_data),
                             Unknown
                         ]))
@@ -159,7 +159,7 @@ def test_FPFromIntegerConverter() -> None:
                 ],
                 [
                     [
-                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
+                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[Word], [
                             *(
                                 fo.from_ui64(sf.UInt64.from_int(abs(v) & ((1 << wi) - 1))).to_bytes()  # type: ignore[attr-defined]
                                 for v in _int_data
@@ -168,7 +168,7 @@ def test_FPFromIntegerConverter() -> None:
                         ]))
                     ],
                     [
-                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
+                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[Word], [
                             *(b'\x00' for _ in _int_data),
                             Unknown
                         ]))
@@ -188,10 +188,10 @@ def test_FPFromIntegerConverter() -> None:
             sim: Simulator = Simulator([*ti, *to, dev])
             sim.start(show_time=True)
             for p, r in zip(po, [[o[i] for i in range(len(o)) if i == 0 or o[i][0] != o[i - 1][0]] for o in t[1]]):
-                assert len(p.data) == len(r)
-                for o, q in zip(p.data, r):
-                    assert o[0] == q[0]
-                    assert abs(o[1] - q[1]) <= _EPS
+                assert len(p.signals) == len(r)
+                for o, q in zip(p.signals, r):
+                    assert o.word == q[0]
+                    assert abs(o.time - q[1]) <= _EPS
 
 
 @skipif_unavailable
@@ -202,10 +202,10 @@ def test_FPToSignedIntegerConverter() -> None:
     for fi in [hwf.Float16, hwf.Float32, hwf.Float64, hwf.Float128]:
         for wo in [7, 33]:
             print(f'fi: {fi}, wo: {wo}')
-            t: tuple[list[list[tuple[DataWord, float]]], list[list[tuple[DataWord, float]]]] = (
+            t: tuple[list[list[tuple[Word, float]]], list[list[tuple[Word, float]]]] = (
                 [
                     [
-                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
+                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[Word], [
                             *(fi.from_float(v).to_bytes() for v in _float_data),  # type: ignore[attr-defined]
                             Unknown
                         ]))
@@ -222,7 +222,7 @@ def test_FPToSignedIntegerConverter() -> None:
                 ],
                 [
                     [
-                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
+                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[Word], [
                             *(
                                 (fi.from_float(v).to_i64(hwf.RoundingMode.MIN).to_int() & ((1 << wo) - 1)).to_bytes((wo + 7) >> 3)  # type: ignore[attr-defined]
                                 for v in _float_data
@@ -231,7 +231,7 @@ def test_FPToSignedIntegerConverter() -> None:
                         ]))
                     ],
                     [
-                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
+                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[Word], [
                             *(
                                 e.to_bytes(1) for e in [
                                     hwf.ExceptionFlag.INVALID, hwf.ExceptionFlag.INVALID, hwf.ExceptionFlag.INVALID,
@@ -257,10 +257,10 @@ def test_FPToSignedIntegerConverter() -> None:
             sim: Simulator = Simulator([*ti, *to, dev])
             sim.start(show_time=True)
             for p, r in zip(po, [[o[i] for i in range(len(o)) if i == 0 or o[i][0] != o[i - 1][0]] for o in t[1]]):
-                assert len(p.data) == len(r)
-                for o, q in zip(p.data, r):
-                    assert o[0] == q[0]
-                    assert abs(o[1] - q[1]) <= _EPS
+                assert len(p.signals) == len(r)
+                for o, q in zip(p.signals, r):
+                    assert o.word == q[0]
+                    assert abs(o.time - q[1]) <= _EPS
 
 
 @skipif_unavailable
@@ -271,10 +271,10 @@ def test_FPFromSignedIntegerConverter() -> None:
     for fo in [hwf.Float16, hwf.Float32, hwf.Float64, hwf.Float128]:
         for wi in [7, 33]:
             print(f'wi: {wi}, fo: {fo}')
-            t: tuple[list[list[tuple[DataWord, float]]], list[list[tuple[DataWord, float]]]] = (
+            t: tuple[list[list[tuple[Word, float]]], list[list[tuple[Word, float]]]] = (
                 [
                     [
-                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
+                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[Word], [
                             *((v & ((1 << wi) - 1)).to_bytes((wi + 7) >> 3) for v in _int_data),
                             Unknown
                         ]))
@@ -291,7 +291,7 @@ def test_FPFromSignedIntegerConverter() -> None:
                 ],
                 [
                     [
-                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
+                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[Word], [
                             *(
                                 fo.from_i64(sf.Int64.from_int(_to_signed_int(wi, v & ((1 << wi) - 1)))).to_bytes()  # type: ignore[attr-defined]
                                 for v in _int_data
@@ -300,7 +300,7 @@ def test_FPFromSignedIntegerConverter() -> None:
                         ]))
                     ],
                     [
-                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
+                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[Word], [
                             *(b'\x00' for _ in _int_data),
                             Unknown
                         ]))
@@ -320,10 +320,10 @@ def test_FPFromSignedIntegerConverter() -> None:
             sim: Simulator = Simulator([*ti, *to, dev])
             sim.start(show_time=True)
             for p, r in zip(po, [[o[i] for i in range(len(o)) if i == 0 or o[i][0] != o[i - 1][0]] for o in t[1]]):
-                assert len(p.data) == len(r)
-                for o, q in zip(p.data, r):
-                    assert o[0] == q[0]
-                    assert abs(o[1] - q[1]) <= _EPS
+                assert len(p.signals) == len(r)
+                for o, q in zip(p.signals, r):
+                    assert o.word == q[0]
+                    assert abs(o.time - q[1]) <= _EPS
 
 
 @skipif_unavailable
@@ -336,10 +336,10 @@ def test_FPConverter() -> None:
             print(f'fi: {fi}, fo: {fo}')
             be: bool = (fo.size() >= fi.size() or fo.size() >= 64)  # type: ignore[attr-defined]
             bo: bool = (fo.size() <= 16)  # type: ignore[attr-defined]
-            t: tuple[list[list[tuple[DataWord, float]]], list[list[tuple[DataWord, float]]]] = (
+            t: tuple[list[list[tuple[Word, float]]], list[list[tuple[Word, float]]]] = (
                 [
                     [
-                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
+                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[Word], [
                             *(fi.from_float(v).to_bytes() for v in _float_data),  # type: ignore[attr-defined]
                             Unknown
                         ]))
@@ -356,13 +356,13 @@ def test_FPConverter() -> None:
                 ],
                 [
                     [
-                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
+                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[Word], [
                             *([fo.from_f16, fo.from_f32, fo.from_f64, fo.from_f128][ii](fi.from_float(v)).to_bytes() for v in _float_data),  # type: ignore[attr-defined]
                             Unknown
                         ]))
                     ],
                     [
-                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
+                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[Word], [
                             *(
                                 e.to_bytes(1) for e in [
                                     0, 0,
@@ -393,10 +393,10 @@ def test_FPConverter() -> None:
             sim: Simulator = Simulator([*ti, *to, dev])
             sim.start(show_time=True)
             for p, r in zip(po, [[o[i] for i in range(len(o)) if i == 0 or o[i][0] != o[i - 1][0]] for o in t[1]]):
-                assert len(p.data) == len(r)
-                for o, q in zip(p.data, r):
-                    assert o[0] == q[0]
-                    assert abs(o[1] - q[1]) <= _EPS
+                assert len(p.signals) == len(r)
+                for o, q in zip(p.signals, r):
+                    assert o.word == q[0]
+                    assert abs(o.time - q[1]) <= _EPS
 
 
 @skipif_unavailable
@@ -408,7 +408,7 @@ def test_SIMD_FPToIntegerConverter() -> None:
     for fi in [hwf.Float16, hwf.Float32, hwf.Float64, hwf.Float128]:
         for wo in [7, 33]:
             print(f'fi: {fi}, wo: {wo}')
-            t: tuple[list[list[tuple[DataWord, float]]], list[list[tuple[DataWord, float]]]] = (
+            t: tuple[list[list[tuple[Word, float]]], list[list[tuple[Word, float]]]] = (
                 [
                     [
                         *(
@@ -482,10 +482,10 @@ def test_SIMD_FPToIntegerConverter() -> None:
             sim: Simulator = Simulator([*ti, *to, dev])
             sim.start(show_time=True)
             for p, r in zip(po, [[o[i] for i in range(len(o)) if i == 0 or o[i][0] != o[i - 1][0]] for o in t[1]]):
-                assert len(p.data) == len(r)
-                for o, q in zip(p.data, r):
-                    assert o[0] == q[0]
-                    assert abs(o[1] - q[1]) <= _EPS
+                assert len(p.signals) == len(r)
+                for o, q in zip(p.signals, r):
+                    assert o.word == q[0]
+                    assert abs(o.time - q[1]) <= _EPS
 
 
 @skipif_unavailable
@@ -497,7 +497,7 @@ def test_SIMD_FPFromIntegerConverter() -> None:
     for fo in [hwf.Float16, hwf.Float32, hwf.Float64, hwf.Float128]:
         for wi in [7, 33]:
             print(f'wi: {wi}, fo: {fo}')
-            t: tuple[list[list[tuple[DataWord, float]]], list[list[tuple[DataWord, float]]]] = (
+            t: tuple[list[list[tuple[Word, float]]], list[list[tuple[Word, float]]]] = (
                 [
                     [
                         *(
@@ -539,7 +539,7 @@ def test_SIMD_FPFromIntegerConverter() -> None:
                         (Unknown, (1 + _int_data_count) * 1e-9)
                     ],
                     [
-                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
+                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[Word], [
                             *(b'\x00' for _ in _int_data),
                             Unknown
                         ]))
@@ -559,10 +559,10 @@ def test_SIMD_FPFromIntegerConverter() -> None:
             sim: Simulator = Simulator([*ti, *to, dev])
             sim.start(show_time=True)
             for p, r in zip(po, [[o[i] for i in range(len(o)) if i == 0 or o[i][0] != o[i - 1][0]] for o in t[1]]):
-                assert len(p.data) == len(r)
-                for o, q in zip(p.data, r):
-                    assert o[0] == q[0]
-                    assert abs(o[1] - q[1]) <= _EPS
+                assert len(p.signals) == len(r)
+                for o, q in zip(p.signals, r):
+                    assert o.word == q[0]
+                    assert abs(o.time - q[1]) <= _EPS
 
 
 @skipif_unavailable
@@ -574,7 +574,7 @@ def test_SIMD_FPToSignedIntegerConverter() -> None:
     for fi in [hwf.Float16, hwf.Float32, hwf.Float64, hwf.Float128]:
         for wo in [7, 33]:
             print(f'fi: {fi}, wo: {wo}')
-            t: tuple[list[list[tuple[DataWord, float]]], list[list[tuple[DataWord, float]]]] = (
+            t: tuple[list[list[tuple[Word, float]]], list[list[tuple[Word, float]]]] = (
                 [
                     [
                         *(
@@ -648,10 +648,10 @@ def test_SIMD_FPToSignedIntegerConverter() -> None:
             sim: Simulator = Simulator([*ti, *to, dev])
             sim.start(show_time=True)
             for p, r in zip(po, [[o[i] for i in range(len(o)) if i == 0 or o[i][0] != o[i - 1][0]] for o in t[1]]):
-                assert len(p.data) == len(r)
-                for o, q in zip(p.data, r):
-                    assert o[0] == q[0]
-                    assert abs(o[1] - q[1]) <= _EPS
+                assert len(p.signals) == len(r)
+                for o, q in zip(p.signals, r):
+                    assert o.word == q[0]
+                    assert abs(o.time - q[1]) <= _EPS
 
 
 @skipif_unavailable
@@ -663,7 +663,7 @@ def test_SIMD_FPFromSignedIntegerConverter() -> None:
     for fo in [hwf.Float16, hwf.Float32, hwf.Float64, hwf.Float128]:
         for wi in [7, 33]:
             print(f'wi: {wi}, fo: {fo}')
-            t: tuple[list[list[tuple[DataWord, float]]], list[list[tuple[DataWord, float]]]] = (
+            t: tuple[list[list[tuple[Word, float]]], list[list[tuple[Word, float]]]] = (
                 [
                     [
                         *(
@@ -705,7 +705,7 @@ def test_SIMD_FPFromSignedIntegerConverter() -> None:
                         (Unknown, (1 + _int_data_count) * 1e-9)
                     ],
                     [
-                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
+                        (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[Word], [
                             *(b'\x00' for _ in _int_data),
                             Unknown
                         ]))
@@ -725,10 +725,10 @@ def test_SIMD_FPFromSignedIntegerConverter() -> None:
             sim: Simulator = Simulator([*ti, *to, dev])
             sim.start(show_time=True)
             for p, r in zip(po, [[o[i] for i in range(len(o)) if i == 0 or o[i][0] != o[i - 1][0]] for o in t[1]]):
-                assert len(p.data) == len(r)
-                for o, q in zip(p.data, r):
-                    assert o[0] == q[0]
-                    assert abs(o[1] - q[1]) <= _EPS
+                assert len(p.signals) == len(r)
+                for o, q in zip(p.signals, r):
+                    assert o.word == q[0]
+                    assert abs(o.time - q[1]) <= _EPS
 
 
 @skipif_unavailable
@@ -742,7 +742,7 @@ def test_SIMD_FPConverter() -> None:
             print(f'fi: {fi}, fo: {fo}')
             be: bool = (fo.size() >= fi.size() or fo.size() >= 64)  # type: ignore[attr-defined]
             bo: bool = (fo.size() <= 16)  # type: ignore[attr-defined]
-            t: tuple[list[list[tuple[DataWord, float]]], list[list[tuple[DataWord, float]]]] = (
+            t: tuple[list[list[tuple[Word, float]]], list[list[tuple[Word, float]]]] = (
                 [
                     [
                         *(
@@ -820,7 +820,7 @@ def test_SIMD_FPConverter() -> None:
             sim: Simulator = Simulator([*ti, *to, dev])
             sim.start(show_time=True)
             for p, r in zip(po, [[o[i] for i in range(len(o)) if i == 0 or o[i][0] != o[i - 1][0]] for o in t[1]]):
-                assert len(p.data) == len(r)
-                for o, q in zip(p.data, r):
-                    assert o[0] == q[0]
-                    assert abs(o[1] - q[1]) <= _EPS
+                assert len(p.signals) == len(r)
+                for o, q in zip(p.signals, r):
+                    assert o.word == q[0]
+                    assert abs(o.time - q[1]) <= _EPS

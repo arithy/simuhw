@@ -24,7 +24,7 @@ from typing import cast
 from abc import ABCMeta
 from collections.abc import Iterable
 
-from ._word import Unknown
+from ._type import Unknown, Signal
 from ._base import InputPort
 from ._operator import UnaryOperator, SIMD_UnaryOperator
 
@@ -44,7 +44,7 @@ class BitOperator(UnaryOperator, metaclass=ABCMeta):
         """Creates a bit operator.
 
         Args:
-            width: The data word width in bits.
+            width: The word width in bits.
 
         """
         super().__init__(width)
@@ -57,7 +57,7 @@ class PopulationCounter(BitOperator):
         """Creates a bit population counter.
 
         Args:
-            width: The data word width in bits.
+            width: The word width in bits.
 
         """
         super().__init__(width)
@@ -69,16 +69,16 @@ class PopulationCounter(BitOperator):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
-            if not isinstance(self._ports_i[0].data[0], bytes):
-                self._port_o.post((Unknown, self._time))
+            if not isinstance(self._ports_i[0].signal.word, bytes):
+                self._port_o.post(Signal(Unknown, self._time))
             else:
-                v: int = int.from_bytes(self._ports_i[0].data[0])
-                self._port_o.post((v.bit_count().to_bytes(self._nbytes), self._time))
+                v: int = int.from_bytes(self._ports_i[0].signal.word)
+                self._port_o.post(Signal(v.bit_count().to_bytes(self._nbytes), self._time))
             self._set_inputs_unchanged(self._ports_i)
         return ([*self._ports_i], None)
 
@@ -90,7 +90,7 @@ class LeadingZeroCounter(BitOperator):
         """Creates a leading bit-0 counter.
 
         Args:
-            width: The data word width in bits.
+            width: The word width in bits.
 
         """
         super().__init__(width)
@@ -102,16 +102,16 @@ class LeadingZeroCounter(BitOperator):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
-            if not isinstance(self._ports_i[0].data[0], bytes):
-                self._port_o.post((Unknown, self._time))
+            if not isinstance(self._ports_i[0].signal.word, bytes):
+                self._port_o.post(Signal(Unknown, self._time))
             else:
-                v: int = int.from_bytes(self._ports_i[0].data[0])
-                self._port_o.post(((self._width - v.bit_length()).to_bytes(self._nbytes), self._time))
+                v: int = int.from_bytes(self._ports_i[0].signal.word)
+                self._port_o.post(Signal((self._width - v.bit_length()).to_bytes(self._nbytes), self._time))
             self._set_inputs_unchanged(self._ports_i)
         return ([*self._ports_i], None)
 
@@ -123,7 +123,7 @@ class TrailingZeroCounter(BitOperator):
         """Creates a trailing bit-0 counter.
 
         Args:
-            width: The data word width in bits.
+            width: The word width in bits.
 
         """
         super().__init__(width)
@@ -135,16 +135,16 @@ class TrailingZeroCounter(BitOperator):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
-            if not isinstance(self._ports_i[0].data[0], bytes):
-                self._port_o.post((Unknown, self._time))
+            if not isinstance(self._ports_i[0].signal.word, bytes):
+                self._port_o.post(Signal(Unknown, self._time))
             else:
-                v: int = int.from_bytes(self._ports_i[0].data[0])
-                self._port_o.post((((v & -v).bit_length() - 1 if v > 0 else self._width).to_bytes(self._nbytes), self._time))
+                v: int = int.from_bytes(self._ports_i[0].signal.word)
+                self._port_o.post(Signal(((v & -v).bit_length() - 1 if v > 0 else self._width).to_bytes(self._nbytes), self._time))
             self._set_inputs_unchanged(self._ports_i)
         return ([*self._ports_i], None)
 
@@ -156,7 +156,7 @@ class BitReverser(BitOperator):
         """Creates a bit reverser.
 
         Args:
-            width: The data word width in bits.
+            width: The word width in bits.
 
         """
         super().__init__(width)
@@ -168,16 +168,16 @@ class BitReverser(BitOperator):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
-            if not isinstance(self._ports_i[0].data[0], bytes):
-                self._port_o.post((Unknown, self._time))
+            if not isinstance(self._ports_i[0].signal.word, bytes):
+                self._port_o.post(Signal(Unknown, self._time))
             else:
-                v: int = int.from_bytes(self._ports_i[0].data[0])
-                self._port_o.post((_reverse_bits(self._width, v).to_bytes(self._nbytes), self._time))
+                v: int = int.from_bytes(self._ports_i[0].signal.word)
+                self._port_o.post(Signal(_reverse_bits(self._width, v).to_bytes(self._nbytes), self._time))
             self._set_inputs_unchanged(self._ports_i)
         return ([*self._ports_i], None)
 
@@ -189,8 +189,8 @@ class SIMD_BitOperator(SIMD_UnaryOperator, metaclass=ABCMeta):
         """Creates a SIMD bit operator.
 
         Args:
-            width: The total width of data words in bits.
-            dsize: The selectable data word width or widths in bits.
+            width: The total width of words in bits.
+            dsize: The selectable word width or widths in bits.
 
         Raises:
             ValueError: If ``width`` is not divisible by any of ``dsize``.
@@ -206,8 +206,8 @@ class SIMD_PopulationCounter(SIMD_BitOperator):
         """Creates a SIMD bit population counter.
 
         Args:
-            width: The total width of data words in bits.
-            dsize: The selectable data word width or widths in bits.
+            width: The total width of words in bits.
+            dsize: The selectable word width or widths in bits.
 
         Raises:
             ValueError: If ``width`` is not divisible by any of ``dsize``.
@@ -222,28 +222,28 @@ class SIMD_PopulationCounter(SIMD_BitOperator):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         ports_i: list[InputPort] = [*self._ports_i, self._port_s]
         if self._update_time_and_check_inputs(time, ports_i):
             if (
-                any((not isinstance(p.data[0], bytes) for p in ports_i)) or
-                int.from_bytes(cast(bytes, self._port_s.data[0])) >= len(self._dsize)
+                any((not isinstance(p.signal.word, bytes) for p in ports_i)) or
+                int.from_bytes(cast(bytes, self._port_s.signal.word)) >= len(self._dsize)
             ):
-                self._port_o.post((Unknown, self._time))
+                self._port_o.post(Signal(Unknown, self._time))
             else:
-                assert isinstance(self._ports_i[0].data[0], bytes)
-                assert isinstance(self._port_s.data[0], bytes)
-                w: int = self._dsize[int.from_bytes(self._port_s.data[0])]
+                assert isinstance(self._ports_i[0].signal.word, bytes)
+                assert isinstance(self._port_s.signal.word, bytes)
+                w: int = self._dsize[int.from_bytes(self._port_s.signal.word)]
                 m: int = (1 << w) - 1
-                v: int = int.from_bytes(self._ports_i[0].data[0])
+                v: int = int.from_bytes(self._ports_i[0].signal.word)
                 o: int = 0
                 for i in range(0, self._width, w):
                     u: int = (v >> i) & m
                     o |= u.bit_count() << i
-                self._port_o.post((o.to_bytes(self._nbytes), self._time))
+                self._port_o.post(Signal(o.to_bytes(self._nbytes), self._time))
             self._set_inputs_unchanged(ports_i)
         return (ports_i, None)
 
@@ -255,8 +255,8 @@ class SIMD_LeadingZeroCounter(SIMD_BitOperator):
         """Creates a SIMD leading bit-0 counter.
 
         Args:
-            width: The total width of data words in bits.
-            dsize: The selectable data word width or widths in bits.
+            width: The total width of words in bits.
+            dsize: The selectable word width or widths in bits.
 
         Raises:
             ValueError: If ``width`` is not divisible by any of ``dsize``.
@@ -271,28 +271,28 @@ class SIMD_LeadingZeroCounter(SIMD_BitOperator):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         ports_i: list[InputPort] = [*self._ports_i, self._port_s]
         if self._update_time_and_check_inputs(time, ports_i):
             if (
-                any((not isinstance(p.data[0], bytes) for p in ports_i)) or
-                int.from_bytes(cast(bytes, self._port_s.data[0])) >= len(self._dsize)
+                any((not isinstance(p.signal.word, bytes) for p in ports_i)) or
+                int.from_bytes(cast(bytes, self._port_s.signal.word)) >= len(self._dsize)
             ):
-                self._port_o.post((Unknown, self._time))
+                self._port_o.post(Signal(Unknown, self._time))
             else:
-                assert isinstance(self._ports_i[0].data[0], bytes)
-                assert isinstance(self._port_s.data[0], bytes)
-                w: int = self._dsize[int.from_bytes(self._port_s.data[0])]
+                assert isinstance(self._ports_i[0].signal.word, bytes)
+                assert isinstance(self._port_s.signal.word, bytes)
+                w: int = self._dsize[int.from_bytes(self._port_s.signal.word)]
                 m: int = (1 << w) - 1
-                v: int = int.from_bytes(self._ports_i[0].data[0])
+                v: int = int.from_bytes(self._ports_i[0].signal.word)
                 o: int = 0
                 for i in range(0, self._width, w):
                     u: int = (v >> i) & m
                     o |= (w - u.bit_length()) << i
-                self._port_o.post((o.to_bytes(self._nbytes), self._time))
+                self._port_o.post(Signal(o.to_bytes(self._nbytes), self._time))
             self._set_inputs_unchanged(ports_i)
         return (ports_i, None)
 
@@ -304,8 +304,8 @@ class SIMD_TrailingZeroCounter(SIMD_BitOperator):
         """Creates a SIMD trailing bit-0 counter.
 
         Args:
-            width: The total width of data words in bits.
-            dsize: The selectable data word width or widths in bits.
+            width: The total width of words in bits.
+            dsize: The selectable word width or widths in bits.
 
         Raises:
             ValueError: If ``width`` is not divisible by any of ``dsize``.
@@ -320,28 +320,28 @@ class SIMD_TrailingZeroCounter(SIMD_BitOperator):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         ports_i: list[InputPort] = [*self._ports_i, self._port_s]
         if self._update_time_and_check_inputs(time, ports_i):
             if (
-                any((not isinstance(p.data[0], bytes) for p in ports_i)) or
-                int.from_bytes(cast(bytes, self._port_s.data[0])) >= len(self._dsize)
+                any((not isinstance(p.signal.word, bytes) for p in ports_i)) or
+                int.from_bytes(cast(bytes, self._port_s.signal.word)) >= len(self._dsize)
             ):
-                self._port_o.post((Unknown, self._time))
+                self._port_o.post(Signal(Unknown, self._time))
             else:
-                assert isinstance(self._ports_i[0].data[0], bytes)
-                assert isinstance(self._port_s.data[0], bytes)
-                w: int = self._dsize[int.from_bytes(self._port_s.data[0])]
+                assert isinstance(self._ports_i[0].signal.word, bytes)
+                assert isinstance(self._port_s.signal.word, bytes)
+                w: int = self._dsize[int.from_bytes(self._port_s.signal.word)]
                 m: int = (1 << w) - 1
-                v: int = int.from_bytes(self._ports_i[0].data[0])
+                v: int = int.from_bytes(self._ports_i[0].signal.word)
                 o: int = 0
                 for i in range(0, self._width, w):
                     u: int = (v >> i) & m
                     o |= ((u & -u).bit_length() - 1 if u > 0 else w) << i
-                self._port_o.post((o.to_bytes(self._nbytes), self._time))
+                self._port_o.post(Signal(o.to_bytes(self._nbytes), self._time))
             self._set_inputs_unchanged(ports_i)
         return (ports_i, None)
 
@@ -353,8 +353,8 @@ class SIMD_BitReverser(SIMD_BitOperator):
         """Creates a SIMD bit reverser.
 
         Args:
-            width: The total width of data words in bits.
-            dsize: The selectable data word width or widths in bits.
+            width: The total width of words in bits.
+            dsize: The selectable word width or widths in bits.
 
         Raises:
             ValueError: If ``width`` is not divisible by any of ``dsize``.
@@ -369,27 +369,27 @@ class SIMD_BitReverser(SIMD_BitOperator):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         ports_i: list[InputPort] = [*self._ports_i, self._port_s]
         if self._update_time_and_check_inputs(time, ports_i):
             if (
-                any((not isinstance(p.data[0], bytes) for p in ports_i)) or
-                int.from_bytes(cast(bytes, self._port_s.data[0])) >= len(self._dsize)
+                any((not isinstance(p.signal.word, bytes) for p in ports_i)) or
+                int.from_bytes(cast(bytes, self._port_s.signal.word)) >= len(self._dsize)
             ):
-                self._port_o.post((Unknown, self._time))
+                self._port_o.post(Signal(Unknown, self._time))
             else:
-                assert isinstance(self._ports_i[0].data[0], bytes)
-                assert isinstance(self._port_s.data[0], bytes)
-                w: int = self._dsize[int.from_bytes(self._port_s.data[0])]
+                assert isinstance(self._ports_i[0].signal.word, bytes)
+                assert isinstance(self._port_s.signal.word, bytes)
+                w: int = self._dsize[int.from_bytes(self._port_s.signal.word)]
                 m: int = (1 << w) - 1
-                v: int = int.from_bytes(self._ports_i[0].data[0])
+                v: int = int.from_bytes(self._ports_i[0].signal.word)
                 o: int = 0
                 for i in range(0, self._width, w):
                     u: int = (v >> i) & m
                     o |= _reverse_bits(w, u) << i
-                self._port_o.post((o.to_bytes(self._nbytes), self._time))
+                self._port_o.post(Signal(o.to_bytes(self._nbytes), self._time))
             self._set_inputs_unchanged(ports_i)
         return (ports_i, None)

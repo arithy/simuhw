@@ -23,7 +23,7 @@
 from typing import cast
 from collections.abc import Iterable
 
-from .._word import Unknown
+from .._type import Unknown, Signal
 from .._base import InputPort
 from ._operator import Float, FPBinaryOperator, SIMD_FPBinaryOperator
 
@@ -54,25 +54,25 @@ class FPRemainder(FPBinaryOperator):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         ports_i: list[InputPort] = [*self._ports_i, self._port_ft, self._port_fr, self._port_fe_i]
         if self._update_time_and_check_inputs(time, ports_i):
             self.apply_states()
-            if any((not isinstance(p.data[0], bytes) for p in [*self._ports_i, self._port_ft, self._port_fr])):
-                self._port_o.post((Unknown, self._time))
+            if any((not isinstance(p.signal.word, bytes) for p in [*self._ports_i, self._port_ft, self._port_fr])):
+                self._port_o.post(Signal(Unknown, self._time))
             else:
-                assert isinstance(self._ports_i[0].data[0], bytes)
-                self._port_o.post((
+                assert isinstance(self._ports_i[0].signal.word, bytes)
+                self._port_o.post(Signal(
                     self._dtype.rem(
-                        self._dtype.from_bytes(self._ports_i[0].data[0]),  # type: ignore[arg-type]
-                        self._dtype.from_bytes(self._ports_i[1].data[0])   # type: ignore[arg-type]
+                        self._dtype.from_bytes(self._ports_i[0].signal.word),  # type: ignore[arg-type]
+                        self._dtype.from_bytes(self._ports_i[1].signal.word)   # type: ignore[arg-type]
                     ).to_bytes(),
                     self._time
                 ))
-            self.restore_states(self._time, not isinstance(self._port_o.data[0], bytes))
+            self.restore_states(self._time, not isinstance(self._port_o.signal.word, bytes))
             self._set_inputs_unchanged(ports_i)
         return (ports_i, None)
 
@@ -91,7 +91,7 @@ class SIMD_FPRemainder(SIMD_FPBinaryOperator):
         """Creates a SIMD floating-point remainder calculator.
 
         Args:
-            width: The data word width in bits.
+            width: The total width of words in bits.
             dtype: The selectable floating-point type or types.
 
         Raises:
@@ -107,7 +107,7 @@ class SIMD_FPRemainder(SIMD_FPBinaryOperator):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
@@ -115,19 +115,19 @@ class SIMD_FPRemainder(SIMD_FPBinaryOperator):
         if self._update_time_and_check_inputs(time, ports_i):
             self.apply_states()
             if (
-                any((not isinstance(p.data[0], bytes) for p in [*self._ports_i, self._port_s, self._port_ft, self._port_fr])) or
-                int.from_bytes(cast(bytes, self._port_s.data[0])) >= len(self._dsize)
+                any((not isinstance(p.signal.word, bytes) for p in [*self._ports_i, self._port_s, self._port_ft, self._port_fr])) or
+                int.from_bytes(cast(bytes, self._port_s.signal.word)) >= len(self._dsize)
             ):
-                self._port_o.post((Unknown, self._time))
+                self._port_o.post(Signal(Unknown, self._time))
             else:
-                assert isinstance(self._ports_i[0].data[0], bytes)
-                assert isinstance(self._ports_i[1].data[0], bytes)
-                assert isinstance(self._port_s.data[0], bytes)
-                s: int = int.from_bytes(self._port_s.data[0])
+                assert isinstance(self._ports_i[0].signal.word, bytes)
+                assert isinstance(self._ports_i[1].signal.word, bytes)
+                assert isinstance(self._port_s.signal.word, bytes)
+                s: int = int.from_bytes(self._port_s.signal.word)
                 w: int = self._dtype[s].size()
                 m: int = (1 << w) - 1
-                v0: int = int.from_bytes(self._ports_i[0].data[0])
-                v1: int = int.from_bytes(self._ports_i[1].data[0])
+                v0: int = int.from_bytes(self._ports_i[0].signal.word)
+                v1: int = int.from_bytes(self._ports_i[1].signal.word)
                 o: bytes = b''
                 for i in range(0, self._width, w):
                     u0: bytes = ((v0 >> i) & m).to_bytes(w >> 3)
@@ -136,7 +136,7 @@ class SIMD_FPRemainder(SIMD_FPBinaryOperator):
                         self._dtype[s].from_bytes(u0),  # type: ignore[arg-type]
                         self._dtype[s].from_bytes(u1)   # type: ignore[arg-type]
                     ).to_bytes() + o
-                self._port_o.post((o, self._time))
-            self.restore_states(self._time, not isinstance(self._port_o.data[0], bytes))
+                self._port_o.post(Signal(o, self._time))
+            self.restore_states(self._time, not isinstance(self._port_o.signal.word, bytes))
             self._set_inputs_unchanged(ports_i)
         return (ports_i, None)

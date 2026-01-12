@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from ._word import Unknown, HighZ
+from ._type import Unknown, HighZ, Signal
 from ._base import InputPort
 from ._operator import UnaryOperator
 
@@ -32,7 +32,7 @@ class Buffer(UnaryOperator):
         """Creates a buffer.
 
         Args:
-            width: The data word width in bits.
+            width: The word width in bits.
 
         """
         super().__init__(width)
@@ -44,13 +44,13 @@ class Buffer(UnaryOperator):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
-            self._port_o.post((
-                Unknown if not isinstance(self._ports_i[0].data[0], bytes) else self._ports_i[0].data[0],
+            self._port_o.post(Signal(
+                Unknown if not isinstance(self._ports_i[0].signal.word, bytes) else self._ports_i[0].signal.word,
                 self._time
             ))
             self._set_inputs_unchanged(self._ports_i)
@@ -64,7 +64,7 @@ class Inverter(Buffer):
         """Creates an inverter.
 
         Args:
-            width: The data word width in bits.
+            width: The word width in bits.
 
         """
         super().__init__(width)
@@ -76,14 +76,14 @@ class Inverter(Buffer):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
-            self._port_o.post((
-                Unknown if not isinstance(self._ports_i[0].data[0], bytes) else (
-                    ~int.from_bytes(self._ports_i[0].data[0]) & self._mask
+            self._port_o.post(Signal(
+                Unknown if not isinstance(self._ports_i[0].signal.word, bytes) else (
+                    ~int.from_bytes(self._ports_i[0].signal.word) & self._mask
                 ).to_bytes(self._nbytes),
                 self._time
             ))
@@ -98,7 +98,7 @@ class TriStateBuffer(UnaryOperator):
         """Creates a tri-state buffer.
 
         Args:
-            width: The data word width in bits.
+            width: The word width in bits.
             active_high: ``True`` if the control port is active-high, ``False`` if it is active-low.
 
         """
@@ -130,18 +130,18 @@ class TriStateBuffer(UnaryOperator):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         ports_i: list[InputPort] = [*self._ports_i, self._port_c]
         if self._update_time_and_check_inputs(time, ports_i):
-            if not isinstance(self._port_c.data[0], bytes):
-                self._port_o.post((Unknown, self._time))
+            if not isinstance(self._port_c.signal.word, bytes):
+                self._port_o.post(Signal(Unknown, self._time))
             else:
-                self._port_o.post((
-                    HighZ if int.from_bytes(self._port_c.data[0]) == (0 if self._active_high else 1) else
-                    Unknown if not isinstance(self._ports_i[0].data[0], bytes) else self._ports_i[0].data[0],
+                self._port_o.post(Signal(
+                    HighZ if int.from_bytes(self._port_c.signal.word) == (0 if self._active_high else 1) else
+                    Unknown if not isinstance(self._ports_i[0].signal.word, bytes) else self._ports_i[0].signal.word,
                     self._time
                 ))
             self._set_inputs_unchanged(ports_i)
@@ -155,7 +155,7 @@ class TriStateInverter(TriStateBuffer):
         """Creates a tri-state inverter.
 
         Args:
-            width: The data word width in bits.
+            width: The word width in bits.
             active_high: ``True`` if the control port is active-high, ``False`` if it is active-low.
 
         """
@@ -168,19 +168,19 @@ class TriStateInverter(TriStateBuffer):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         ports_i: list[InputPort] = [*self._ports_i, self._port_c]
         if self._update_time_and_check_inputs(time, ports_i):
-            if not isinstance(self._port_c.data[0], bytes):
-                self._port_o.post((Unknown, self._time))
+            if not isinstance(self._port_c.signal.word, bytes):
+                self._port_o.post(Signal(Unknown, self._time))
             else:
-                self._port_o.post((
-                    HighZ if int.from_bytes(self._port_c.data[0]) == (0 if self._active_high else 1) else
-                    Unknown if not isinstance(self._ports_i[0].data[0], bytes) else (
-                        ~int.from_bytes(self._ports_i[0].data[0]) & self._mask
+                self._port_o.post(Signal(
+                    HighZ if int.from_bytes(self._port_c.signal.word) == (0 if self._active_high else 1) else
+                    Unknown if not isinstance(self._ports_i[0].signal.word, bytes) else (
+                        ~int.from_bytes(self._ports_i[0].signal.word) & self._mask
                     ).to_bytes(self._nbytes),
                     self._time
                 ))

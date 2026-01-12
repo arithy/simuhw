@@ -22,7 +22,7 @@
 
 from typing import cast
 
-from .._word import DataWord, Unknown
+from .._type import Word, Unknown, Signal
 from .._base import InputPort
 from ._base import Memory
 from .model._base import MemorizingModel
@@ -40,7 +40,7 @@ class EdgeTriggeredMemory(Memory):
         """Creates an edge-triggered memory device.
 
         Args:
-            width: The data word width in bits.
+            width: The word width in bits.
             width_a: The address word width in bits.
             model: The memorizing model.
             neg_edged: ``True`` if negative-edged, ``False`` otherwise.
@@ -56,8 +56,8 @@ class EdgeTriggeredMemory(Memory):
         """The clock port."""
         self._port_e: InputPort = InputPort(1)
         """The enable port."""
-        self._prev_c: DataWord = Unknown
-        """The previous clock data word."""
+        self._prev_c: Word = Unknown
+        """The previous clock word."""
 
     @property
     def negative_edged(self) -> bool:
@@ -92,30 +92,30 @@ class EdgeTriggeredMemory(Memory):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         ports_i: list[InputPort] = [self._port_c, self._port_e, self._port_a, self._port_i]
-        addr: DataWord = self._port_a.data[0]
-        clock: DataWord = self._port_c.data[0]
-        enable: DataWord = self._port_e.data[0]
+        addr: Word = self._port_a.signal.word
+        clock: Word = self._port_c.signal.word
+        enable: Word = self._port_e.signal.word
         if time is None:
             self._initialize_probes()
         if self._update_time_and_check_inputs(time, ports_i):
             if any((not isinstance(d, bytes) for d in [clock, enable, addr])):
-                self._port_o.post((Unknown, self._time))
+                self._port_o.post(Signal(Unknown, self._time))
             elif (
                 isinstance(self._prev_c, bytes) and
                 int.from_bytes(cast(bytes, clock)) - int.from_bytes(self._prev_c) == (-1 if self._neg_edged else 1)
             ):
                 assert isinstance(enable, bytes)
                 if int.from_bytes(enable) == (0 if self._neg_enable else 1):
-                    self._model.write(addr, self._port_i.data[0])
-                d: tuple[DataWord, float] = (self._model.read(addr), self._time)
-                self._port_o.post(d)
+                    self._model.write(addr, self._port_i.signal.word)
+                g: Signal = Signal(self._model.read(addr), self._time)
+                self._port_o.post(g)
                 if int.from_bytes(enable) == (0 if self._neg_enable else 1):
-                    self._update_probes(addr, d)
+                    self._update_probes(addr, g)
             self._prev_c = clock
             self._set_inputs_unchanged(ports_i)
         return (ports_i, None)

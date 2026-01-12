@@ -20,48 +20,48 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from ..._word import DataWord, Unknown
+from ..._type import Word, Unknown
 from ._base import MemorizingModel
 
 
 class RealMemorizingModel(MemorizingModel):
     """A memorizing model retaining actual data."""
 
-    def __init__(self, init_data: DataWord = Unknown) -> None:
+    def __init__(self, init_word: Word = Unknown) -> None:
         """Creates a memorizing model retaining actual data.
 
         Args:
-            init: The initial data word.
+            init_word: The initial word retained in all addresses.
 
         """
-        self._init_data: DataWord = init_data
-        """The initial data word."""
-        self._data: dict[bytes, DataWord] = {}
-        """The memorized data words."""
+        self._init_word: Word = init_word
+        """The initial word retained in all addresses."""
+        self._words: dict[bytes, Word] = {}
+        """The memorized words."""
 
     def reset(self) -> None:
         """Resets the states."""
-        self._data.clear()
+        self._words.clear()
 
-    def read(self, address: DataWord) -> DataWord:
-        """Reads the data word from the memory device.
+    def read(self, address: Word) -> Word:
+        """Reads the word from the memory device.
 
         Args:
-            address: The memory address whose data is to be read.
+            address: The memory address whose word is to be read.
 
         Returns:
-            The data word read form the specified memory address.
+            The word read form the specified memory address.
 
         """
-        return Unknown if not isinstance(address, bytes) else self._data[address] if address in self._data else self._init_data
+        return Unknown if not isinstance(address, bytes) else self._words[address] if address in self._words else self._init_word
 
-    def write(self, address: DataWord, data: DataWord) -> None:
-        """Writes the data word to the memory device.
+    def write(self, address: Word, word: Word) -> None:
+        """Writes the word to the memory device.
 
         Args:
-            address: The memory address whose data is to be written.
-            data: the data word to be written to the specified memory address.
+            address: The memory address whose word is to be updated.
+            word: the word to be written to the specified memory address.
 
         """
         if isinstance(address, bytes):
-            self._data[address] = data
+            self._words[address] = word

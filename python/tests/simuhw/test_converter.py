@@ -24,7 +24,7 @@ from typing import cast
 from functools import reduce
 
 from simuhw import (
-    DataWord, Unknown, Source, Drain,
+    Word, Unknown, Source, Drain,
     IntegerConverter, SignedIntegerConverter, SIMD_IntegerConverter, SIMD_SignedIntegerConverter,
     ChannelProbe, Simulator
 )
@@ -33,18 +33,18 @@ _EPS: float = 1e-18
 
 
 def test_IntegerConverter() -> None:
-    test_data: list[tuple[int, int, list[tuple[DataWord, float]], list[tuple[DataWord, float]]]] = [
+    test_data: list[tuple[int, int, list[tuple[Word, float]], list[tuple[Word, float]]]] = [
         (
             7, 33,
             [
-                (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
+                (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[Word], [
                     b'\x00', b'\x01', b'\x3e', b'\x3f',
                     b'\x40', b'\x41', b'\x7e', b'\x7f',
                     Unknown
                 ]))
             ],
             [
-                (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
+                (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[Word], [
                     b'\x00\x00\x00\x00\x00', b'\x00\x00\x00\x00\x01', b'\x00\x00\x00\x00\x3e', b'\x00\x00\x00\x00\x3f',
                     b'\x00\x00\x00\x00\x40', b'\x00\x00\x00\x00\x41', b'\x00\x00\x00\x00\x7e', b'\x00\x00\x00\x00\x7f',
                     Unknown
@@ -54,14 +54,14 @@ def test_IntegerConverter() -> None:
         (
             33, 7,
             [
-                (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
+                (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[Word], [
                     b'\x01\xff\xff\xff\x80', b'\x01\xff\xff\xff\x81', b'\x01\xff\xff\xff\xbe', b'\x01\xff\xff\xff\xbf',
                     b'\x01\xff\xff\xff\xc0', b'\x01\xff\xff\xff\xc1', b'\x01\xff\xff\xff\xfe', b'\x01\xff\xff\xff\xff',
                     Unknown
                 ]))
             ],
             [
-                (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
+                (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[Word], [
                     b'\x00', b'\x01', b'\x3e', b'\x3f',
                     b'\x40', b'\x41', b'\x7e', b'\x7f',
                     Unknown
@@ -81,26 +81,26 @@ def test_IntegerConverter() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[DataWord, float]] = t[3]
-        assert len(po.data) == len(r)
-        for o, q in zip(po.data, r):
-            assert o[0] == q[0]
-            assert abs(o[1] - q[1]) <= _EPS
+        r: list[tuple[Word, float]] = t[3]
+        assert len(po.signals) == len(r)
+        for o, q in zip(po.signals, r):
+            assert o.word == q[0]
+            assert abs(o.time - q[1]) <= _EPS
 
 
 def test_SignedIntegerConverter() -> None:
-    test_data: list[tuple[int, int, list[tuple[DataWord, float]], list[tuple[DataWord, float]]]] = [
+    test_data: list[tuple[int, int, list[tuple[Word, float]], list[tuple[Word, float]]]] = [
         (
             7, 33,
             [
-                (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
+                (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[Word], [
                     b'\x00', b'\x01', b'\x3e', b'\x3f',
                     b'\x40', b'\x41', b'\x7e', b'\x7f',
                     Unknown
                 ]))
             ],
             [
-                (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
+                (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[Word], [
                     b'\x00\x00\x00\x00\x00', b'\x00\x00\x00\x00\x01', b'\x00\x00\x00\x00\x3e', b'\x00\x00\x00\x00\x3f',
                     b'\x01\xff\xff\xff\xc0', b'\x01\xff\xff\xff\xc1', b'\x01\xff\xff\xff\xfe', b'\x01\xff\xff\xff\xff',
                     Unknown
@@ -110,14 +110,14 @@ def test_SignedIntegerConverter() -> None:
         (
             33, 7,
             [
-                (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
+                (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[Word], [
                     b'\x01\xff\xff\xff\x80', b'\x01\xff\xff\xff\x81', b'\x01\xff\xff\xff\xbe', b'\x01\xff\xff\xff\xbf',
                     b'\x00\x00\x00\x00\x40', b'\x00\x00\x00\x00\x41', b'\x00\x00\x00\x00\x7e', b'\x00\x00\x00\x00\x7f',
                     Unknown
                 ]))
             ],
             [
-                (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
+                (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[Word], [
                     b'\x00', b'\x01', b'\x3e', b'\x3f',
                     b'\x40', b'\x41', b'\x7e', b'\x7f',
                     Unknown
@@ -137,19 +137,19 @@ def test_SignedIntegerConverter() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[DataWord, float]] = t[3]
-        assert len(po.data) == len(r)
-        for o, q in zip(po.data, r):
-            assert o[0] == q[0]
-            assert abs(o[1] - q[1]) <= _EPS
+        r: list[tuple[Word, float]] = t[3]
+        assert len(po.signals) == len(r)
+        for o, q in zip(po.signals, r):
+            assert o.word == q[0]
+            assert abs(o.time - q[1]) <= _EPS
 
 
 def test_SIMD_IntegerConverter() -> None:
-    test_data: list[tuple[int, int, int, list[tuple[DataWord, float]], list[tuple[DataWord, float]]]] = [
+    test_data: list[tuple[int, int, int, list[tuple[Word, float]], list[tuple[Word, float]]]] = [
         (
             4, 7, 9,
             [
-                (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
+                (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[Word], [
                     reduce(
                         lambda x, y: x | y,
                         (int.from_bytes(d) << (7 * i) for i, d in enumerate([b'\x00', b'\x01', b'\x3e', b'\x3f'])),
@@ -164,7 +164,7 @@ def test_SIMD_IntegerConverter() -> None:
                 ]))
             ],
             [
-                (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
+                (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[Word], [
                     reduce(
                         lambda x, y: x | y,
                         (int.from_bytes(d) << (9 * i) for i, d in enumerate([b'\x00\x00', b'\x00\x01', b'\x00\x3e', b'\x00\x3f'])),
@@ -182,7 +182,7 @@ def test_SIMD_IntegerConverter() -> None:
         (
             4, 9, 7,
             [
-                (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
+                (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[Word], [
                     reduce(
                         lambda x, y: x | y,
                         (int.from_bytes(d) << (9 * i) for i, d in enumerate([b'\x01\x80', b'\x01\x81', b'\x01\xbe', b'\x01\xbf'])),
@@ -197,7 +197,7 @@ def test_SIMD_IntegerConverter() -> None:
                 ]))
             ],
             [
-                (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
+                (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[Word], [
                     reduce(
                         lambda x, y: x | y,
                         (int.from_bytes(d) << (7 * i) for i, d in enumerate([b'\x00', b'\x01', b'\x3e', b'\x3f'])),
@@ -226,19 +226,19 @@ def test_SIMD_IntegerConverter() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[DataWord, float]] = t[4]
-        assert len(po.data) == len(r)
-        for o, q in zip(po.data, r):
-            assert o[0] == q[0]
-            assert abs(o[1] - q[1]) <= _EPS
+        r: list[tuple[Word, float]] = t[4]
+        assert len(po.signals) == len(r)
+        for o, q in zip(po.signals, r):
+            assert o.word == q[0]
+            assert abs(o.time - q[1]) <= _EPS
 
 
 def test_SIMD_SignedIntegerConverter() -> None:
-    test_data: list[tuple[int, int, int, list[tuple[DataWord, float]], list[tuple[DataWord, float]]]] = [
+    test_data: list[tuple[int, int, int, list[tuple[Word, float]], list[tuple[Word, float]]]] = [
         (
             4, 7, 9,
             [
-                (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
+                (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[Word], [
                     reduce(
                         lambda x, y: x | y,
                         (int.from_bytes(d) << (7 * i) for i, d in enumerate([b'\x00', b'\x01', b'\x3e', b'\x3f'])),
@@ -253,7 +253,7 @@ def test_SIMD_SignedIntegerConverter() -> None:
                 ]))
             ],
             [
-                (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
+                (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[Word], [
                     reduce(
                         lambda x, y: x | y,
                         (int.from_bytes(d) << (9 * i) for i, d in enumerate([b'\x00\x00', b'\x00\x01', b'\x00\x3e', b'\x00\x3f'])),
@@ -271,7 +271,7 @@ def test_SIMD_SignedIntegerConverter() -> None:
         (
             4, 9, 7,
             [
-                (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
+                (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[Word], [
                     reduce(
                         lambda x, y: x | y,
                         (int.from_bytes(d) << (9 * i) for i, d in enumerate([b'\x01\x80', b'\x01\x81', b'\x01\xbe', b'\x01\xbf'])),
@@ -286,7 +286,7 @@ def test_SIMD_SignedIntegerConverter() -> None:
                 ]))
             ],
             [
-                (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[DataWord], [
+                (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[Word], [
                     reduce(
                         lambda x, y: x | y,
                         (int.from_bytes(d) << (7 * i) for i, d in enumerate([b'\x00', b'\x01', b'\x3e', b'\x3f'])),
@@ -315,8 +315,8 @@ def test_SIMD_SignedIntegerConverter() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[DataWord, float]] = t[4]
-        assert len(po.data) == len(r)
-        for o, q in zip(po.data, r):
-            assert o[0] == q[0]
-            assert abs(o[1] - q[1]) <= _EPS
+        r: list[tuple[Word, float]] = t[4]
+        assert len(po.signals) == len(r)
+        for o, q in zip(po.signals, r):
+            assert o.word == q[0]
+            assert abs(o.time - q[1]) <= _EPS

@@ -23,16 +23,16 @@
 from typing import cast
 
 from simuhw import (
-    DataWord, HighZ, Unknown, Source, Drain,
-    DataCombiner, DataSplitter, Multiplexer, Demultiplexer, DataRetainingDemultiplexer, Junction, Distributor,
+    Word, HighZ, Unknown, Source, Drain,
+    WordCombiner, WordSplitter, Multiplexer, Demultiplexer, WordRetainingDemultiplexer, Junction, Distributor,
     ChannelProbe, Simulator
 )
 
 _EPS: float = 1e-18
 
 
-def test_DataCombiner() -> None:
-    test_data: list[tuple[list[int], list[list[tuple[DataWord, float]]], list[tuple[DataWord, float]]]] = [
+def test_WordCombiner() -> None:
+    test_data: list[tuple[list[int], list[list[tuple[Word, float]]], list[tuple[Word, float]]]] = [
         (
             [1],
             [
@@ -58,22 +58,22 @@ def test_DataCombiner() -> None:
         po: ChannelProbe = ChannelProbe('out', sum(t[0]))
         ti: list[Source] = [Source(t[0][i], t[1][i]) for i in range(len(t[0]))]
         to: Drain = Drain(sum(t[0]))
-        dev: DataCombiner = DataCombiner(t[0])
+        dev: WordCombiner = WordCombiner(t[0])
         dev.port_o.connect(to.port_i)
         for i in range(len(t[0])):
             ti[i].port_o.connect(dev.ports_i[i])
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[DataWord, float]] = t[2]
-        assert len(po.data) == len(r)
-        for o, q in zip(po.data, r):
-            assert o[0] == q[0]
-            assert abs(o[1] - q[1]) <= _EPS
+        r: list[tuple[Word, float]] = t[2]
+        assert len(po.signals) == len(r)
+        for o, q in zip(po.signals, r):
+            assert o.word == q[0]
+            assert abs(o.time - q[1]) <= _EPS
 
 
-def test_DataSplitter() -> None:
-    test_data: list[tuple[list[int], list[tuple[DataWord, float]], list[list[tuple[DataWord, float]]]]] = [
+def test_WordSplitter() -> None:
+    test_data: list[tuple[list[int], list[tuple[Word, float]], list[list[tuple[Word, float]]]]] = [
         (
             [1],
             [(b'\x01', 1e-9), (b'\x00', 3e-9), (Unknown, 4e-9), (b'\x01', 6e-9)],
@@ -108,7 +108,7 @@ def test_DataSplitter() -> None:
         po: list[ChannelProbe] = [ChannelProbe(f'out{i}', t[0][i]) for i in range(len(t[0]))]
         ti: Source = Source(sum(t[0]), t[1])
         to: list[Drain] = [Drain(t[0][i]) for i in range(len(t[0]))]
-        dev: DataSplitter = DataSplitter(t[0])
+        dev: WordSplitter = WordSplitter(t[0])
         ti.port_o.connect(dev.port_i)
         for i in range(len(t[0])):
             dev.ports_o[i].connect(to[i].port_i)
@@ -116,14 +116,14 @@ def test_DataSplitter() -> None:
         sim: Simulator = Simulator([ti, *to, dev])
         sim.start(show_time=True)
         for p, r in zip(po, t[2]):
-            assert len(p.data) == len(r)
-            for o, q in zip(p.data, r):
-                assert o[0] == q[0]
-                assert abs(o[1] - q[1]) <= _EPS
+            assert len(p.signals) == len(r)
+            for o, q in zip(p.signals, r):
+                assert o.word == q[0]
+                assert abs(o.time - q[1]) <= _EPS
 
 
 def test_Multiplexer() -> None:
-    test_data: list[tuple[tuple[int, int], list[list[tuple[DataWord, float]]], list[tuple[DataWord, float]], list[tuple[DataWord, float]]]] = [
+    test_data: list[tuple[tuple[int, int], list[list[tuple[Word, float]]], list[tuple[Word, float]], list[tuple[Word, float]]]] = [
         (
             (1, 0),
             [
@@ -158,16 +158,16 @@ def test_Multiplexer() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
-        a: list[tuple[DataWord, float]] = t[3]
-        r: list[tuple[DataWord, float]] = [a[i] for i in range(len(a)) if i == 0 or a[i][0] != a[i - 1][0]]
-        assert len(po.data) == len(r)
-        for o, q in zip(po.data, r):
-            assert o[0] == q[0]
-            assert abs(o[1] - q[1]) <= _EPS
+        a: list[tuple[Word, float]] = t[3]
+        r: list[tuple[Word, float]] = [a[i] for i in range(len(a)) if i == 0 or a[i][0] != a[i - 1][0]]
+        assert len(po.signals) == len(r)
+        for o, q in zip(po.signals, r):
+            assert o.word == q[0]
+            assert abs(o.time - q[1]) <= _EPS
 
 
 def test_Demultiplexer() -> None:
-    test_data: list[tuple[tuple[int, int, DataWord], list[tuple[DataWord, float]], list[tuple[DataWord, float]], list[list[tuple[DataWord, float]]]]] = [
+    test_data: list[tuple[tuple[int, int, Word], list[tuple[Word, float]], list[tuple[Word, float]], list[list[tuple[Word, float]]]]] = [
         (
             (1, 0, b'\x01'),
             [(b'\x01', 1e-9), (b'\x00', 3e-9), (Unknown, 4e-9), (b'\x01', 5e-9), (b'\x00', 6e-9), (Unknown, 10e-9), (b'\x01', 11e-9)],
@@ -191,7 +191,7 @@ def test_Demultiplexer() -> None:
     for t in test_data:
         w: int = t[0][0]
         s: int = t[0][1]
-        d: DataWord = t[0][2]
+        d: Word = t[0][2]
         n: int = len(t[3])
         po: list[ChannelProbe] = [ChannelProbe(f'out{i}', w) for i in range(n)]
         ti: list[Source] = [Source(w, t[1]), Source(s, t[2])]
@@ -205,15 +205,15 @@ def test_Demultiplexer() -> None:
         sim: Simulator = Simulator([*ti, *to, dev])
         sim.start(show_time=True)
         for p, a in zip(po, t[3]):
-            r: list[tuple[DataWord, float]] = [a[i] for i in range(len(a)) if i == 0 or a[i][0] != a[i - 1][0]]
-            assert len(p.data) == len(r)
-            for o, q in zip(p.data, r):
-                assert o[0] == q[0]
-                assert abs(o[1] - q[1]) <= _EPS
+            r: list[tuple[Word, float]] = [a[i] for i in range(len(a)) if i == 0 or a[i][0] != a[i - 1][0]]
+            assert len(p.signals) == len(r)
+            for o, q in zip(p.signals, r):
+                assert o.word == q[0]
+                assert abs(o.time - q[1]) <= _EPS
 
 
-def test_DataRetainingDemultiplexer() -> None:
-    test_data: list[tuple[tuple[int, int], list[tuple[DataWord, float]], list[tuple[DataWord, float]], list[list[tuple[DataWord, float]]]]] = [
+def test_WordRetainingDemultiplexer() -> None:
+    test_data: list[tuple[tuple[int, int], list[tuple[Word, float]], list[tuple[Word, float]], list[list[tuple[Word, float]]]]] = [
         (
             (1, 0),
             [(b'\x01', 1e-9), (b'\x00', 3e-9), (Unknown, 4e-9), (b'\x01', 5e-9), (b'\x00', 6e-9), (Unknown, 10e-9), (b'\x01', 11e-9)],
@@ -241,7 +241,7 @@ def test_DataRetainingDemultiplexer() -> None:
         po: list[ChannelProbe] = [ChannelProbe(f'out{i}', w) for i in range(n)]
         ti: list[Source] = [Source(w, t[1]), Source(s, t[2])]
         to: list[Drain] = [Drain(w) for _ in range(n)]
-        dev: DataRetainingDemultiplexer = DataRetainingDemultiplexer(w, n)
+        dev: WordRetainingDemultiplexer = WordRetainingDemultiplexer(w, n)
         ti[0].port_o.connect(dev.port_i)
         ti[1].port_o.connect(dev.port_s)
         for i in range(n):
@@ -250,15 +250,15 @@ def test_DataRetainingDemultiplexer() -> None:
         sim: Simulator = Simulator([*ti, *to, dev])
         sim.start(show_time=True)
         for p, a in zip(po, t[3]):
-            r: list[tuple[DataWord, float]] = [a[i] for i in range(len(a)) if i == 0 or a[i][0] != a[i - 1][0]]
-            assert len(p.data) == len(r)
-            for o, q in zip(p.data, r):
-                assert o[0] == q[0]
-                assert abs(o[1] - q[1]) <= _EPS
+            r: list[tuple[Word, float]] = [a[i] for i in range(len(a)) if i == 0 or a[i][0] != a[i - 1][0]]
+            assert len(p.signals) == len(r)
+            for o, q in zip(p.signals, r):
+                assert o.word == q[0]
+                assert abs(o.time - q[1]) <= _EPS
 
 
 def test_Junction() -> None:
-    test_data: list[tuple[int, list[list[tuple[DataWord, float]]], list[tuple[DataWord, float]]]] = [
+    test_data: list[tuple[int, list[list[tuple[Word, float]]], list[tuple[Word, float]]]] = [
         (
             9,
             [],
@@ -268,17 +268,17 @@ def test_Junction() -> None:
             9,
             [
                 [],
-                [(cast(list[DataWord], [b'\x01\x03', HighZ, Unknown])[i % 3], (1 + i) * 1e-9) for i in range(9)],
+                [(cast(list[Word], [b'\x01\x03', HighZ, Unknown])[i % 3], (1 + i) * 1e-9) for i in range(9)],
                 [(HighZ, 0.0)],
-                [(cast(list[DataWord], [b'\x01\x03', HighZ, Unknown])[i % 3], (1 + 3 * i) * 1e-9) for i in range(3)],
-                [(cast(list[DataWord], [b'\x01\x03', HighZ, Unknown])[i % 3], (1 + i) * 1e-9) for i in range(9)],
+                [(cast(list[Word], [b'\x01\x03', HighZ, Unknown])[i % 3], (1 + 3 * i) * 1e-9) for i in range(3)],
+                [(cast(list[Word], [b'\x01\x03', HighZ, Unknown])[i % 3], (1 + i) * 1e-9) for i in range(9)],
                 [],
                 [(HighZ, 0.0)]
             ],
             [
-                *((cast(list[DataWord], [b'\x01\x03', b'\x01\x03', Unknown])[i % 3], (1 + i) * 1e-9) for i in range(0, 3)),
-                *((cast(list[DataWord], [b'\x01\x03', HighZ, Unknown])[i % 3], (1 + i) * 1e-9) for i in range(3, 6)),
-                *((cast(list[DataWord], [Unknown, Unknown, Unknown])[i % 3], (1 + i) * 1e-9) for i in range(6, 9))
+                *((cast(list[Word], [b'\x01\x03', b'\x01\x03', Unknown])[i % 3], (1 + i) * 1e-9) for i in range(0, 3)),
+                *((cast(list[Word], [b'\x01\x03', HighZ, Unknown])[i % 3], (1 + i) * 1e-9) for i in range(3, 6)),
+                *((cast(list[Word], [Unknown, Unknown, Unknown])[i % 3], (1 + i) * 1e-9) for i in range(6, 9))
             ]
         )
     ]
@@ -296,16 +296,16 @@ def test_Junction() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
-        a: list[tuple[DataWord, float]] = t[2]
-        r: list[tuple[DataWord, float]] = [a[i] for i in range(len(a)) if i == 0 or a[i][0] != a[i - 1][0]]
-        assert len(po.data) == len(r)
-        for o, q in zip(po.data, r):
-            assert o[0] == q[0]
-            assert abs(o[1] - q[1]) <= _EPS
+        a: list[tuple[Word, float]] = t[2]
+        r: list[tuple[Word, float]] = [a[i] for i in range(len(a)) if i == 0 or a[i][0] != a[i - 1][0]]
+        assert len(po.signals) == len(r)
+        for o, q in zip(po.signals, r):
+            assert o.word == q[0]
+            assert abs(o.time - q[1]) <= _EPS
 
 
 def test_Distributor() -> None:
-    test_data: list[tuple[int, list[tuple[DataWord, float]], list[list[tuple[DataWord, float]]]]] = [
+    test_data: list[tuple[int, list[tuple[Word, float]], list[list[tuple[Word, float]]]]] = [
         (
             1,
             [(b'\x01', 2e-9), (b'\x00', 3e-9), (Unknown, 4e-9), (b'\x01', 5e-9), (b'\x00', 6e-9), (Unknown, 7e-9), (b'\x00', 9e-9)],
@@ -337,9 +337,9 @@ def test_Distributor() -> None:
         sim: Simulator = Simulator([*to, dev])
         sim.start(show_time=True)
         for p in po:
-            assert len(p.data) == 1
-            assert p.data[0][0] == HighZ
-            assert p.data[0][1] == 0.0
+            assert len(p.signals) == 1
+            assert p.signals[0].word == HighZ
+            assert p.signals[0].time == 0.0
     for t in test_data:
         n: int = len(t[2])  # type: ignore[no-redef]
         po: list[ChannelProbe] = [ChannelProbe(f'out{i}', t[0]) for i in range(n)]  # type: ignore[no-redef]
@@ -353,7 +353,7 @@ def test_Distributor() -> None:
         sim: Simulator = Simulator([ti, *to, dev])  # type: ignore[no-redef]
         sim.start(show_time=True)
         for p, r in zip(po, t[2]):
-            assert len(p.data) == len(r)
-            for o, q in zip(p.data, r):
-                assert o[0] == q[0]
-                assert abs(o[1] - q[1]) <= _EPS
+            assert len(p.signals) == len(r)
+            for o, q in zip(p.signals, r):
+                assert o.word == q[0]
+                assert abs(o.time - q[1]) <= _EPS

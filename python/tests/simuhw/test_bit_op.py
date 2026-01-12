@@ -23,7 +23,7 @@
 from typing import cast
 
 from simuhw import (
-    DataWord, Unknown, Source, Drain,
+    Word, Unknown, Source, Drain,
     PopulationCounter, LeadingZeroCounter, TrailingZeroCounter, BitReverser,
     SIMD_PopulationCounter, SIMD_LeadingZeroCounter, SIMD_TrailingZeroCounter, SIMD_BitReverser,
     ChannelProbe, Simulator
@@ -32,11 +32,11 @@ from simuhw import (
 _EPS: float = 1e-18
 
 
-_test_data: list[tuple[int, list[tuple[DataWord, float]], dict[type, list[tuple[DataWord, float]]]]] = [
+_test_data: list[tuple[int, list[tuple[Word, float]], dict[type, list[tuple[Word, float]]]]] = [
     (
         2,
         [
-            (cast(list[DataWord], [
+            (cast(list[Word], [
                 b'\x00', b'\x01', b'\x02', b'\x03', Unknown
             ])[i], (1 + i) * 1e-9) for i in range(5)
         ],
@@ -58,7 +58,7 @@ _test_data: list[tuple[int, list[tuple[DataWord, float]], dict[type, list[tuple[
     (
         8,
         [
-            (cast(list[DataWord], [
+            (cast(list[Word], [
                 b'\x00', b'\x01', b'\x05', b'\x3a', b'\x1c', b'\x80', b'\xff', Unknown
             ])[i], (1 + i) * 1e-9) for i in range(8)
         ],
@@ -81,7 +81,7 @@ _test_data: list[tuple[int, list[tuple[DataWord, float]], dict[type, list[tuple[
         33,
         [
             (
-                cast(list[DataWord], [
+                cast(list[Word], [
                     b'\x00\x00\x00\x00\x00', b'\x00\x00\x00\x00\x01', b'\x00\x00\x08\x00\x00', b'\x01\xb6\xf3\x8c\x29',
                     b'\x00\x02\x00\xe0\x00', b'\x01\x00\x00\x00\x00', b'\x01\xff\xff\xff\xff', Unknown
                 ])[i],
@@ -122,11 +122,11 @@ def test_PopulationCounter() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[DataWord, float]] = t[2][PopulationCounter]
-        assert len(po.data) == len(r)
-        for o, q in zip(po.data, r):
-            assert o[0] == q[0]
-            assert abs(o[1] - q[1]) <= _EPS
+        r: list[tuple[Word, float]] = t[2][PopulationCounter]
+        assert len(po.signals) == len(r)
+        for o, q in zip(po.signals, r):
+            assert o.word == q[0]
+            assert abs(o.time - q[1]) <= _EPS
 
 
 def test_LeadingZeroCounter() -> None:
@@ -141,11 +141,11 @@ def test_LeadingZeroCounter() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[DataWord, float]] = t[2][LeadingZeroCounter]
-        assert len(po.data) == len(r)
-        for o, q in zip(po.data, r):
-            assert o[0] == q[0]
-            assert abs(o[1] - q[1]) <= _EPS
+        r: list[tuple[Word, float]] = t[2][LeadingZeroCounter]
+        assert len(po.signals) == len(r)
+        for o, q in zip(po.signals, r):
+            assert o.word == q[0]
+            assert abs(o.time - q[1]) <= _EPS
 
 
 def test_TrailingZeroCounter() -> None:
@@ -160,11 +160,11 @@ def test_TrailingZeroCounter() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[DataWord, float]] = t[2][TrailingZeroCounter]
-        assert len(po.data) == len(r)
-        for o, q in zip(po.data, r):
-            assert o[0] == q[0]
-            assert abs(o[1] - q[1]) <= _EPS
+        r: list[tuple[Word, float]] = t[2][TrailingZeroCounter]
+        assert len(po.signals) == len(r)
+        for o, q in zip(po.signals, r):
+            assert o.word == q[0]
+            assert abs(o.time - q[1]) <= _EPS
 
 
 def test_BitReverser() -> None:
@@ -179,26 +179,26 @@ def test_BitReverser() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[DataWord, float]] = t[2][BitReverser]
-        assert len(po.data) == len(r)
-        for o, q in zip(po.data, r):
-            assert o[0] == q[0]
-            assert abs(o[1] - q[1]) <= _EPS
+        r: list[tuple[Word, float]] = t[2][BitReverser]
+        assert len(po.signals) == len(r)
+        for o, q in zip(po.signals, r):
+            assert o.word == q[0]
+            assert abs(o.time - q[1]) <= _EPS
 
 
 def test_SIMD_PopulationCounter() -> None:
-    test_data: list[tuple[list[int], list[int], list[list[tuple[DataWord, float]]], list[tuple[DataWord, float]]]] = [
+    test_data: list[tuple[list[int], list[int], list[list[tuple[Word, float]]], list[tuple[Word, float]]]] = [
         (
             [32, 2],
             [4, 8, 16, 32],
             [
                 [
-                    (cast(list[DataWord], [
+                    (cast(list[Word], [
                         b'\x01\x23\x45\x67', b'\x08\xe1\x86\xff', b'\xff\xff\x86\xe1', b'\xff\x86\xff\xe1', Unknown
                     ])[i], 1e-9 * (1 + i)) for i in range(5)
                 ],
                 [
-                    (cast(list[DataWord], [
+                    (cast(list[Word], [
                         b'\x00', b'\x01', b'\x02', b'\x03', Unknown
                     ])[i % 5], 1e-9 * (1 + i)) for i in range(10)
                 ]
@@ -221,26 +221,26 @@ def test_SIMD_PopulationCounter() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[DataWord, float]] = t[3]
-        assert len(po.data) == len(r)
-        for o, q in zip(po.data, r):
-            assert o[0] == q[0]
-            assert abs(o[1] - q[1]) <= _EPS
+        r: list[tuple[Word, float]] = t[3]
+        assert len(po.signals) == len(r)
+        for o, q in zip(po.signals, r):
+            assert o.word == q[0]
+            assert abs(o.time - q[1]) <= _EPS
 
 
 def test_SIMD_LeadingZeroCounter() -> None:
-    test_data: list[tuple[list[int], list[int], list[list[tuple[DataWord, float]]], list[tuple[DataWord, float]]]] = [
+    test_data: list[tuple[list[int], list[int], list[list[tuple[Word, float]]], list[tuple[Word, float]]]] = [
         (
             [32, 2],
             [4, 8, 16, 32],
             [
                 [
-                    (cast(list[DataWord], [
+                    (cast(list[Word], [
                         b'\x01\x23\x45\x9f', b'\x08\x01\x8e\x00', b'\x00\x03\x00\x00', b'\x00\x00\x00\x11', Unknown
                     ])[i], 1e-9 * (1 + i)) for i in range(5)
                 ],
                 [
-                    (cast(list[DataWord], [
+                    (cast(list[Word], [
                         b'\x00', b'\x01', b'\x02', b'\x03', Unknown
                     ])[i % 5], 1e-9 * (1 + i)) for i in range(10)
                 ]
@@ -263,26 +263,26 @@ def test_SIMD_LeadingZeroCounter() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[DataWord, float]] = t[3]
-        assert len(po.data) == len(r)
-        for o, q in zip(po.data, r):
-            assert o[0] == q[0]
-            assert abs(o[1] - q[1]) <= _EPS
+        r: list[tuple[Word, float]] = t[3]
+        assert len(po.signals) == len(r)
+        for o, q in zip(po.signals, r):
+            assert o.word == q[0]
+            assert abs(o.time - q[1]) <= _EPS
 
 
 def test_SIMD_TrailingZeroCounter() -> None:
-    test_data: list[tuple[list[int], list[int], list[list[tuple[DataWord, float]]], list[tuple[DataWord, float]]]] = [
+    test_data: list[tuple[list[int], list[int], list[list[tuple[Word, float]]], list[tuple[Word, float]]]] = [
         (
             [32, 2],
             [4, 8, 16, 32],
             [
                 [
-                    (cast(list[DataWord], [
+                    (cast(list[Word], [
                         b'\x08\x4c\x2a\x9f', b'\x10\x80\x71\x00', b'\xc0\x00\x00\x00', b'\x88\x00\x00\x00', Unknown
                     ])[i], 1e-9 * (1 + i)) for i in range(5)
                 ],
                 [
-                    (cast(list[DataWord], [
+                    (cast(list[Word], [
                         b'\x00', b'\x01', b'\x02', b'\x03', Unknown
                     ])[i % 5], 1e-9 * (1 + i)) for i in range(10)
                 ]
@@ -305,26 +305,26 @@ def test_SIMD_TrailingZeroCounter() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[DataWord, float]] = t[3]
-        assert len(po.data) == len(r)
-        for o, q in zip(po.data, r):
-            assert o[0] == q[0]
-            assert abs(o[1] - q[1]) <= _EPS
+        r: list[tuple[Word, float]] = t[3]
+        assert len(po.signals) == len(r)
+        for o, q in zip(po.signals, r):
+            assert o.word == q[0]
+            assert abs(o.time - q[1]) <= _EPS
 
 
 def test_SIMD_BitReverser() -> None:
-    test_data: list[tuple[list[int], list[int], list[list[tuple[DataWord, float]]], list[tuple[DataWord, float]]]] = [
+    test_data: list[tuple[list[int], list[int], list[list[tuple[Word, float]]], list[tuple[Word, float]]]] = [
         (
             [32, 2],
             [4, 8, 16, 32],
             [
                 [
-                    (cast(list[DataWord], [
+                    (cast(list[Word], [
                         b'\x01\x23\x45\x67', b'\x01\x23\x45\x67', b'\x01\x23\x45\x67', b'\x01\x23\x45\x67', Unknown
                     ])[i], 1e-9 * (1 + i)) for i in range(5)
                 ],
                 [
-                    (cast(list[DataWord], [
+                    (cast(list[Word], [
                         b'\x00', b'\x01', b'\x02', b'\x03', Unknown
                     ])[i % 5], 1e-9 * (1 + i)) for i in range(10)
                 ]
@@ -347,8 +347,8 @@ def test_SIMD_BitReverser() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[DataWord, float]] = t[3]
-        assert len(po.data) == len(r)
-        for o, q in zip(po.data, r):
-            assert o[0] == q[0]
-            assert abs(o[1] - q[1]) <= _EPS
+        r: list[tuple[Word, float]] = t[3]
+        assert len(po.signals) == len(r)
+        for o, q in zip(po.signals, r):
+            assert o.word == q[0]
+            assert abs(o.time - q[1]) <= _EPS

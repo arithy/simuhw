@@ -23,7 +23,7 @@
 from typing import cast
 
 from simuhw import (
-    DataWord, Unknown, Source, Drain, Negator, SIMD_Negator,
+    Word, Unknown, Source, Drain, Negator, SIMD_Negator,
     ChannelProbe, Simulator
 )
 
@@ -31,11 +31,11 @@ _EPS: float = 1e-18
 
 
 def test_Negator() -> None:
-    test_data: list[tuple[int, list[tuple[DataWord, float]], list[tuple[DataWord, float]]]] = [
+    test_data: list[tuple[int, list[tuple[Word, float]], list[tuple[Word, float]]]] = [
         (
             2,
             [
-                (cast(list[DataWord], [
+                (cast(list[Word], [
                     b'\x00', b'\x01', b'\x02', b'\x03', Unknown
                 ])[i], (1 + i) * 1e-9) for i in range(5)
             ],
@@ -46,7 +46,7 @@ def test_Negator() -> None:
         (
             8,
             [
-                (cast(list[DataWord], [
+                (cast(list[Word], [
                     b'\x00', b'\x01', b'\x05', b'\x3a', b'\x1c', b'\x80', b'\xff', Unknown
                 ])[i], (1 + i) * 1e-9) for i in range(8)
             ],
@@ -58,7 +58,7 @@ def test_Negator() -> None:
             33,
             [
                 (
-                    cast(list[DataWord], [
+                    cast(list[Word], [
                         b'\x00\x00\x00\x00\x00', b'\x00\x00\x00\x00\x01', b'\x00\x00\x08\x00\x00', b'\x01\xb6\xf3\x8c\x29',
                         b'\x00\x02\x00\xe0\x00', b'\x01\x00\x00\x00\x00', b'\x01\xff\xff\xff\xff', Unknown
                     ])[i],
@@ -82,26 +82,26 @@ def test_Negator() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[DataWord, float]] = t[2]
-        assert len(po.data) == len(r)
-        for o, q in zip(po.data, r):
-            assert o[0] == q[0]
-            assert abs(o[1] - q[1]) <= _EPS
+        r: list[tuple[Word, float]] = t[2]
+        assert len(po.signals) == len(r)
+        for o, q in zip(po.signals, r):
+            assert o.word == q[0]
+            assert abs(o.time - q[1]) <= _EPS
 
 
 def test_SIMD_Negator() -> None:
-    test_data: list[tuple[list[int], list[int], list[list[tuple[DataWord, float]]], list[tuple[DataWord, float]]]] = [
+    test_data: list[tuple[list[int], list[int], list[list[tuple[Word, float]]], list[tuple[Word, float]]]] = [
         (
             [32, 2],
             [4, 8, 16, 32],
             [
                 [
-                    (cast(list[DataWord], [
+                    (cast(list[Word], [
                         b'\x01\x23\xcd\xef', b'\x08\xe1\x86\xff', b'\xff\xff\x86\xe1', b'\xff\x86\xff\xe1', Unknown
                     ])[i], 1e-9 * (1 + i)) for i in range(5)
                 ],
                 [
-                    (cast(list[DataWord], [b'\x00', b'\x01', b'\x02', b'\x03', Unknown])[i % 5], 1e-9 * (1 + i)) for i in range(10)
+                    (cast(list[Word], [b'\x00', b'\x01', b'\x02', b'\x03', Unknown])[i % 5], 1e-9 * (1 + i)) for i in range(10)
                 ]
             ],
             [
@@ -122,8 +122,8 @@ def test_SIMD_Negator() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[DataWord, float]] = t[3]
-        assert len(po.data) == len(r)
-        for o, q in zip(po.data, r):
-            assert o[0] == q[0]
-            assert abs(o[1] - q[1]) <= _EPS
+        r: list[tuple[Word, float]] = t[3]
+        assert len(po.signals) == len(r)
+        for o, q in zip(po.signals, r):
+            assert o.word == q[0]
+            assert abs(o.time - q[1]) <= _EPS

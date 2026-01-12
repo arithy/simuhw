@@ -22,7 +22,7 @@
 
 from abc import ABCMeta, abstractmethod
 
-from ..._word import DataWord
+from ..._type import Word
 
 
 class MemorizingModel(metaclass=ABCMeta):
@@ -34,25 +34,25 @@ class MemorizingModel(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def read(self, address: DataWord) -> DataWord:
-        """Reads the data word from the memory device.
+    def read(self, address: Word) -> Word:
+        """Reads the word from the memory device.
 
         Args:
-            address: The memory address whose data is to be read.
+            address: The memory address whose word is to be read.
 
         Returns:
-            The data word read form the specified memory address.
+            The word read form the specified memory address.
 
         """
         pass
 
     @abstractmethod
-    def write(self, address: DataWord, data: DataWord) -> None:
-        """Writes the data word to the memory device.
+    def write(self, address: Word, word: Word) -> None:
+        """Writes the word to the memory device.
 
         Args:
-            address: The memory address whose data is to be written.
-            data: the data word to be written to the specified memory address.
+            address: The memory address whose word is to be updated.
+            word: the word to be written to the specified memory address.
 
         """
         pass

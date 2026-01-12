@@ -24,7 +24,7 @@ from abc import ABCMeta, abstractmethod
 from typing import IO
 import heapq
 
-from ._word import DataWord, Unknown, HighZ
+from ._type import Word, Unknown, HighZ, Signal
 
 
 class Probe(metaclass=ABCMeta):
@@ -41,15 +41,15 @@ class Probe(metaclass=ABCMeta):
 
         Args:
             name: The probe name.
-            width: The data word width in bits.
+            width: The word width in bits.
 
         """
         self._name: str = name
         """The probe name."""
         self._width: int = width
-        """The data word width in bits."""
-        self._data: list[tuple[DataWord, float]] = []
-        """The list of the data words recorded."""
+        """The word width in bits."""
+        self._signals: list[Signal] = []
+        """The list of the signals recorded."""
 
     @property
     def name(self) -> str:
@@ -58,21 +58,21 @@ class Probe(metaclass=ABCMeta):
 
     @property
     def width(self) -> int:
-        """The data word width in bits."""
+        """The word width in bits."""
         return self._width
 
     @property
-    def data(self) -> list[tuple[DataWord, float]]:
-        """The list of the data words recorded."""
-        return self._data
+    def signals(self) -> list[Signal]:
+        """The list of the signals recorded."""
+        return self._signals
 
     def reset(self) -> None:
         """Resets the states."""
-        self._data.clear()
+        self._signals.clear()
 
 
 class ChannelProbe(Probe):
-    """A probe to record timings of channel data change."""
+    """A probe to record timings of channel word change."""
 
     @classmethod
     def typename(cls) -> str:
@@ -84,14 +84,14 @@ class ChannelProbe(Probe):
 
         Args:
             name: The probe name.
-            width: The data word width in bits.
+            width: The word width in bits.
 
         """
         super().__init__(name, width)
 
 
 class MemoryProbe(Probe):
-    """A probe to record timings of memory data change."""
+    """A probe to record timings of memory word change."""
 
     @classmethod
     def typename(cls) -> str:
@@ -103,14 +103,14 @@ class MemoryProbe(Probe):
 
         Args:
             name: The probe name.
-            width: The data word width in bits.
+            width: The word width in bits.
 
         """
         super().__init__(name, width)
 
 
 class LogicAnalyzer:
-    """A logic analyzer to save the collected timings of data change."""
+    """A logic analyzer to save the collected timings of word change."""
 
     def __init__(self) -> None:
         """Creates a logic analyzer."""
@@ -146,7 +146,7 @@ class LogicAnalyzer:
         self._probe.clear()
 
     def save_as_vcd(self, file: IO[str]) -> None:
-        """Collects the timings of data change at all probes, and saves them into a file in the VCD format.
+        """Collects the timings of word change at all probes, and saves them into a file in the VCD format.
 
         Args:
             file: The file in which the collected timings are saved.
@@ -159,13 +159,13 @@ class LogicAnalyzer:
         for i, p in enumerate(self._probe):
             file.write(f'b{"x" * p.width} {i}\n')
         file.write('$end\n')
-        q: list[tuple[int, tuple[int, int, DataWord]]] = []
+        q: list[tuple[int, tuple[int, int, Word]]] = []
         for i, p in enumerate(self._probe):
-            for d in p.data:
-                heapq.heappush(q, (int(d[1] * 1e12), (i, p.width, d[0])))
+            for d in p.signals:
+                heapq.heappush(q, (int(d.time * 1e12), (i, p.width, d.word)))
         t: int | None = None
         for i in range(len(q)):
-            e: tuple[int, tuple[int, int, DataWord]] = heapq.heappop(q)
+            e: tuple[int, tuple[int, int, Word]] = heapq.heappop(q)
             if t is None or t != e[0]:
                 t = e[0]
                 file.write(f'#{t}\n')

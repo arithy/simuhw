@@ -22,7 +22,8 @@
 
 from simuhw._base import combine_bits, extract_bits, to_signed_int
 from simuhw import (
-    DataWord, Unknown, Source, LogicLowSource, LogicHighSource, LogicUnknownSource, Drain,
+    Word, Unknown, HighZ,
+    Source, LogicLowSource, LogicHighSource, LogicUnknownSource, HighZSource, Drain,
     ChannelProbe, Simulator
 )
 
@@ -61,7 +62,7 @@ def test_to_signed_int() -> None:
 
 def test_Source_and_Drain() -> None:
     w: int = 10
-    d: list[tuple[DataWord, float]] = [
+    d: list[tuple[Word, float]] = [
         (b'\x00\x01', 1.0), (b'\x00\x80', 3.0), (b'\xab\xcd', 3.0), (Unknown, 4.0), (b'\x01\x00', 6.0), (b'\x02\x00', 10.0)
     ]
     po: ChannelProbe = ChannelProbe('out', w)
@@ -71,12 +72,15 @@ def test_Source_and_Drain() -> None:
     to.port_i.add_probe(po)
     sim: Simulator = Simulator([ti, to])
     sim.start(show_time=True)
-    assert po.data == d
+    assert len(po.signals) == len(d)
+    for o, q in zip(po.signals, d):
+        assert o.word == q[0]
+        assert o.time == q[1]
 
 
 def test_LogicLowSource() -> None:
     w: int = 10
-    d: list[tuple[DataWord, float]] = [(b'\x00\x00', 0.0)]
+    d: list[tuple[Word, float]] = [(b'\x00\x00', 0.0)]
     po: ChannelProbe = ChannelProbe('out', w)
     ti: Source = LogicLowSource(w)
     to: Drain = Drain(w)
@@ -84,12 +88,15 @@ def test_LogicLowSource() -> None:
     to.port_i.add_probe(po)
     sim: Simulator = Simulator([ti, to])
     sim.start(show_time=True)
-    assert po.data == d
+    assert len(po.signals) == len(d)
+    for o, q in zip(po.signals, d):
+        assert o.word == q[0]
+        assert o.time == q[1]
 
 
 def test_LogicHighSource() -> None:
     w: int = 10
-    d: list[tuple[DataWord, float]] = [(b'\x03\xff', 0.0)]
+    d: list[tuple[Word, float]] = [(b'\x03\xff', 0.0)]
     po: ChannelProbe = ChannelProbe('out', w)
     ti: Source = LogicHighSource(w)
     to: Drain = Drain(w)
@@ -97,12 +104,15 @@ def test_LogicHighSource() -> None:
     to.port_i.add_probe(po)
     sim: Simulator = Simulator([ti, to])
     sim.start(show_time=True)
-    assert po.data == d
+    assert len(po.signals) == len(d)
+    for o, q in zip(po.signals, d):
+        assert o.word == q[0]
+        assert o.time == q[1]
 
 
 def test_LogicUnknownSource() -> None:
     w: int = 10
-    d: list[tuple[DataWord, float]] = []
+    d: list[tuple[Word, float]] = []
     po: ChannelProbe = ChannelProbe('out', w)
     ti: Source = LogicUnknownSource(w)
     to: Drain = Drain(w)
@@ -110,4 +120,23 @@ def test_LogicUnknownSource() -> None:
     to.port_i.add_probe(po)
     sim: Simulator = Simulator([ti, to])
     sim.start(show_time=True)
-    assert po.data == d
+    assert len(po.signals) == len(d)
+    for o, q in zip(po.signals, d):
+        assert o.word == q[0]
+        assert o.time == q[1]
+
+
+def test_HighZSource() -> None:
+    w: int = 10
+    d: list[tuple[Word, float]] = [(HighZ, 0.0)]
+    po: ChannelProbe = ChannelProbe('out', w)
+    ti: Source = HighZSource(w)
+    to: Drain = Drain(w)
+    ti.port_o.connect(to.port_i)
+    to.port_i.add_probe(po)
+    sim: Simulator = Simulator([ti, to])
+    sim.start(show_time=True)
+    assert len(po.signals) == len(d)
+    for o, q in zip(po.signals, d):
+        assert o.word == q[0]
+        assert o.time == q[1]

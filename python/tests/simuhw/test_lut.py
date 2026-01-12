@@ -22,13 +22,13 @@
 
 import math
 
-from simuhw import DataWord, Source, Drain, LookupTable, ChannelProbe, Simulator
+from simuhw import Word, Source, Drain, LookupTable, ChannelProbe, Simulator
 
 _EPS: float = 1e-18
 
 
 def test_LookupTable() -> None:
-    test_data: list[tuple[tuple[int, int], list[bytes], list[tuple[DataWord, float]], list[tuple[DataWord, float]]]] = [
+    test_data: list[tuple[tuple[int, int], list[bytes], list[tuple[Word, float]], list[tuple[Word, float]]]] = [
         (
             (6, 11),
             [
@@ -57,8 +57,8 @@ def test_LookupTable() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[DataWord, float]] = t[3]
-        assert len(po.data) == len(r)
-        for o, q in zip(po.data, r):
-            assert o[0] == q[0]
-            assert abs(o[1] - q[1]) <= _EPS
+        r: list[tuple[Word, float]] = t[3]
+        assert len(po.signals) == len(r)
+        for o, q in zip(po.signals, r):
+            assert o.word == q[0]
+            assert abs(o.time - q[1]) <= _EPS

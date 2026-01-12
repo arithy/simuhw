@@ -20,12 +20,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from ._word import DataWord
+from ._type import Signal
 from ._base import InputPort, OutputPort, Device
 
 
 class Delay(Device):
-    """A device to delay data transfer.
+    """A device to delay word transfer.
 
     This device can be also utilized to compose a realistic device
     with delay in signal transmission and gate switching.
@@ -33,28 +33,28 @@ class Delay(Device):
     """
 
     def __init__(self, width: int, *, delay: float) -> None:
-        """Creates a device to delay data transfer.
+        """Creates a device to delay word transfer.
 
         Args:
-            width: The data word width in bits.
+            width: The word width in bits.
             delay: The delay in seconds.
 
         """
         super().__init__()
         self._width: int = width
-        """The data word width in bits."""
+        """The word width in bits."""
         self._delay: float = delay
         """The delay in seconds."""
         self._port_i: InputPort = InputPort(width)
         """The input port."""
         self._port_o: OutputPort = OutputPort(width)
         """The output port."""
-        self._queue: list[tuple[DataWord, float]] = []
-        """The queue of data words to be output later."""
+        self._queue: list[Signal] = []
+        """The queue of words to be output later."""
 
     @property
     def width(self) -> int:
-        """The data word width in bits."""
+        """The word width in bits."""
         return self._width
 
     @property
@@ -86,15 +86,15 @@ class Delay(Device):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         ports_i: list[InputPort] = [self._port_i]
         if self._update_time_and_check_inputs(time, ports_i):
-            self._queue.append((self._port_i.data[0], self._time))
+            self._queue.append(Signal(self._port_i.signal.word, self._time))
             self._set_inputs_unchanged(ports_i)
-        while len(self._queue) > 0 and self._queue[0][1] + self._delay <= self._time:
-            self._port_o.post((self._queue[0][0], self._queue[0][1] + self._delay))
+        while len(self._queue) > 0 and self._queue[0].time + self._delay <= self._time:
+            self._port_o.post(Signal(self._queue[0].word, self._queue[0].time + self._delay))
             self._queue.pop(0)
-        return (ports_i, self._queue[0][1] + self._delay if len(self._queue) > 0 else None)
+        return (ports_i, self._queue[0].time + self._delay if len(self._queue) > 0 else None)

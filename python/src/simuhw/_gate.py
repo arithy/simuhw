@@ -23,7 +23,7 @@
 from typing import cast
 from functools import reduce
 
-from ._word import Unknown
+from ._type import Unknown, Signal
 from ._base import InputPort
 from ._operator import Operator
 
@@ -35,7 +35,7 @@ class ANDGate(Operator):
         """Creates an AND gate.
 
         Args:
-            width: The data word width in bits.
+            width: The word width in bits.
             ninputs: The number of the input ports.
 
         """
@@ -48,14 +48,14 @@ class ANDGate(Operator):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
-            self._port_o.post((
-                Unknown if any((not isinstance(p.data[0], bytes) for p in self._ports_i)) else (
-                    reduce(lambda x, y: x & y, (int.from_bytes(cast(bytes, p.data[0])) for p in self._ports_i), self._mask)
+            self._port_o.post(Signal(
+                Unknown if any((not isinstance(p.signal.word, bytes) for p in self._ports_i)) else (
+                    reduce(lambda x, y: x & y, (int.from_bytes(cast(bytes, p.signal.word)) for p in self._ports_i), self._mask)
                 ).to_bytes(self._nbytes),
                 self._time
             ))
@@ -70,7 +70,7 @@ class ORGate(Operator):
         """Creates an OR gate.
 
         Args:
-            width: The data word width in bits.
+            width: The word width in bits.
             ninputs: The number of the input ports.
 
         """
@@ -83,14 +83,14 @@ class ORGate(Operator):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
-            self._port_o.post((
-                Unknown if any((not isinstance(p.data[0], bytes) for p in self._ports_i)) else (
-                    reduce(lambda x, y: x | y, (int.from_bytes(cast(bytes, p.data[0])) for p in self._ports_i), 0)
+            self._port_o.post(Signal(
+                Unknown if any((not isinstance(p.signal.word, bytes) for p in self._ports_i)) else (
+                    reduce(lambda x, y: x | y, (int.from_bytes(cast(bytes, p.signal.word)) for p in self._ports_i), 0)
                 ).to_bytes(self._nbytes),
                 self._time
             ))
@@ -105,7 +105,7 @@ class XORGate(Operator):
         """Creates an XOR gate.
 
         Args:
-            width: The data word width in bits.
+            width: The word width in bits.
             ninputs: The number of the input ports.
 
         """
@@ -118,14 +118,14 @@ class XORGate(Operator):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
-            self._port_o.post((
-                Unknown if any((not isinstance(p.data[0], bytes) for p in self._ports_i)) else (
-                    reduce(lambda x, y: x ^ y, (int.from_bytes(cast(bytes, p.data[0])) for p in self._ports_i), 0)
+            self._port_o.post(Signal(
+                Unknown if any((not isinstance(p.signal.word, bytes) for p in self._ports_i)) else (
+                    reduce(lambda x, y: x ^ y, (int.from_bytes(cast(bytes, p.signal.word)) for p in self._ports_i), 0)
                 ).to_bytes(self._nbytes),
                 self._time
             ))
@@ -140,7 +140,7 @@ class NANDGate(Operator):
         """Creates a NAND gate.
 
         Args:
-            width: The data word width in bits.
+            width: The word width in bits.
             ninputs: The number of the input ports.
 
         """
@@ -153,14 +153,14 @@ class NANDGate(Operator):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
-            self._port_o.post((
-                Unknown if any((not isinstance(p.data[0], bytes) for p in self._ports_i)) else (
-                    ~reduce(lambda x, y: x & y, (int.from_bytes(cast(bytes, p.data[0])) for p in self._ports_i), self._mask) & self._mask
+            self._port_o.post(Signal(
+                Unknown if any((not isinstance(p.signal.word, bytes) for p in self._ports_i)) else (
+                    ~reduce(lambda x, y: x & y, (int.from_bytes(cast(bytes, p.signal.word)) for p in self._ports_i), self._mask) & self._mask
                 ).to_bytes(self._nbytes),
                 self._time
             ))
@@ -175,7 +175,7 @@ class NORGate(Operator):
         """Creates a NOR gate.
 
         Args:
-            width: The data word width in bits.
+            width: The word width in bits.
             ninputs: The number of the input ports.
 
         """
@@ -188,14 +188,14 @@ class NORGate(Operator):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
-            self._port_o.post((
-                Unknown if any((not isinstance(p.data[0], bytes) for p in self._ports_i)) else (
-                    ~reduce(lambda x, y: x | y, (int.from_bytes(cast(bytes, p.data[0])) for p in self._ports_i), 0) & self._mask
+            self._port_o.post(Signal(
+                Unknown if any((not isinstance(p.signal.word, bytes) for p in self._ports_i)) else (
+                    ~reduce(lambda x, y: x | y, (int.from_bytes(cast(bytes, p.signal.word)) for p in self._ports_i), 0) & self._mask
                 ).to_bytes(self._nbytes),
                 self._time
             ))
@@ -210,7 +210,7 @@ class XNORGate(Operator):
         """Creates an XNOR gate.
 
         Args:
-            width: The data word width in bits.
+            width: The word width in bits.
             ninputs: The number of the input ports.
 
         """
@@ -223,14 +223,14 @@ class XNORGate(Operator):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
-            self._port_o.post((
-                Unknown if any((not isinstance(p.data[0], bytes) for p in self._ports_i)) else (
-                    ~reduce(lambda x, y: x ^ y, (int.from_bytes(cast(bytes, p.data[0])) for p in self._ports_i), 0) & self._mask
+            self._port_o.post(Signal(
+                Unknown if any((not isinstance(p.signal.word, bytes) for p in self._ports_i)) else (
+                    ~reduce(lambda x, y: x ^ y, (int.from_bytes(cast(bytes, p.signal.word)) for p in self._ports_i), 0) & self._mask
                 ).to_bytes(self._nbytes),
                 self._time
             ))

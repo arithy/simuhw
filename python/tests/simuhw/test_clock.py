@@ -37,12 +37,12 @@ def test_Clock() -> None:
         sim: Simulator = Simulator([to, dev])
         sim.start(show_time=True, duration=duration)
         if p < period * 0.5:
-            assert len(po.data) == (duration - p) // (period * 0.5) + 1
-            for io, o in enumerate(po.data):
-                assert o[0] == ((io + 1) & 1).to_bytes(1)
-                assert o[1] == p + period * 0.5 * io
+            assert len(po.signals) == (duration - p) // (period * 0.5) + 1
+            for io, o in enumerate(po.signals):
+                assert o.word == ((io + 1) & 1).to_bytes(1)
+                assert o.time == p + period * 0.5 * io
         else:
-            assert len(po.data) == (duration - p) // (period * 0.5) + 2
-            for io, o in enumerate(po.data):
-                assert o[0] == (io & 1).to_bytes(1)
-                assert o[1] == p + period * 0.5 * (io - 1)
+            assert len(po.signals) == (duration - p) // (period * 0.5) + 2
+            for io, o in enumerate(po.signals):
+                assert o.word == (io & 1).to_bytes(1)
+                assert o.time == p + period * 0.5 * (io - 1)

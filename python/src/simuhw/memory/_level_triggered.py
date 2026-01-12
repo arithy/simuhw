@@ -22,7 +22,7 @@
 
 from typing import cast
 
-from .._word import DataWord, Unknown
+from .._type import Word, Unknown, Signal
 from .._base import InputPort
 from ._base import Memory
 from .model._base import MemorizingModel
@@ -40,7 +40,7 @@ class LevelTriggeredMemory(Memory):
         """Creates a level-triggered memory device.
 
         Args:
-            width: The data word width in bits.
+            width: The word width in bits.
             width_a: The address word width in bits.
             model: The memorizing model.
             neg_leveled: ``True`` if negative-leveled, ``False`` otherwise.
@@ -74,13 +74,13 @@ class LevelTriggeredMemory(Memory):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         ports_i: list[InputPort] = [self._port_g, self._port_a, self._port_i]
-        addr: DataWord = self._port_a.data[0]
-        gate: DataWord = self._port_g.data[0]
+        addr: Word = self._port_a.signal.word
+        gate: Word = self._port_g.signal.word
         if time is None:
             if any((not isinstance(d, bytes) for d in [gate, addr])):
                 self._initialize_probes()
@@ -90,13 +90,13 @@ class LevelTriggeredMemory(Memory):
                 self._initialize_probes()
         if self._update_time_and_check_inputs(time, ports_i):
             if any((not isinstance(d, bytes) for d in [gate, addr])):
-                self._port_o.post((Unknown, self._time))
+                self._port_o.post(Signal(Unknown, self._time))
             elif int.from_bytes(cast(bytes, gate)) == (0 if self._neg_leveled else 1):
-                self._model.write(addr, self._port_i.data[0])
-                d: tuple[DataWord, float] = (self._model.read(addr), self._time)
-                self._port_o.post(d)
-                self._update_probes(addr, d)
+                self._model.write(addr, self._port_i.signal.word)
+                g: Signal = Signal(self._model.read(addr), self._time)
+                self._port_o.post(g)
+                self._update_probes(addr, g)
             else:
-                self._port_o.post((self._model.read(addr), self._time))
+                self._port_o.post(Signal(self._model.read(addr), self._time))
             self._set_inputs_unchanged(ports_i)
         return (ports_i, None)

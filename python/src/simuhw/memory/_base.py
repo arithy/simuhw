@@ -22,7 +22,7 @@
 
 from abc import ABCMeta
 
-from .._word import DataWord, Unknown
+from .._type import Word, Unknown, Signal
 from .._base import InputPort, OutputPort, Device
 from .._analyzer import MemoryProbe
 from .model._base import MemorizingModel
@@ -35,14 +35,14 @@ class Memory(Device, metaclass=ABCMeta):
         """Creates a memory device.
 
         Args:
-            width: The data word width in bits.
+            width: The word width in bits.
             width_a: The address word width in bits.
             model: The memorizing model.
 
         """
         super().__init__()
         self._width: int = width
-        """The data word width in bits."""
+        """The word width in bits."""
         self._width_a: int = width_a
         """The address word width in bits."""
         self._model: MemorizingModel = model
@@ -58,7 +58,7 @@ class Memory(Device, metaclass=ABCMeta):
 
     @property
     def width(self) -> int:
-        """The data word width in bits."""
+        """The word width in bits."""
         return self._width
 
     @property
@@ -97,11 +97,11 @@ class Memory(Device, metaclass=ABCMeta):
             address: The probe address.
 
         Raises:
-            ValueError: If a memory probe with a different data word width is specified in ``probe``.
+            ValueError: If a memory probe with a different word width is specified in ``probe``.
 
         """
         if self._width != probe.width:
-            raise ValueError('inconsistent data word width')
+            raise ValueError('inconsistent word width')
         self._probes[probe] = address
 
     def remove_probe(self, probe: MemoryProbe) -> None:
@@ -122,13 +122,13 @@ class Memory(Device, metaclass=ABCMeta):
         """Removes all memory probes."""
         self._probes.clear()
 
-    def _initialize_probes(self, exclude: DataWord = Unknown) -> None:
+    def _initialize_probes(self, exclude: Word = Unknown) -> None:
         for p in self._probes:
             if self._probes[p] != exclude:
-                p.data.append((self._model.read(self._probes[p]), 0.0))
+                p.signals.append(Signal(self._model.read(self._probes[p]), 0.0))
 
-    def _update_probes(self, address: DataWord, data: tuple[DataWord, float]) -> None:
+    def _update_probes(self, address: Word, signal: Signal) -> None:
         if isinstance(address, bytes):
             for p in self._probes:
                 if self._probes[p] == address:
-                    p.data.append(data)
+                    p.signals.append(signal)

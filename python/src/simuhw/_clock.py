@@ -22,6 +22,7 @@
 
 import math
 
+from ._type import Signal
 from ._base import InputPort, OutputPort, Device
 
 
@@ -73,7 +74,7 @@ class Clock(Device):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
@@ -88,4 +89,4 @@ class Clock(Device):
             if t > self._time:
                 return ([], t)
             self._hcycle += 1
-            self._port_o.post(((self._hcycle & 1).to_bytes(1), t))
+            self._port_o.post(Signal((self._hcycle & 1).to_bytes(1), t))

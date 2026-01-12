@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from ._word import Unknown
+from ._type import Unknown, Signal
 from ._base import InputPort, to_signed_int
 from ._operator import UnaryOperator, SIMD_UnaryOperator
 
@@ -36,8 +36,8 @@ class IntegerConverter(UnaryOperator):
         """Creates an integer converter.
 
         Args:
-            width_i: The input data word width in bits.
-            width_o: The output data word width in bits.
+            width_i: The input word width in bits.
+            width_o: The output word width in bits.
 
         """
         super().__init__(width_i, width_o)
@@ -49,16 +49,16 @@ class IntegerConverter(UnaryOperator):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
-            if not isinstance(self._ports_i[0].data[0], bytes):
-                self._port_o.post((Unknown, self._time))
+            if not isinstance(self._ports_i[0].signal.word, bytes):
+                self._port_o.post(Signal(Unknown, self._time))
             else:
-                o: int = int.from_bytes(self._ports_i[0].data[0])
-                self._port_o.post(((o & self._mask).to_bytes(self._nbytes), self._time))
+                o: int = int.from_bytes(self._ports_i[0].signal.word)
+                self._port_o.post(Signal((o & self._mask).to_bytes(self._nbytes), self._time))
             self._set_inputs_unchanged(self._ports_i)
         return ([*self._ports_i], None)
 
@@ -74,8 +74,8 @@ class SignedIntegerConverter(IntegerConverter):
         """Creates a signed integer converter.
 
         Args:
-            width_i: The input data word width in bits.
-            width_o: The output data word width in bits.
+            width_i: The input word width in bits.
+            width_o: The output word width in bits.
 
         """
         super().__init__(width_i, width_o)
@@ -87,16 +87,16 @@ class SignedIntegerConverter(IntegerConverter):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
-            if not isinstance(self._ports_i[0].data[0], bytes):
-                self._port_o.post((Unknown, self._time))
+            if not isinstance(self._ports_i[0].signal.word, bytes):
+                self._port_o.post(Signal(Unknown, self._time))
             else:
-                o: int = to_signed_int(self._width_i, int.from_bytes(self._ports_i[0].data[0]))
-                self._port_o.post(((o & self._mask).to_bytes(self._nbytes), self._time))
+                o: int = to_signed_int(self._width_i, int.from_bytes(self._ports_i[0].signal.word))
+                self._port_o.post(Signal((o & self._mask).to_bytes(self._nbytes), self._time))
             self._set_inputs_unchanged(self._ports_i)
         return ([*self._ports_i], None)
 
@@ -113,8 +113,8 @@ class SIMD_IntegerConverter(SIMD_UnaryOperator):
 
         Args:
             multi: The number of SIMD elements.
-            dsize_i: The input data word width in bits.
-            dsize_o: The output data word width in bits.
+            dsize_i: The input word width in bits.
+            dsize_o: The output word width in bits.
 
         """
         super().__init__(dsize_i * multi, dsize_i, dsize_o * multi)
@@ -126,23 +126,23 @@ class SIMD_IntegerConverter(SIMD_UnaryOperator):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
-            if not isinstance(self._ports_i[0].data[0], bytes):
-                self._port_o.post((Unknown, self._time))
+            if not isinstance(self._ports_i[0].signal.word, bytes):
+                self._port_o.post(Signal(Unknown, self._time))
             else:
                 m: int = (1 << min(self._dsize_i[0], self._dsize_o[0])) - 1
-                v: int = int.from_bytes(self._ports_i[0].data[0])
+                v: int = int.from_bytes(self._ports_i[0].signal.word)
                 o: int = 0
                 for i, j in zip(
                     range(0, self._width_i, self._dsize_i[0]),
                     range(0, self._width_o, self._dsize_o[0])
                 ):
                     o |= ((v >> i) & m) << j
-                self._port_o.post((o.to_bytes(self._nbytes), self._time))
+                self._port_o.post(Signal(o.to_bytes(self._nbytes), self._time))
             self._set_inputs_unchanged(self._ports_i)
         return ([*self._ports_i], None)
 
@@ -159,8 +159,8 @@ class SIMD_SignedIntegerConverter(SIMD_IntegerConverter):
 
         Args:
             multi: The number of SIMD elements.
-            dsize_i: The input data word width in bits.
-            dsize_o: The output data word width in bits.
+            dsize_i: The input word width in bits.
+            dsize_o: The output word width in bits.
 
         """
         super().__init__(multi, dsize_i, dsize_o)
@@ -172,23 +172,23 @@ class SIMD_SignedIntegerConverter(SIMD_IntegerConverter):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
-            if not isinstance(self._ports_i[0].data[0], bytes):
-                self._port_o.post((Unknown, self._time))
+            if not isinstance(self._ports_i[0].signal.word, bytes):
+                self._port_o.post(Signal(Unknown, self._time))
             else:
                 m: int = (1 << self._dsize_i[0]) - 1
                 n: int = (1 << self._dsize_o[0]) - 1
-                v: int = int.from_bytes(self._ports_i[0].data[0])
+                v: int = int.from_bytes(self._ports_i[0].signal.word)
                 o: int = 0
                 for i, j in zip(
                     range(0, self._width_i, self._dsize_i[0]),
                     range(0, self._width_o, self._dsize_o[0])
                 ):
                     o |= (to_signed_int(self._dsize_i[0], (v >> i) & m) & n) << j
-                self._port_o.post((o.to_bytes(self._nbytes), self._time))
+                self._port_o.post(Signal(o.to_bytes(self._nbytes), self._time))
             self._set_inputs_unchanged(self._ports_i)
         return ([*self._ports_i], None)

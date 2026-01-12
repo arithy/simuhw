@@ -25,7 +25,7 @@ from collections.abc import Iterable
 
 import softfloatpy as sf
 
-from .._word import Unknown
+from .._type import Unknown, Signal
 from .._base import InputPort, OutputPort
 from .._operator import (
     UnaryOperator, BinaryOperator, TernaryOperator,
@@ -142,25 +142,27 @@ class FPState(metaclass=ABCMeta):
         self._tininess_mode = sf.get_tininess_mode()
         self._rounding_mode = sf.get_rounding_mode()
         self._exception_flags = sf.get_exception_flags()
-        if isinstance(self._port_ft.data[0], bytes) and int.from_bytes(self._port_ft.data[0]) in [m.value for m in sf.TininessMode]:
-            sf.set_tininess_mode(sf.TininessMode(int.from_bytes(self._port_ft.data[0])))
-        if isinstance(self._port_fr.data[0], bytes) and int.from_bytes(self._port_fr.data[0]) in [m.value for m in sf.RoundingMode]:
-            sf.set_rounding_mode(sf.RoundingMode(int.from_bytes(self._port_fr.data[0])))
-        if isinstance(self._port_fe_i.data[0], bytes):
-            sf.set_exception_flags(int.from_bytes(self._port_fe_i.data[0]))
+        if isinstance(self._port_ft.signal.word, bytes) and int.from_bytes(self._port_ft.signal.word) in [m.value for m in sf.TininessMode]:
+            sf.set_tininess_mode(sf.TininessMode(int.from_bytes(self._port_ft.signal.word)))
+        if isinstance(self._port_fr.signal.word, bytes) and int.from_bytes(self._port_fr.signal.word) in [m.value for m in sf.RoundingMode]:
+            sf.set_rounding_mode(sf.RoundingMode(int.from_bytes(self._port_fr.signal.word)))
+        if isinstance(self._port_fe_i.signal.word, bytes):
+            sf.set_exception_flags(int.from_bytes(self._port_fe_i.signal.word))
 
     def restore_states(self, time: float, not_bytes: bool) -> None:
         """Restores the floating-point states after posting the current ones to the output port.
 
         Args:
             time: The current device time in seconds.
-            not_bytes: ``True`` if the type of the output data word is not ``bytes``.
+            not_bytes: ``True`` if the type of the output word is not ``bytes``.
 
         """
-        if not_bytes or any((not isinstance(d, bytes) for d in [self._port_ft.data[0], self._port_fr.data[0], self._port_fe_i.data[0]])):
-            self._port_fe_o.post((Unknown, time))
+        if not_bytes or any((
+            not isinstance(d, bytes) for d in [self._port_ft.signal.word, self._port_fr.signal.word, self._port_fe_i.signal.word]
+        )):
+            self._port_fe_o.post(Signal(Unknown, time))
         else:
-            self._port_fe_o.post((sf.get_exception_flags().to_bytes(1), time))
+            self._port_fe_o.post(Signal(sf.get_exception_flags().to_bytes(1), time))
         if self._tininess_mode is not None:
             sf.set_tininess_mode(self._tininess_mode)
         if self._rounding_mode is not None:
@@ -239,7 +241,7 @@ class SIMD_FPUnaryOperator(SIMD_UnaryOperator, FPState, metaclass=ABCMeta):
         """Creates a SIMD floating-point unary operators.
 
         Args:
-            width: The data word width in bits.
+            width: The total width of words in bits.
             dtype: The selectable floating-point type or types.
 
         """
@@ -261,7 +263,7 @@ class SIMD_FPBinaryOperator(SIMD_BinaryOperator, FPState, metaclass=ABCMeta):
         """Creates a SIMD floating-point binary operators.
 
         Args:
-            width: The data word width in bits.
+            width: The total width of words in bits.
             dtype: The selectable floating-point type or types.
 
         """
@@ -283,7 +285,7 @@ class SIMD_FPTernaryOperator(SIMD_TernaryOperator, FPState, metaclass=ABCMeta):
         """Creates a SIMD floating-point ternary operators.
 
         Args:
-            width: The data word width in bits.
+            width: The total width of words in bits.
             dtype: The selectable floating-point type or types.
 
         """

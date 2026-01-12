@@ -21,16 +21,16 @@
 # SOFTWARE.
 
 __all__ = [
-    'DataWord', 'Unknown', 'HighZ',
+    'Word', 'Unknown', 'HighZ', 'Signal',
     'Probe', 'ChannelProbe', 'MemoryProbe',
     'LogicAnalyzer',
     'Simulator',
     'InputPort', 'OutputPort',
-    'Device', 'Source', 'LogicLowSource', 'LogicHighSource', 'LogicUnknownSource', 'Drain',
+    'Device', 'Source', 'LogicLowSource', 'LogicHighSource', 'LogicUnknownSource', 'HighZSource', 'Drain',
     'Group',
     'Delay',
     'Clock',
-    'DataCombiner', 'DataSplitter', 'Multiplexer', 'Demultiplexer', 'DataRetainingDemultiplexer', 'Junction', 'Distributor',
+    'WordCombiner', 'WordSplitter', 'Multiplexer', 'Demultiplexer', 'WordRetainingDemultiplexer', 'Junction', 'Distributor',
     'Channel',
     'Operator', 'UnaryOperator', 'BinaryOperator', 'TernaryOperator',
     'SIMD_Operator', 'SIMD_UnaryOperator', 'SIMD_BinaryOperator', 'SIMD_TernaryOperator',
@@ -55,14 +55,14 @@ __all__ = [
 
 from ._version import __version__  # noqa:F401
 
-from ._word import DataWord, Unknown, HighZ
+from ._type import Word, Unknown, HighZ, Signal
 from ._analyzer import Probe, ChannelProbe, MemoryProbe, LogicAnalyzer
 from ._simulator import Simulator
-from ._base import InputPort, OutputPort, Device, Source, LogicLowSource, LogicHighSource, LogicUnknownSource, Drain
+from ._base import InputPort, OutputPort, Device, Source, LogicLowSource, LogicHighSource, LogicUnknownSource, HighZSource, Drain
 from ._group import Group
 from ._delay import Delay
 from ._clock import Clock
-from ._branch import DataCombiner, DataSplitter, Multiplexer, Demultiplexer, DataRetainingDemultiplexer, Junction, Distributor
+from ._branch import WordCombiner, WordSplitter, Multiplexer, Demultiplexer, WordRetainingDemultiplexer, Junction, Distributor
 from ._channel import Channel
 from ._operator import (
     Operator, UnaryOperator, BinaryOperator, TernaryOperator,

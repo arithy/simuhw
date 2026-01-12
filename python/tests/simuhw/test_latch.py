@@ -20,13 +20,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from simuhw import DataWord, Unknown, Source, Drain, DLatch, ChannelProbe, Simulator
+from simuhw import Word, Unknown, Source, Drain, DLatch, ChannelProbe, Simulator
 
 _EPS: float = 1e-18
 
 
 def test_DLatch() -> None:
-    test_data: list[tuple[tuple[int, bool], list[tuple[DataWord, float]], list[tuple[DataWord, float]], list[tuple[DataWord, float]]]] = [
+    test_data: list[tuple[tuple[int, bool], list[tuple[Word, float]], list[tuple[Word, float]], list[tuple[Word, float]]]] = [
         (
             (8, False),
             [(b'\x01', 3e-9), (b'\x00', 6e-9), (Unknown, 9e-9), (b'\x00', 12e-9), (b'\x01', 15e-9)],
@@ -68,8 +68,8 @@ def test_DLatch() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[DataWord, float]] = t[3]
-        assert len(po.data) == len(r)
-        for o, q in zip(po.data, r):
-            assert o[0] == q[0]
-            assert abs(o[1] - q[1]) <= _EPS
+        r: list[tuple[Word, float]] = t[3]
+        assert len(po.signals) == len(r)
+        for o, q in zip(po.signals, r):
+            assert o.word == q[0]
+            assert abs(o.time - q[1]) <= _EPS

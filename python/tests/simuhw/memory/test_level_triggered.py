@@ -23,7 +23,7 @@
 from typing import cast
 from collections.abc import Callable
 
-from simuhw import DataWord, Unknown, Source, Drain, ChannelProbe, MemoryProbe, Simulator
+from simuhw import Word, Unknown, Source, Drain, ChannelProbe, MemoryProbe, Simulator
 from simuhw.memory import LevelTriggeredMemory
 from simuhw.memory.model import MockMemorizingModel, RealMemorizingModel
 
@@ -31,15 +31,15 @@ _EPS: float = 1e-18
 
 
 def test_LevelTriggeredMemory_Mock() -> None:
-    test_data: list[tuple[tuple[int, int, Callable[[DataWord], DataWord], bool, bytes], list[list[tuple[DataWord, float]]]]] = [
+    test_data: list[tuple[tuple[int, int, Callable[[Word], Word], bool, bytes], list[list[tuple[Word, float]]]]] = [
         (
             (8, 4, lambda x: Unknown if not isinstance(x, bytes) else (int.from_bytes(x) + 0xf0).to_bytes(1), False, b'\x0c'),
             [
-                [(cast(list[DataWord], [Unknown, b'\x00', b'\x01'])[(i // 9) % 3], 1e-9 * i) for i in range(0, 27 * 2, 9)],
-                [(cast(list[DataWord], [Unknown, b'\x0c', b'\x02'])[(i // 3) % 3], 1e-9 * i) for i in range(0, 27 * 2, 3)],
+                [(cast(list[Word], [Unknown, b'\x00', b'\x01'])[(i // 9) % 3], 1e-9 * i) for i in range(0, 27 * 2, 9)],
+                [(cast(list[Word], [Unknown, b'\x0c', b'\x02'])[(i // 3) % 3], 1e-9 * i) for i in range(0, 27 * 2, 3)],
                 [(Unknown if i % 3 == 0 else (0xc0 + i).to_bytes(1), 1e-9 * i) for i in range(27 * 2)],
                 [
-                    (Unknown if (i // 9) % 3 == 0 else cast(list[DataWord], [Unknown, b'\xfc', b'\xf2'])[(i // 3) % 3], 1e-9 * i)
+                    (Unknown if (i // 9) % 3 == 0 else cast(list[Word], [Unknown, b'\xfc', b'\xf2'])[(i // 3) % 3], 1e-9 * i)
                     for i in [12, 15, 18, 21, 24, 27, 39, 42, 45, 48, 51]
                 ],
                 [
@@ -51,11 +51,11 @@ def test_LevelTriggeredMemory_Mock() -> None:
         (
             (8, 4, lambda x: Unknown if not isinstance(x, bytes) else (int.from_bytes(x) + 0xf0).to_bytes(1), True, b'\x0c'),
             [
-                [(cast(list[DataWord], [Unknown, b'\x01', b'\x00'])[(i // 9) % 3], 1e-9 * i) for i in range(0, 27 * 2, 9)],
-                [(cast(list[DataWord], [Unknown, b'\x0c', b'\x02'])[(i // 3) % 3], 1e-9 * i) for i in range(0, 27 * 2, 3)],
+                [(cast(list[Word], [Unknown, b'\x01', b'\x00'])[(i // 9) % 3], 1e-9 * i) for i in range(0, 27 * 2, 9)],
+                [(cast(list[Word], [Unknown, b'\x0c', b'\x02'])[(i // 3) % 3], 1e-9 * i) for i in range(0, 27 * 2, 3)],
                 [(Unknown if i % 3 == 0 else (0xc0 + i).to_bytes(1), 1e-9 * i) for i in range(27 * 2)],
                 [
-                    (Unknown if (i // 9) % 3 == 0 else cast(list[DataWord], [Unknown, b'\xfc', b'\xf2'])[(i // 3) % 3], 1e-9 * i)
+                    (Unknown if (i // 9) % 3 == 0 else cast(list[Word], [Unknown, b'\xfc', b'\xf2'])[(i // 3) % 3], 1e-9 * i)
                     for i in [12, 15, 18, 21, 24, 27, 39, 42, 45, 48, 51]
                 ],
                 [
@@ -82,19 +82,19 @@ def test_LevelTriggeredMemory_Mock() -> None:
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         for p, r in zip([po, pm], t[1][3:5]):
-            assert len(p.data) == len(r)
-            for o, q in zip(p.data, r):
-                assert o[0] == q[0]
-                assert abs(o[1] - q[1]) <= _EPS
+            assert len(p.signals) == len(r)
+            for o, q in zip(p.signals, r):
+                assert o.word == q[0]
+                assert abs(o.time - q[1]) <= _EPS
 
 
 def test_LevelTriggeredMemory_Real() -> None:
-    test_data: list[tuple[tuple[int, int, bytes, bool, bytes], list[list[tuple[DataWord, float]]]]] = [
+    test_data: list[tuple[tuple[int, int, bytes, bool, bytes], list[list[tuple[Word, float]]]]] = [
         (
             (8, 4, b'\xa5', False, b'\x0c'),
             [
-                [(cast(list[DataWord], [Unknown, b'\x00', b'\x01'])[(i // 9) % 3], 1e-9 * i) for i in range(0, 27 * 2, 9)],
-                [(cast(list[DataWord], [Unknown, b'\x0c', b'\x02'])[(i // 3) % 3], 1e-9 * i) for i in range(0, 27 * 2, 3)],
+                [(cast(list[Word], [Unknown, b'\x00', b'\x01'])[(i // 9) % 3], 1e-9 * i) for i in range(0, 27 * 2, 9)],
+                [(cast(list[Word], [Unknown, b'\x0c', b'\x02'])[(i // 3) % 3], 1e-9 * i) for i in range(0, 27 * 2, 3)],
                 [(Unknown if i % 3 == 0 else (0xc0 + i).to_bytes(1), 1e-9 * i) for i in range(27 * 2)],
                 [
                     (Unknown if i % 3 == 0 else (0xc0 + i).to_bytes(1), 1e-9 * i) if i >= 0 else
@@ -109,8 +109,8 @@ def test_LevelTriggeredMemory_Real() -> None:
         (
             (8, 4, b'\xa5', True, b'\x0c'),
             [
-                [(cast(list[DataWord], [Unknown, b'\x01', b'\x00'])[(i // 9) % 3], 1e-9 * i) for i in range(0, 27 * 2, 9)],
-                [(cast(list[DataWord], [Unknown, b'\x0c', b'\x02'])[(i // 3) % 3], 1e-9 * i) for i in range(0, 27 * 2, 3)],
+                [(cast(list[Word], [Unknown, b'\x01', b'\x00'])[(i // 9) % 3], 1e-9 * i) for i in range(0, 27 * 2, 9)],
+                [(cast(list[Word], [Unknown, b'\x0c', b'\x02'])[(i // 3) % 3], 1e-9 * i) for i in range(0, 27 * 2, 3)],
                 [(Unknown if i % 3 == 0 else (0xc0 + i).to_bytes(1), 1e-9 * i) for i in range(27 * 2)],
                 [
                     (Unknown if i % 3 == 0 else (0xc0 + i).to_bytes(1), 1e-9 * i) if i >= 0 else
@@ -140,7 +140,7 @@ def test_LevelTriggeredMemory_Real() -> None:
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         for p, r in zip([po, pm], t[1][3:5]):
-            assert len(p.data) == len(r)
-            for o, q in zip(p.data, r):
-                assert o[0] == q[0]
-                assert abs(o[1] - q[1]) <= _EPS
+            assert len(p.signals) == len(r)
+            for o, q in zip(p.signals, r):
+                assert o.word == q[0]
+                assert abs(o.time - q[1]) <= _EPS

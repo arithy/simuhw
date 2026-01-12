@@ -23,7 +23,7 @@
 import io
 import difflib
 
-from simuhw import Unknown, HighZ, ChannelProbe, MemoryProbe, LogicAnalyzer
+from simuhw import Unknown, HighZ, Signal, ChannelProbe, MemoryProbe, LogicAnalyzer
 
 
 def test_LogicAnalyzer() -> None:
@@ -44,10 +44,16 @@ def test_LogicAnalyzer() -> None:
         la.add_probe(mp)
     for icp, cp in enumerate(lcp):
         for iwd, wd in enumerate(lwd):
-            cp.data.append(((wd & ((1 << cp.width) - 1)).to_bytes((cp.width + 7) >> 3, byteorder='big') if isinstance(wd, int) else wd, (icp + iwd) * 1e-9))
+            cp.signals.append(Signal(
+                (wd & ((1 << cp.width) - 1)).to_bytes((cp.width + 7) >> 3, byteorder='big') if isinstance(wd, int) else wd,
+                (icp + iwd) * 1e-9
+            ))
     for imp, mp in enumerate(lmp):
         for iwd, wd in enumerate(reversed(lwd)):
-            mp.data.append(((wd & ((1 << mp.width) - 1)).to_bytes((mp.width + 7) >> 3, byteorder='big') if isinstance(wd, int) else wd, (imp + iwd + 1) * 1e-9))
+            mp.signals.append(Signal((
+                wd & ((1 << mp.width) - 1)).to_bytes((mp.width + 7) >> 3, byteorder='big') if isinstance(wd, int) else wd,
+                (imp + iwd + 1) * 1e-9
+            ))
     with io.StringIO() as out:
         la.save_as_vcd(out)
         assert '\n'.join(difflib.unified_diff(_ref_vcd().splitlines(), out.getvalue().splitlines())) == ''

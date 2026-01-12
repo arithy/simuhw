@@ -23,7 +23,7 @@
 from abc import ABCMeta, abstractmethod
 from collections.abc import Iterable
 
-from ._word import DataWord, Unknown, HighZ
+from ._type import Word, Unknown, HighZ, Signal
 from ._analyzer import ChannelProbe
 
 
@@ -82,29 +82,29 @@ class Port(metaclass=ABCMeta):
         """Creates a port.
 
         Args:
-            width: The data word width in bits.
+            width: The word width in bits.
 
         """
         self._width: int = width
-        """The data word width in bits."""
-        self._data: tuple[DataWord, float] = (Unknown, 0.0)
-        """The data word with the arrival time in seconds."""
+        """The word width in bits."""
+        self._signal: Signal = Signal(Unknown, 0.0)
+        """The latest signal."""
         self._probes: list[ChannelProbe] = []
         """The channel probes."""
 
     @property
     def width(self) -> int:
-        """The data word width in bits."""
+        """The word width in bits."""
         return self._width
 
     @property
-    def data(self) -> tuple[DataWord, float]:
-        """The data word with the arrival time in seconds."""
-        return self._data
+    def signal(self) -> Signal:
+        """The latest signal."""
+        return self._signal
 
     def reset(self) -> None:
         """Resets the states."""
-        self._data = (Unknown, 0.0)
+        self._signal = Signal(Unknown, 0.0)
 
     def add_probe(self, probe: ChannelProbe) -> None:
         """Adds a channel probe.
@@ -113,11 +113,11 @@ class Port(metaclass=ABCMeta):
             probe: The channel probe to be added.
 
         Raises:
-            ValueError: If a channel probe with a different data word width is specified in ``probe``.
+            ValueError: If a channel probe with a different word width is specified in ``probe``.
 
         """
         if self._width != probe.width:
-            raise ValueError('inconsistent data word width')
+            raise ValueError('inconsistent word width')
         if probe not in self._probes:
             self._probes.append(probe)
 
@@ -141,20 +141,20 @@ class Port(metaclass=ABCMeta):
 
 
 class InputPort(Port):
-    """An input port to receive data word from an output port."""
+    """An input port to receive signals from an output port."""
 
     def __init__(self, width: int) -> None:
         """Creates an input port.
 
         Args:
-            width: The data word width in bits.
+            width: The word width in bits.
 
         """
         super().__init__(width)
         self._connected: bool = False
         """``True`` if connected to an output port, ``False`` otherwise."""
         self._changed: bool = False
-        """``True`` if the data has been changed, ``False`` otherwise."""
+        """``True`` if the signal word has been changed, ``False`` otherwise."""
 
     @property
     def connected(self) -> bool:
@@ -171,39 +171,39 @@ class InputPort(Port):
 
     @property
     def changed(self) -> bool:
-        """``True`` if the data has been changed, ``False`` otherwise."""
+        """``True`` if the signal word has been changed, ``False`` otherwise."""
         return self._changed
 
     def mark_as_changed(self) -> None:
-        """Marks the data as changed."""
+        """Marks the signal word as changed."""
         self._changed = True
 
     def mark_as_unchanged(self) -> None:
-        """Marks the data as unchanged."""
+        """Marks the signal word as unchanged."""
         self._changed = False
 
-    def post(self, data: tuple[DataWord, float]) -> None:
-        """Posts the data word to this port.
+    def post(self, signal: Signal) -> None:
+        """Posts the signal to this port.
 
         Args:
-            data: The data word with the arrival time in seconds.
+            signal: The signal to be posted.
 
         """
-        if self._data[0] != data[0]:
-            self._data = data
+        if self._signal.word != signal.word:
+            self._signal = signal
             for p in self._probes:
-                p.data.append(data)
+                p.signals.append(signal)
             self._changed = True
 
 
 class OutputPort(Port):
-    """An output port to send data words to an input port."""
+    """An output port to send signals to an input port."""
 
     def __init__(self, width: int) -> None:
         """Creates an output port.
 
         Args:
-            width: The data word width in bits.
+            width: The word width in bits.
 
         """
         super().__init__(width)
@@ -227,7 +227,7 @@ class OutputPort(Port):
             peer: The input port. The connected input port is disconnected if ``None``.
 
         Raises:
-            ValueError: If an input port with a different data word width is specified in ``peer``.
+            ValueError: If an input port with a different word width is specified in ``peer``.
 
         """
         if self._peer is not None and self._peer is not peer:
@@ -236,23 +236,23 @@ class OutputPort(Port):
             p.mark_as_disconnected()
         if peer is not None and peer is not self._peer:
             if self._width != peer.width:
-                raise ValueError('inconsistent data word width')
+                raise ValueError('inconsistent word width')
             self._peer = peer  # This is done first to avoid infinite recursive calls between InputPort.mark_as_connected() and OutputPort.connect().
             peer.mark_as_connected()
 
-    def post(self, data: tuple[DataWord, float]) -> None:
-        """Posts the data word to this port.
+    def post(self, signal: Signal) -> None:
+        """Posts the signal to this port.
 
         Args:
-            data: The data word with the arrival time in seconds.
+            signal: The signal to be posted.
 
         """
-        if self._data[0] != data[0]:
-            self._data = data
+        if self._signal.word != signal.word:
+            self._signal = signal
             for p in self._probes:
-                p.data.append(data)
+                p.signals.append(signal)
             if self._peer is not None:
-                self._peer.post(data)
+                self._peer.post(signal)
 
 
 class Device(metaclass=ABCMeta):
@@ -270,7 +270,7 @@ class Device(metaclass=ABCMeta):
 
     def _update_time_and_check_inputs(self, time: float | None, ports_i: Iterable[InputPort] = []) -> bool:
         self._time = 0.0 if time is None else time
-        assert all((p.data[1] <= self._time for p in ports_i))
+        assert all((p.signal.time <= self._time for p in ports_i))
         return any((p.changed for p in ports_i))
 
     def _set_inputs_unchanged(self, ports_i: Iterable[InputPort] = []) -> None:
@@ -290,7 +290,7 @@ class Device(metaclass=ABCMeta):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
@@ -298,29 +298,29 @@ class Device(metaclass=ABCMeta):
 
 
 class Source(Device):
-    """A source device to emit data words."""
+    """A source device to emit signals."""
 
-    def __init__(self, width: int, data: Iterable[tuple[DataWord, float]]) -> None:
+    def __init__(self, width: int, signals: Iterable[Signal | tuple[Word, float]]) -> None:
         """Creates a source device.
 
         Args:
-            width: The data word width in bits.
-            data: The iterator to supply data words.
+            width: The word width in bits.
+            signals: The iterator to supply signals.
 
         """
         super().__init__()
         self._width: int = width
-        """The data word width in bits."""
-        self._data: list[tuple[DataWord, float]] = sorted([*data], key=lambda d: d[1])
-        """The data words to be emitted."""
+        """The word width in bits."""
+        self._signals: list[Signal] = sorted([g if isinstance(g, Signal) else Signal(g[0], g[1]) for g in signals], key=lambda d: d.time)
+        """The signals to be emitted."""
         self._port_o: OutputPort = OutputPort(width)
         """The output port."""
         self._index: int = 0
-        """The index of the next data word to be emitted."""
+        """The index of the next signal to be emitted."""
 
     @property
     def width(self) -> int:
-        """The data word width in bits."""
+        """The word width in bits."""
         return self._width
 
     @property
@@ -341,93 +341,93 @@ class Source(Device):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         if time is None:
             self._index = 0
         self._update_time_and_check_inputs(time)
-        while self._index < len(self._data):
-            d: tuple[DataWord, float] = self._data[self._index]
-            if self._time < d[1]:
-                return ([], d[1])
-            self._port_o.post(d)
+        while self._index < len(self._signals):
+            g: Signal = self._signals[self._index]
+            if self._time < g.time:
+                return ([], g.time)
+            self._port_o.post(g)
             self._index += 1
         return ([], None)
 
 
 class LogicLowSource(Source):
-    """A source device to emit logic-low data words."""
+    """A source device to hold a logic-low word."""
 
     def __init__(self, width: int) -> None:
-        """Creates a source device to emit logic-low data words.
+        """Creates a source device to hold a logic-low word.
 
         Args:
-            width: The data word width in bits.
+            width: The word width in bits.
 
         """
         super().__init__(width, [((0).to_bytes((width + 7) >> 3), 0.0)])
 
 
 class LogicHighSource(Source):
-    """A source device to emit logic-high data words."""
+    """A source device to hold a logic-high word."""
 
     def __init__(self, width: int) -> None:
-        """Creates a source device to emit logic-high data words.
+        """Creates a source device to hold a logic-high word.
 
         Args:
-            width: The data word width in bits.
+            width: The word width in bits.
 
         """
         super().__init__(width, [(((1 << width) - 1).to_bytes((width + 7) >> 3), 0.0)])
 
 
 class LogicUnknownSource(Source):
-    """A source device to emit logic-unknown data words."""
+    """A source device to hold a logic-unknown word."""
 
     def __init__(self, width: int) -> None:
-        """Creates a source device to emit logic-unknown data words.
+        """Creates a source device to hold a logic-unknown word.
 
         Args:
-            width: The data word width in bits.
+            width: The word width in bits.
 
         """
-        super().__init__(width, [(Unknown, 0.0)])
+        super().__init__(width, [Signal(Unknown, 0.0)])
 
 
-class LogicHighZSource(Source):
+class HighZSource(Source):
     """A source device to hold high impedance."""
 
     def __init__(self, width: int) -> None:
         """Creates a source device to hold high impedance.
 
         Args:
-            width: The data word width in bits.
+            width: The word width in bits.
 
         """
         super().__init__(width, [(HighZ, 0.0)])
 
 
 class Drain(Device):
-    """A drain device to absorb data words."""
+    """A drain device to absorb signals."""
 
     def __init__(self, width: int) -> None:
         """Creates a drain device.
 
         Args:
-            width: The data word width in bits.
+            width: The word width in bits.
 
         """
         super().__init__()
         self._width: int = width
-        """The data word width in bits."""
+        """The word width in bits."""
         self._port_i: InputPort = InputPort(width)
         """The input port."""
 
     @property
     def width(self) -> int:
-        """The data word width in bits."""
+        """The word width in bits."""
         return self._width
 
     @property
@@ -447,7 +447,7 @@ class Drain(Device):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """

@@ -22,7 +22,7 @@
 
 from abc import ABCMeta
 
-from .._word import DataWord, Unknown
+from .._type import Word, Unknown
 from .._base import InputPort, OutputPort, Device
 
 
@@ -33,12 +33,12 @@ class Counter(Device, metaclass=ABCMeta):
         """Creates a counter.
 
         Args:
-            width: The data word width in bits.
+            width: The word width in bits.
 
         """
         super().__init__()
         self._width: int = width
-        """The data word width in bits."""
+        """The word width in bits."""
         self._nbytes: int = (width + 7) >> 3
         """The number of bytes required to represent the output."""
         self._mask: int = (1 << width) - 1
@@ -49,12 +49,12 @@ class Counter(Device, metaclass=ABCMeta):
         """The count output port."""
         self._port_co: OutputPort = OutputPort(1)
         """The carry output port."""
-        self._count: DataWord = Unknown
+        self._count: Word = Unknown
         """The count."""
 
     @property
     def width(self) -> int:
-        """The data word width in bits."""
+        """The word width in bits."""
         return self._width
 
     @property
@@ -69,7 +69,11 @@ class Counter(Device, metaclass=ABCMeta):
 
     @property
     def port_co(self) -> OutputPort:
-        """The carry output port."""
+        """The carry output port.
+
+        The width is 1 bit.
+
+        """
         return self._port_co
 
     def reset(self) -> None:
@@ -87,7 +91,7 @@ class SynchronousCounter(Counter, metaclass=ABCMeta):
         """Creates a synchronous counter.
 
         Args:
-            width: The data word width in bits.
+            width: The word width in bits.
             neg_edged: ``True`` if negative-edged, ``False`` otherwise.
 
         """
@@ -96,8 +100,8 @@ class SynchronousCounter(Counter, metaclass=ABCMeta):
         """``True`` if negative-edged, ``False`` otherwise."""
         self._port_ck: InputPort = InputPort(1)
         """The clock port."""
-        self._prev_ck: DataWord = Unknown
-        """The previous clock data word."""
+        self._prev_ck: Word = Unknown
+        """The previous clock word."""
 
     @property
     def negative_edged(self) -> bool:
@@ -106,7 +110,11 @@ class SynchronousCounter(Counter, metaclass=ABCMeta):
 
     @property
     def port_ck(self) -> InputPort:
-        """The clock port."""
+        """The clock port.
+
+        The width is 1 bit.
+
+        """
         return self._port_ck
 
     def reset(self) -> None:
@@ -122,7 +130,7 @@ class SynchronousBinaryCounter(SynchronousCounter, metaclass=ABCMeta):
         """Creates a synchronous binary counter.
 
         Args:
-            width: The data word width in bits.
+            width: The word width in bits.
             neg_edged: ``True`` if negative-edged, ``False`` otherwise.
 
         """

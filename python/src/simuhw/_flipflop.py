@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from ._word import DataWord, Unknown
+from ._type import Word, Unknown, Signal
 from ._base import InputPort, OutputPort, Device
 
 
@@ -31,13 +31,13 @@ class DFlipFlop(Device):
         """Creates a D flip-flop.
 
         Args:
-            width: The data word width in bits.
+            width: The word width in bits.
             neg_edged: ``True`` if negative-edged, ``False`` otherwise.
 
         """
         super().__init__()
         self._width: int = width
-        """The data word width in bits."""
+        """The word width in bits."""
         self._neg_edged = neg_edged
         """``True`` if negative-edged, ``False`` otherwise."""
         self._port_c: InputPort = InputPort(1)
@@ -46,12 +46,12 @@ class DFlipFlop(Device):
         """The input port."""
         self._port_o: OutputPort = OutputPort(width)
         """The output port."""
-        self._prev_c: DataWord = Unknown
-        """The previous clock data word."""
+        self._prev_c: Word = Unknown
+        """The previous clock word."""
 
     @property
     def width(self) -> int:
-        """The data word width in bits."""
+        """The word width in bits."""
         return self._width
 
     @property
@@ -88,20 +88,20 @@ class DFlipFlop(Device):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         ports_i: list[InputPort] = [self._port_c, self._port_i]
-        clock: DataWord = self._port_c.data[0]
+        clock: Word = self._port_c.signal.word
         if self._update_time_and_check_inputs(time, ports_i):
             if not isinstance(clock, bytes):
-                self._port_o.post((Unknown, self._time))
+                self._port_o.post(Signal(Unknown, self._time))
             elif (
                 isinstance(self._prev_c, bytes) and
                 int.from_bytes(clock) - int.from_bytes(self._prev_c) == (-1 if self._neg_edged else 1)
             ):
-                self._port_o.post((self._port_i.data[0], self._time))
+                self._port_o.post(Signal(self._port_i.signal.word, self._time))
             self._prev_c = clock
             self._set_inputs_unchanged(ports_i)
         return (ports_i, None)

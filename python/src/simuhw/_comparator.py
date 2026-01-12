@@ -23,7 +23,7 @@
 from typing import cast
 from collections.abc import Iterable
 
-from ._word import Unknown
+from ._type import Unknown, Signal
 from ._base import InputPort, to_signed_int
 from ._operator import BinaryOperator, SIMD_BinaryOperator
 
@@ -41,7 +41,7 @@ class Comparator(BinaryOperator):
         """Creates a comparator.
 
         Args:
-            width: The data word width in bits.
+            width: The word width in bits.
 
         """
         super().__init__(width)
@@ -53,19 +53,19 @@ class Comparator(BinaryOperator):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         ports_i: list[InputPort] = [*self._ports_i]
         if self._update_time_and_check_inputs(time, ports_i):
-            if any((not isinstance(p.data[0], bytes) for p in ports_i)):
-                self._port_o.post((Unknown, self._time))
+            if any((not isinstance(p.signal.word, bytes) for p in ports_i)):
+                self._port_o.post(Signal(Unknown, self._time))
             else:
-                assert isinstance(self._ports_i[0].data[0], bytes)
-                assert isinstance(self._ports_i[1].data[0], bytes)
-                o: int = int.from_bytes(self._ports_i[0].data[0]) - int.from_bytes(self._ports_i[1].data[0])
-                self._port_o.post((((-1 if o < 0 else 1 if o > 0 else 0) & self._mask).to_bytes(self._nbytes), self._time))
+                assert isinstance(self._ports_i[0].signal.word, bytes)
+                assert isinstance(self._ports_i[1].signal.word, bytes)
+                o: int = int.from_bytes(self._ports_i[0].signal.word) - int.from_bytes(self._ports_i[1].signal.word)
+                self._port_o.post(Signal(((-1 if o < 0 else 1 if o > 0 else 0) & self._mask).to_bytes(self._nbytes), self._time))
             self._set_inputs_unchanged(ports_i)
         return (ports_i, None)
 
@@ -83,7 +83,7 @@ class SignedComparator(Comparator):
         """Creates a signed comparator.
 
         Args:
-            width: The data word width in bits.
+            width: The word width in bits.
 
         """
         super().__init__(width)
@@ -95,22 +95,22 @@ class SignedComparator(Comparator):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         ports_i: list[InputPort] = [*self._ports_i]
         if self._update_time_and_check_inputs(time, ports_i):
-            if any((not isinstance(p.data[0], bytes) for p in ports_i)):
-                self._port_o.post((Unknown, self._time))
+            if any((not isinstance(p.signal.word, bytes) for p in ports_i)):
+                self._port_o.post(Signal(Unknown, self._time))
             else:
-                assert isinstance(self._ports_i[0].data[0], bytes)
-                assert isinstance(self._ports_i[1].data[0], bytes)
+                assert isinstance(self._ports_i[0].signal.word, bytes)
+                assert isinstance(self._ports_i[1].signal.word, bytes)
                 o: int = (
-                    to_signed_int(self._width, int.from_bytes(self._ports_i[0].data[0])) -
-                    to_signed_int(self._width, int.from_bytes(self._ports_i[1].data[0]))
+                    to_signed_int(self._width, int.from_bytes(self._ports_i[0].signal.word)) -
+                    to_signed_int(self._width, int.from_bytes(self._ports_i[1].signal.word))
                 )
-                self._port_o.post((((-1 if o < 0 else 1 if o > 0 else 0) & self._mask).to_bytes(self._nbytes), self._time))
+                self._port_o.post(Signal(((-1 if o < 0 else 1 if o > 0 else 0) & self._mask).to_bytes(self._nbytes), self._time))
             self._set_inputs_unchanged(ports_i)
         return (ports_i, None)
 
@@ -128,8 +128,8 @@ class SIMD_Comparator(SIMD_BinaryOperator):
         """Creates a SIMD comparator.
 
         Args:
-            width: The total width of data words in bits.
-            dsize: The selectable data word width or widths in bits.
+            width: The total width of words in bits.
+            dsize: The selectable word width or widths in bits.
 
         Raises:
             ValueError: If ``width`` is not divisible by any of ``dsize``.
@@ -144,30 +144,30 @@ class SIMD_Comparator(SIMD_BinaryOperator):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         ports_i: list[InputPort] = [*self._ports_i, self._port_s]
         if self._update_time_and_check_inputs(time, ports_i):
             if (
-                any((not isinstance(p.data[0], bytes) for p in ports_i)) or
-                int.from_bytes(cast(bytes, self._port_s.data[0])) >= len(self._dsize)
+                any((not isinstance(p.signal.word, bytes) for p in ports_i)) or
+                int.from_bytes(cast(bytes, self._port_s.signal.word)) >= len(self._dsize)
             ):
-                self._port_o.post((Unknown, self._time))
+                self._port_o.post(Signal(Unknown, self._time))
             else:
-                assert isinstance(self._ports_i[0].data[0], bytes)
-                assert isinstance(self._ports_i[1].data[0], bytes)
-                assert isinstance(self._port_s.data[0], bytes)
-                w: int = self._dsize[int.from_bytes(self._port_s.data[0])]
+                assert isinstance(self._ports_i[0].signal.word, bytes)
+                assert isinstance(self._ports_i[1].signal.word, bytes)
+                assert isinstance(self._port_s.signal.word, bytes)
+                w: int = self._dsize[int.from_bytes(self._port_s.signal.word)]
                 m: int = (1 << w) - 1
-                v0: int = int.from_bytes(self._ports_i[0].data[0])
-                v1: int = int.from_bytes(self._ports_i[1].data[0])
+                v0: int = int.from_bytes(self._ports_i[0].signal.word)
+                v1: int = int.from_bytes(self._ports_i[1].signal.word)
                 o: int = 0
                 for i in range(0, self._width, w):
                     u: int = ((v0 >> i) & m) - ((v1 >> i) & m)
                     o |= ((-1 if u < 0 else 1 if u > 0 else 0) & m) << i
-                self._port_o.post((o.to_bytes(self._nbytes), self._time))
+                self._port_o.post(Signal(o.to_bytes(self._nbytes), self._time))
             self._set_inputs_unchanged(ports_i)
         return (ports_i, None)
 
@@ -185,8 +185,8 @@ class SIMD_SignedComparator(SIMD_Comparator):
         """Creates a SIMD signed comparator.
 
         Args:
-            width: The total width of data words in bits.
-            dsize: The selectable data word width or widths in bits.
+            width: The total width of words in bits.
+            dsize: The selectable word width or widths in bits.
 
         Raises:
             ValueError: If ``width`` is not divisible by any of ``dsize``.
@@ -201,29 +201,29 @@ class SIMD_SignedComparator(SIMD_Comparator):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         ports_i: list[InputPort] = [*self._ports_i, self._port_s]
         if self._update_time_and_check_inputs(time, ports_i):
             if (
-                any((not isinstance(p.data[0], bytes) for p in ports_i)) or
-                int.from_bytes(cast(bytes, self._port_s.data[0])) >= len(self._dsize)
+                any((not isinstance(p.signal.word, bytes) for p in ports_i)) or
+                int.from_bytes(cast(bytes, self._port_s.signal.word)) >= len(self._dsize)
             ):
-                self._port_o.post((Unknown, self._time))
+                self._port_o.post(Signal(Unknown, self._time))
             else:
-                assert isinstance(self._ports_i[0].data[0], bytes)
-                assert isinstance(self._ports_i[1].data[0], bytes)
-                assert isinstance(self._port_s.data[0], bytes)
-                w: int = self._dsize[int.from_bytes(self._port_s.data[0])]
+                assert isinstance(self._ports_i[0].signal.word, bytes)
+                assert isinstance(self._ports_i[1].signal.word, bytes)
+                assert isinstance(self._port_s.signal.word, bytes)
+                w: int = self._dsize[int.from_bytes(self._port_s.signal.word)]
                 m: int = (1 << w) - 1
-                v0: int = int.from_bytes(self._ports_i[0].data[0])
-                v1: int = int.from_bytes(self._ports_i[1].data[0])
+                v0: int = int.from_bytes(self._ports_i[0].signal.word)
+                v1: int = int.from_bytes(self._ports_i[1].signal.word)
                 o: int = 0
                 for i, j in enumerate(range(0, self._width, w)):
                     u: int = to_signed_int(w, (v0 >> j) & m) - to_signed_int(w, (v1 >> j) & m)
                     o |= ((-1 if u < 0 else 1 if u > 0 else 0) & m) << j
-                self._port_o.post((o.to_bytes(self._nbytes), self._time))
+                self._port_o.post(Signal(o.to_bytes(self._nbytes), self._time))
             self._set_inputs_unchanged(ports_i)
         return (ports_i, None)

@@ -33,4 +33,31 @@ class HighZ(metaclass=ABCMeta):
     pass
 
 
-DataWord = bytes | type[Unknown | HighZ]
+Word = bytes | type[Unknown | HighZ]
+
+
+class Signal:
+    """A signal."""
+
+    def __init__(self, word: Word, time: float) -> None:
+        """Creates a signal.
+
+        Args:
+            word: The word.
+            time: The time in seconds.
+
+        """
+        self._word: Word = word
+        """The word."""
+        self._time: float = time
+        """The time in seconds."""
+
+    @property
+    def word(self) -> Word:
+        """The word."""
+        return self._word
+
+    @property
+    def time(self) -> float:
+        """The time in seconds."""
+        return self._time

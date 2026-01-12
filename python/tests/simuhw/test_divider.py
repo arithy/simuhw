@@ -23,14 +23,14 @@
 from typing import cast
 
 from simuhw import (
-    DataWord, Unknown, Source, Drain, Divider, SignedDivider, SIMD_Divider, SIMD_SignedDivider,
+    Word, Unknown, Source, Drain, Divider, SignedDivider, SIMD_Divider, SIMD_SignedDivider,
     ChannelProbe, Simulator
 )
 
 _EPS: float = 1e-18
 
 
-_test_data: list[tuple[int, list[list[tuple[DataWord, float]]], list[list[list[tuple[DataWord, float]]]]]] = [
+_test_data: list[tuple[int, list[list[tuple[Word, float]]], list[list[list[tuple[Word, float]]]]]] = [
     (
         1,
         [
@@ -52,10 +52,10 @@ _test_data: list[tuple[int, list[list[tuple[DataWord, float]]], list[list[list[t
         8,
         [
             [
-                (cast(list[DataWord], [b'\x00', b'\x01', b'\x80', b'\xff', Unknown])[i % 5], (1 + 5 * i) * 1e-9) for i in range(5)
+                (cast(list[Word], [b'\x00', b'\x01', b'\x80', b'\xff', Unknown])[i % 5], (1 + 5 * i) * 1e-9) for i in range(5)
             ],
             [
-                (cast(list[DataWord], [b'\x00', b'\x02', b'\x7f', b'\xff', Unknown])[i % 5], (1 + i) * 1e-9) for i in range(25)
+                (cast(list[Word], [b'\x00', b'\x02', b'\x7f', b'\xff', Unknown])[i % 5], (1 + i) * 1e-9) for i in range(25)
             ]
         ],
         [
@@ -94,7 +94,7 @@ _test_data: list[tuple[int, list[list[tuple[DataWord, float]]], list[list[list[t
         [
             [
                 (
-                    cast(list[DataWord], [
+                    cast(list[Word], [
                         b'\x00\x00\x00\x00\x00', b'\x00\x00\x00\x00\x01', b'\x01\x00\x00\x00\x00', b'\x01\xff\xff\xff\xff', Unknown
                     ])[i % 5],
                     (1 + 5 * i) * 1e-9
@@ -102,7 +102,7 @@ _test_data: list[tuple[int, list[list[tuple[DataWord, float]]], list[list[list[t
             ],
             [
                 (
-                    cast(list[DataWord], [
+                    cast(list[Word], [
                         b'\x00\x00\x00\x00\x00', b'\x00\x00\x00\x00\x02', b'\x00\xff\xff\xff\xff', b'\x01\xff\xff\xff\xff', Unknown
                     ])[i % 5],
                     (1 + i) * 1e-9
@@ -159,10 +159,10 @@ def test_Divider() -> None:
         sim: Simulator = Simulator([*ti, *to, dev])
         sim.start(show_time=True)
         for p, r in zip(po, t[2][0]):
-            assert len(p.data) == len(r)
-            for o, q in zip(p.data, r):
-                assert o[0] == q[0]
-                assert abs(o[1] - q[1]) <= _EPS
+            assert len(p.signals) == len(r)
+            for o, q in zip(p.signals, r):
+                assert o.word == q[0]
+                assert abs(o.time - q[1]) <= _EPS
 
 
 def test_SignedDivider() -> None:
@@ -181,14 +181,14 @@ def test_SignedDivider() -> None:
         sim: Simulator = Simulator([*ti, *to, dev])
         sim.start(show_time=True)
         for p, r in zip(po, t[2][1]):
-            assert len(p.data) == len(r)
-            for o, q in zip(p.data, r):
-                assert o[0] == q[0]
-                assert abs(o[1] - q[1]) <= _EPS
+            assert len(p.signals) == len(r)
+            for o, q in zip(p.signals, r):
+                assert o.word == q[0]
+                assert abs(o.time - q[1]) <= _EPS
 
 
 def test_SIMD_Divider() -> None:
-    test_data: list[tuple[list[int], list[int], list[list[tuple[DataWord, float]]], list[list[tuple[DataWord, float]]]]] = [
+    test_data: list[tuple[list[int], list[int], list[list[tuple[Word, float]]], list[list[tuple[Word, float]]]]] = [
         (
             [32, 2],
             [4, 8, 16, 32],
@@ -200,7 +200,7 @@ def test_SIMD_Divider() -> None:
                     (b'\x01\xff\x08\x0c', 10e-9)
                 ],
                 [
-                    (cast(list[DataWord], [Unknown, b'\x00', b'\x01', b'\x02', b'\x03'])[i % 5], 1e-9 * i) for i in range(20)
+                    (cast(list[Word], [Unknown, b'\x00', b'\x01', b'\x02', b'\x03'])[i % 5], 1e-9 * i) for i in range(20)
                 ]
             ],
             [
@@ -232,14 +232,14 @@ def test_SIMD_Divider() -> None:
         sim: Simulator = Simulator([*ti, *to, dev])
         sim.start(show_time=True)
         for p, r in zip(po, t[3]):
-            assert len(p.data) == len(r)
-            for o, q in zip(p.data, r):
-                assert o[0] == q[0]
-                assert abs(o[1] - q[1]) <= _EPS
+            assert len(p.signals) == len(r)
+            for o, q in zip(p.signals, r):
+                assert o.word == q[0]
+                assert abs(o.time - q[1]) <= _EPS
 
 
 def test_SIMD_SignedDivider() -> None:
-    test_data: list[tuple[list[int], list[int], list[list[tuple[DataWord, float]]], list[list[tuple[DataWord, float]]]]] = [
+    test_data: list[tuple[list[int], list[int], list[list[tuple[Word, float]]], list[list[tuple[Word, float]]]]] = [
         (
             [32, 2],
             [4, 8, 16, 32],
@@ -251,7 +251,7 @@ def test_SIMD_SignedDivider() -> None:
                     (b'\x01\xff\x08\x0c', 10e-9)
                 ],
                 [
-                    (cast(list[DataWord], [Unknown, b'\x00', b'\x01', b'\x02', b'\x03'])[i % 5], 1e-9 * i) for i in range(20)
+                    (cast(list[Word], [Unknown, b'\x00', b'\x01', b'\x02', b'\x03'])[i % 5], 1e-9 * i) for i in range(20)
                 ]
             ],
             [
@@ -283,7 +283,7 @@ def test_SIMD_SignedDivider() -> None:
         sim: Simulator = Simulator([*ti, *to, dev])
         sim.start(show_time=True)
         for p, r in zip(po, t[3]):
-            assert len(p.data) == len(r)
-            for o, q in zip(p.data, r):
-                assert o[0] == q[0]
-                assert abs(o[1] - q[1]) <= _EPS
+            assert len(p.signals) == len(r)
+            for o, q in zip(p.signals, r):
+                assert o.word == q[0]
+                assert abs(o.time - q[1]) <= _EPS

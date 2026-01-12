@@ -22,7 +22,7 @@
 
 import softfloatpy as sf
 
-from .._word import Unknown
+from .._type import Unknown, Signal
 from .._base import InputPort, to_signed_int
 from .._operator import UnaryOperator, SIMD_UnaryOperator
 from ._operator import Float, Float16, Float32, Float64, Float128, FPState
@@ -43,7 +43,7 @@ class FPToIntegerConverter(UnaryOperator, FPState):
 
         Args:
             dtype_i: The input floating-point type.
-            width_o: The output data word width in bits.
+            width_o: The output word width in bits.
                      Must be less than or equal to 64.
 
         Raises:
@@ -51,7 +51,7 @@ class FPToIntegerConverter(UnaryOperator, FPState):
 
         """
         if width_o > 64:
-            raise ValueError('output data word width greater than 64')
+            raise ValueError('output word width greater than 64')
         super().__init__(dtype_i.size(), width_o)
         FPState.__init__(self)
         self._dtype_i: Float = dtype_i
@@ -69,24 +69,24 @@ class FPToIntegerConverter(UnaryOperator, FPState):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
             self.apply_states()
-            if not isinstance(self._ports_i[0].data[0], bytes):
-                self._port_o.post((Unknown, self._time))
+            if not isinstance(self._ports_i[0].signal.word, bytes):
+                self._port_o.post(Signal(Unknown, self._time))
             else:
-                o: int = self._dtype_i.from_bytes(self._ports_i[0].data[0]).to_ui64(sf.get_rounding_mode()).to_int()
+                o: int = self._dtype_i.from_bytes(self._ports_i[0].signal.word).to_ui64(sf.get_rounding_mode()).to_int()
                 e: int = sf.get_exception_flags()
                 if (
                     (e & (sf.ExceptionFlag.OVERFLOW | sf.ExceptionFlag.INFINITE | sf.ExceptionFlag.INVALID)) == 0 and
                     o >= (1 << self._width_o)
                 ):
                     sf.set_exception_flags(e | sf.ExceptionFlag.INVALID)
-                self._port_o.post(((o & self._mask).to_bytes(self._nbytes), self._time))
-            self.restore_states(self._time, not isinstance(self._port_o.data[0], bytes))
+                self._port_o.post(Signal((o & self._mask).to_bytes(self._nbytes), self._time))
+            self.restore_states(self._time, not isinstance(self._port_o.signal.word, bytes))
             self._set_inputs_unchanged(self._ports_i)
         return ([*self._ports_i], None)
 
@@ -105,7 +105,7 @@ class FPFromIntegerConverter(UnaryOperator, FPState):
         """Creates a integer to floating-point converter.
 
         Args:
-            width_i: The input data word width in bits.
+            width_i: The input word width in bits.
             dtype_o: The output floating-point type.
 
         """
@@ -126,20 +126,20 @@ class FPFromIntegerConverter(UnaryOperator, FPState):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
             self.apply_states()
-            if not isinstance(self._ports_i[0].data[0], bytes):
-                self._port_o.post((Unknown, self._time))
+            if not isinstance(self._ports_i[0].signal.word, bytes):
+                self._port_o.post(Signal(Unknown, self._time))
             else:
-                self._port_o.post((
-                    self._dtype_o.from_ui64(sf.UInt64.from_int(int.from_bytes(self._ports_i[0].data[0]))).to_bytes(),
+                self._port_o.post(Signal(
+                    self._dtype_o.from_ui64(sf.UInt64.from_int(int.from_bytes(self._ports_i[0].signal.word))).to_bytes(),
                     self._time
                 ))
-            self.restore_states(self._time, not isinstance(self._port_o.data[0], bytes))
+            self.restore_states(self._time, not isinstance(self._port_o.signal.word, bytes))
             self._set_inputs_unchanged(self._ports_i)
         return ([*self._ports_i], None)
 
@@ -159,7 +159,7 @@ class FPToSignedIntegerConverter(FPToIntegerConverter):
 
         Args:
             dtype_i: The input floating-point type.
-            width_o: The output data word width in bits.
+            width_o: The output word width in bits.
 
         """
         super().__init__(dtype_i, width_o)
@@ -171,16 +171,16 @@ class FPToSignedIntegerConverter(FPToIntegerConverter):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
             self.apply_states()
-            if not isinstance(self._ports_i[0].data[0], bytes):
-                self._port_o.post((Unknown, self._time))
+            if not isinstance(self._ports_i[0].signal.word, bytes):
+                self._port_o.post(Signal(Unknown, self._time))
             else:
-                o: int = self._dtype_i.from_bytes(self._ports_i[0].data[0]).to_i64(sf.get_rounding_mode()).to_int()
+                o: int = self._dtype_i.from_bytes(self._ports_i[0].signal.word).to_i64(sf.get_rounding_mode()).to_int()
                 e: int = sf.get_exception_flags()
                 l: int = (1 << self._width_o) >> 1
                 if (
@@ -188,8 +188,8 @@ class FPToSignedIntegerConverter(FPToIntegerConverter):
                     (o >= l or o < -l)
                 ):
                     sf.set_exception_flags(e | sf.ExceptionFlag.INVALID)
-                self._port_o.post(((o & self._mask).to_bytes(self._nbytes), self._time))
-            self.restore_states(self._time, not isinstance(self._port_o.data[0], bytes))
+                self._port_o.post(Signal((o & self._mask).to_bytes(self._nbytes), self._time))
+            self.restore_states(self._time, not isinstance(self._port_o.signal.word, bytes))
             self._set_inputs_unchanged(self._ports_i)
         return ([*self._ports_i], None)
 
@@ -208,7 +208,7 @@ class FPFromSignedIntegerConverter(FPFromIntegerConverter):
         """Creates a signed-integer to floating-point converter.
 
         Args:
-            width_i: The input data word width in bits.
+            width_i: The input word width in bits.
             dtype_o: The output floating-point type.
 
         """
@@ -221,22 +221,22 @@ class FPFromSignedIntegerConverter(FPFromIntegerConverter):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
             self.apply_states()
-            if not isinstance(self._ports_i[0].data[0], bytes):
-                self._port_o.post((Unknown, self._time))
+            if not isinstance(self._ports_i[0].signal.word, bytes):
+                self._port_o.post(Signal(Unknown, self._time))
             else:
-                self._port_o.post((
+                self._port_o.post(Signal(
                     self._dtype_o.from_i64(sf.Int64.from_int(
-                        to_signed_int(self._width_i, int.from_bytes(self._ports_i[0].data[0]))
+                        to_signed_int(self._width_i, int.from_bytes(self._ports_i[0].signal.word))
                     )).to_bytes(),
                     self._time
                 ))
-            self.restore_states(self._time, not isinstance(self._port_o.data[0], bytes))
+            self.restore_states(self._time, not isinstance(self._port_o.signal.word, bytes))
             self._set_inputs_unchanged(self._ports_i)
         return ([*self._ports_i], None)
 
@@ -278,26 +278,26 @@ class FPConverter(UnaryOperator, FPState):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
             self.apply_states()
-            if not isinstance(self._ports_i[0].data[0], bytes):
-                self._port_o.post((Unknown, self._time))
+            if not isinstance(self._ports_i[0].signal.word, bytes):
+                self._port_o.post(Signal(Unknown, self._time))
             else:
                 assert self._dtype_i in [Float16, Float32, Float64, Float128]
-                self._port_o.post((
+                self._port_o.post(Signal(
                     (
                         self._dtype_o.from_f16 if self._dtype_i == Float16 else
                         self._dtype_o.from_f32 if self._dtype_i == Float32 else
                         self._dtype_o.from_f64 if self._dtype_i == Float64 else
                         self._dtype_o.from_f128
-                    )(self._dtype_i.from_bytes(self._ports_i[0].data[0])).to_bytes(),  # type: ignore[arg-type]
+                    )(self._dtype_i.from_bytes(self._ports_i[0].signal.word)).to_bytes(),  # type: ignore[arg-type]
                     self._time
                 ))
-            self.restore_states(self._time, not isinstance(self._port_o.data[0], bytes))
+            self.restore_states(self._time, not isinstance(self._port_o.signal.word, bytes))
             self._set_inputs_unchanged(self._ports_i)
         return ([*self._ports_i], None)
 
@@ -318,7 +318,7 @@ class SIMD_FPToIntegerConverter(SIMD_UnaryOperator, FPState):
         Args:
             multi: The number of SIMD elements.
             dtype_i: The input floating-point type.
-            dsize_o: The output data word width in bits.
+            dsize_o: The output word width in bits.
 
         """
         super().__init__(dtype_i.size() * multi, dtype_i.size(), dsize_o * multi)
@@ -338,20 +338,20 @@ class SIMD_FPToIntegerConverter(SIMD_UnaryOperator, FPState):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
             self.apply_states()
-            if not isinstance(self._ports_i[0].data[0], bytes):
-                self._port_o.post((Unknown, self._time))
+            if not isinstance(self._ports_i[0].signal.word, bytes):
+                self._port_o.post(Signal(Unknown, self._time))
             else:
                 s: int = self._dsize_i[0]
                 t: int = self._dsize_o[0]
                 m: int = (1 << s) - 1
                 n: int = (1 << t) - 1
-                v: int = int.from_bytes(self._ports_i[0].data[0])
+                v: int = int.from_bytes(self._ports_i[0].signal.word)
                 o: int = 0
                 for i, j in zip(
                     range(0, self._width_i, s),
@@ -365,8 +365,8 @@ class SIMD_FPToIntegerConverter(SIMD_UnaryOperator, FPState):
                     ):
                         sf.set_exception_flags(e | sf.ExceptionFlag.INVALID)
                     o |= (u & n) << j
-                self._port_o.post((o.to_bytes(self._nbytes), self._time))
-            self.restore_states(self._time, not isinstance(self._port_o.data[0], bytes))
+                self._port_o.post(Signal(o.to_bytes(self._nbytes), self._time))
+            self.restore_states(self._time, not isinstance(self._port_o.signal.word, bytes))
             self._set_inputs_unchanged(self._ports_i)
         return ([*self._ports_i], None)
 
@@ -386,7 +386,7 @@ class SIMD_FPFromIntegerConverter(SIMD_UnaryOperator, FPState):
 
         Args:
             multi: The number of SIMD elements.
-            dsize_i: The input data word width in bits.
+            dsize_i: The input word width in bits.
             dtype_o: The output floating-point type.
 
         """
@@ -407,23 +407,23 @@ class SIMD_FPFromIntegerConverter(SIMD_UnaryOperator, FPState):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
             self.apply_states()
-            if not isinstance(self._ports_i[0].data[0], bytes):
-                self._port_o.post((Unknown, self._time))
+            if not isinstance(self._ports_i[0].signal.word, bytes):
+                self._port_o.post(Signal(Unknown, self._time))
             else:
                 s: int = self._dsize_i[0]
                 m: int = (1 << s) - 1
-                v: int = int.from_bytes(self._ports_i[0].data[0])
+                v: int = int.from_bytes(self._ports_i[0].signal.word)
                 o: bytes = b''
                 for i in range(0, self._width_i, s):
                     o = self._dtype_o.from_ui64(sf.UInt64.from_int((v >> i) & m)).to_bytes() + o
-                self._port_o.post((o, self._time))
-            self.restore_states(self._time, not isinstance(self._port_o.data[0], bytes))
+                self._port_o.post(Signal(o, self._time))
+            self.restore_states(self._time, not isinstance(self._port_o.signal.word, bytes))
             self._set_inputs_unchanged(self._ports_i)
         return ([*self._ports_i], None)
 
@@ -444,7 +444,7 @@ class SIMD_FPToSignedIntegerConverter(SIMD_FPToIntegerConverter):
         Args:
             multi: The number of SIMD elements.
             dtype_i: The input floating-point type.
-            dsize_o: The output data word width in bits.
+            dsize_o: The output word width in bits.
 
         """
         super().__init__(multi, dtype_i, dsize_o)
@@ -456,21 +456,21 @@ class SIMD_FPToSignedIntegerConverter(SIMD_FPToIntegerConverter):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
             self.apply_states()
-            if not isinstance(self._ports_i[0].data[0], bytes):
-                self._port_o.post((Unknown, self._time))
+            if not isinstance(self._ports_i[0].signal.word, bytes):
+                self._port_o.post(Signal(Unknown, self._time))
             else:
                 s: int = self._dsize_i[0]
                 t: int = self._dsize_o[0]
                 m: int = (1 << s) - 1
                 n: int = (1 << t) - 1
                 l: int = (1 << t) >> 1
-                v: int = int.from_bytes(self._ports_i[0].data[0])
+                v: int = int.from_bytes(self._ports_i[0].signal.word)
                 o: int = 0
                 for i, j in zip(
                     range(0, self._width_i, s),
@@ -484,8 +484,8 @@ class SIMD_FPToSignedIntegerConverter(SIMD_FPToIntegerConverter):
                     ):
                         sf.set_exception_flags(e | sf.ExceptionFlag.INVALID)
                     o |= (u & n) << j
-                self._port_o.post((o.to_bytes(self._nbytes), self._time))
-            self.restore_states(self._time, not isinstance(self._port_o.data[0], bytes))
+                self._port_o.post(Signal(o.to_bytes(self._nbytes), self._time))
+            self.restore_states(self._time, not isinstance(self._port_o.signal.word, bytes))
             self._set_inputs_unchanged(self._ports_i)
         return ([*self._ports_i], None)
 
@@ -505,7 +505,7 @@ class SIMD_FPFromSignedIntegerConverter(SIMD_FPFromIntegerConverter):
 
         Args:
             multi: The number of SIMD elements.
-            dsize_i: The input data word width in bits.
+            dsize_i: The input word width in bits.
             dtype_o: The output floating-point type.
 
         """
@@ -518,25 +518,25 @@ class SIMD_FPFromSignedIntegerConverter(SIMD_FPFromIntegerConverter):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
             self.apply_states()
-            if not isinstance(self._ports_i[0].data[0], bytes):
-                self._port_o.post((Unknown, self._time))
+            if not isinstance(self._ports_i[0].signal.word, bytes):
+                self._port_o.post(Signal(Unknown, self._time))
             else:
                 s: int = self._dsize_i[0]
                 m: int = (1 << s) - 1
-                v: int = int.from_bytes(self._ports_i[0].data[0])
+                v: int = int.from_bytes(self._ports_i[0].signal.word)
                 o: bytes = b''
                 for i in range(0, self._width_i, s):
                     o = self._dtype_o.from_i64(sf.Int64.from_int(
                         to_signed_int(s, (v >> i) & m)
                     )).to_bytes() + o
-                self._port_o.post((o, self._time))
-            self.restore_states(self._time, not isinstance(self._port_o.data[0], bytes))
+                self._port_o.post(Signal(o, self._time))
+            self.restore_states(self._time, not isinstance(self._port_o.signal.word, bytes))
             self._set_inputs_unchanged(self._ports_i)
         return ([*self._ports_i], None)
 
@@ -579,19 +579,19 @@ class SIMD_FPConverter(SIMD_UnaryOperator, FPState):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
             self.apply_states()
-            if not isinstance(self._ports_i[0].data[0], bytes):
-                self._port_o.post((Unknown, self._time))
+            if not isinstance(self._ports_i[0].signal.word, bytes):
+                self._port_o.post(Signal(Unknown, self._time))
             else:
                 assert self._dtype_i in [Float16, Float32, Float64, Float128]
                 s: int = self._dsize_i[0]
                 m: int = (1 << s) - 1
-                v: int = int.from_bytes(self._ports_i[0].data[0])
+                v: int = int.from_bytes(self._ports_i[0].signal.word)
                 o: bytes = b''
                 for i in range(0, self._width_i, s):
                     o = (
@@ -600,7 +600,7 @@ class SIMD_FPConverter(SIMD_UnaryOperator, FPState):
                         self._dtype_o.from_f64 if self._dtype_i == Float64 else
                         self._dtype_o.from_f128
                     )(self._dtype_i.from_bytes(((v >> i) & m).to_bytes(self._dtype_i.size() >> 3))).to_bytes() + o  # type: ignore[arg-type]
-                self._port_o.post((o, self._time))
-            self.restore_states(self._time, not isinstance(self._port_o.data[0], bytes))
+                self._port_o.post(Signal(o, self._time))
+            self.restore_states(self._time, not isinstance(self._port_o.signal.word, bytes))
             self._set_inputs_unchanged(self._ports_i)
         return ([*self._ports_i], None)

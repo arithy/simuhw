@@ -25,24 +25,24 @@ from collections.abc import Iterable
 from functools import reduce
 import math
 
-from ._word import DataWord, Unknown, HighZ
+from ._type import Word, Unknown, HighZ, Signal
 from ._base import InputPort, OutputPort, Device, combine_bits, extract_bits
 
 
-class DataCombiner(Device):
-    """A data word combiner.
+class WordCombiner(Device):
+    """A word combiner.
 
-    This device combines multiple input data words into one data word.
-    The data word from the first input port will be the most significant bits
-    in the output data word.
+    This device combines multiple input words into one word.
+    The word from the first input port will be the most significant bits
+    in the output word.
 
     """
 
     def __init__(self, widths: Iterable[int]) -> None:
-        """Creates a data word combiner.
+        """Creates a word combiner.
 
         Args:
-            widths: The input data word widths in bits.
+            widths: The input word widths in bits.
 
         """
         super().__init__()
@@ -75,15 +75,15 @@ class DataCombiner(Device):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         if self._update_time_and_check_inputs(time, self._ports_i):
-            self._port_o.post((
-                Unknown if any((not isinstance(p.data[0], bytes) for p in self._ports_i)) else reduce(
+            self._port_o.post(Signal(
+                Unknown if any((not isinstance(p.signal.word, bytes) for p in self._ports_i)) else reduce(
                     lambda x, y: (x[0] + y[0], combine_bits(x[0], x[1], y[0], y[1])),
-                    ((p.width, cast(bytes, p.data[0])) for p in self._ports_i), (0, b'')
+                    ((p.width, cast(bytes, p.signal.word)) for p in self._ports_i), (0, b'')
                 )[1],
                 self._time
             ))
@@ -91,19 +91,19 @@ class DataCombiner(Device):
         return ([*self._ports_i], None)
 
 
-class DataSplitter(Device):
-    """A data word splitter.
+class WordSplitter(Device):
+    """A word splitter.
 
-    This device splits an input data word into multiple data words.
-    The most significant bits in the input data word will be output to the first output port.
+    This device splits an input word into multiple words.
+    The most significant bits in the input word will be output to the first output port.
 
     """
 
     def __init__(self, widths: Iterable[int]) -> None:
-        """Creates a data word splitter.
+        """Creates a word splitter.
 
         Args:
-            widths: The output data word widths in bits.
+            widths: The output word widths in bits.
 
         """
         super().__init__()
@@ -136,21 +136,21 @@ class DataSplitter(Device):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         ports_i: list[InputPort] = [self._port_i]
         if self._update_time_and_check_inputs(time, ports_i):
-            b: DataWord = self._port_i.data[0]
+            b: Word = self._port_i.signal.word
             if not isinstance(b, bytes):
                 for p in self._ports_o:
-                    p.post((Unknown, self._time))
+                    p.post(Signal(Unknown, self._time))
             else:
                 s: int = self._port_i.width
                 for p in self._ports_o:
                     s -= p.width
-                    p.post((extract_bits(self._port_i.width, b, s, p.width), self._time))
+                    p.post(Signal(extract_bits(self._port_i.width, b, s, p.width), self._time))
             self._set_inputs_unchanged(ports_i)
         return (ports_i, None)
 
@@ -162,40 +162,40 @@ class Multiplexer(Device):
         """Creates a multiplexer.
 
         Args:
-            width: The data word width in bits.
+            width: The word width in bits.
             ninputs: The number of the input ports.
 
         """
         super().__init__()
         self._width: int = width
-        """The data word width in bits."""
+        """The word width in bits."""
         self._width_s: int = math.ceil(math.log2(ninputs)) if ninputs > 0 else 0
-        """The selection word width in bits."""
+        """The selection port width in bits."""
         self._ports_i: tuple[InputPort, ...] = tuple(InputPort(width) for _ in range(ninputs))
-        """The input ports for the data word."""
+        """The input ports."""
         self._port_s: InputPort = InputPort(self._width_s)
-        """The input port for selection of the input ports for the data word."""
+        """The selection port."""
         self._port_o: OutputPort = OutputPort(width)
         """The output port."""
 
     @property
     def width(self) -> int:
-        """The data word width in bits."""
+        """The word width in bits."""
         return self._width
 
     @property
     def width_s(self) -> int:
-        """The selection word width in bits."""
+        """The selection port width in bits."""
         return self._width_s
 
     @property
     def ports_i(self) -> tuple[InputPort, ...]:
-        """The input ports for the data word."""
+        """The input ports."""
         return self._ports_i
 
     @property
     def port_s(self) -> InputPort:
-        """The input port for selection of the input ports for the data word."""
+        """The selection port."""
         return self._port_s
 
     @property
@@ -218,18 +218,18 @@ class Multiplexer(Device):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         ports_i: list[InputPort] = [*self._ports_i, self._port_s]
         if self._update_time_and_check_inputs(time, ports_i):
-            if not isinstance(self._port_s.data[0], bytes):
-                self._port_o.post((Unknown, self._time))
+            if not isinstance(self._port_s.signal.word, bytes):
+                self._port_o.post(Signal(Unknown, self._time))
             else:
-                i: int = int.from_bytes(self._port_s.data[0])
-                self._port_o.post((
-                    self._ports_i[i].data[0] if i < len(self._ports_i) else Unknown,
+                i: int = int.from_bytes(self._port_s.signal.word)
+                self._port_o.post(Signal(
+                    self._ports_i[i].signal.word if i < len(self._ports_i) else Unknown,
                     self._time
                 ))
             self._set_inputs_unchanged(ports_i)
@@ -239,46 +239,47 @@ class Multiplexer(Device):
 class Demultiplexer(Device):
     """A demultiplexer."""
 
-    def __init__(self, width: int, noutputs: int, *, deselected: DataWord = Unknown) -> None:
+    def __init__(self, width: int, noutputs: int, *, deselected: Word = Unknown) -> None:
         """Creates a demultiplexer.
 
         Args:
-            width: The data word width in bits.
+            width: The word width in bits.
             noutputs: The number of the output ports.
+            deselected: The word to be output to ports not selected.
 
         """
         super().__init__()
         self._width: int = width
-        """The data word width in bits."""
+        """The word width in bits."""
         self._width_s: int = math.ceil(math.log2(noutputs)) if noutputs > 0 else 0
-        """The selection word width in bits."""
-        self._deselected: DataWord = deselected
-        """The data word when not selected."""
+        """The selection port width in bits."""
+        self._deselected: Word = deselected
+        """The word to be output to ports not selected."""
         self._port_i: InputPort = InputPort(width)
-        """The input port for the data word."""
+        """The input port."""
         self._port_s: InputPort = InputPort(self._width_s)
-        """The input port for selection of the output ports."""
+        """The selection port."""
         self._ports_o: tuple[OutputPort, ...] = tuple(OutputPort(width) for _ in range(noutputs))
         """The output ports."""
 
     @property
     def width(self) -> int:
-        """The data word width in bits."""
+        """The word width in bits."""
         return self._width
 
     @property
     def width_s(self) -> int:
-        """The selection word width in bits."""
+        """The selection port width in bits."""
         return self._width_s
 
     @property
     def port_i(self) -> InputPort:
-        """The input port for the data word."""
+        """The input port."""
         return self._port_i
 
     @property
     def port_s(self) -> InputPort:
-        """The input port for selection of the output ports."""
+        """The selection port."""
         return self._port_s
 
     @property
@@ -301,34 +302,34 @@ class Demultiplexer(Device):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         ports_i: list[InputPort] = [self._port_i, self._port_s]
         if self._update_time_and_check_inputs(time, ports_i):
-            if isinstance(self._port_s.data[0], bytes):
-                s: int = int.from_bytes(self._port_s.data[0])
+            if isinstance(self._port_s.signal.word, bytes):
+                s: int = int.from_bytes(self._port_s.signal.word)
                 for i, p in enumerate(self._ports_o):
                     if i == s:
-                        p.post((self._port_i.data[0], self._time))
+                        p.post(Signal(self._port_i.signal.word, self._time))
                     else:
-                        p.post((self._deselected, self._time))
+                        p.post(Signal(self._deselected, self._time))
             else:
                 for i, p in enumerate(self._ports_o):
-                    p.post((Unknown, self._time))
+                    p.post(Signal(Unknown, self._time))
             self._set_inputs_unchanged(ports_i)
         return (ports_i, None)
 
 
-class DataRetainingDemultiplexer(Demultiplexer):
-    """A demultiplexer to retain data in the unselected ports."""
+class WordRetainingDemultiplexer(Demultiplexer):
+    """A demultiplexer to retain word in the unselected ports."""
 
     def __init__(self, width: int, noutputs: int) -> None:
-        """Creates a demultiplexer to retain data in the unselected ports.
+        """Creates a demultiplexer to retain word in the unselected ports.
 
         Args:
-            width: The data word width in bits.
+            width: The word width in bits.
             noutputs: The number of the output ports.
 
         """
@@ -341,20 +342,20 @@ class DataRetainingDemultiplexer(Demultiplexer):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         ports_i: list[InputPort] = [self._port_i, self._port_s]
         if self._update_time_and_check_inputs(time, ports_i):
-            if isinstance(self._port_s.data[0], bytes):
-                s: int = int.from_bytes(self._port_s.data[0])
+            if isinstance(self._port_s.signal.word, bytes):
+                s: int = int.from_bytes(self._port_s.signal.word)
                 for i, p in enumerate(self._ports_o):
                     if i == s:
-                        p.post((self._port_i.data[0], self._time))
+                        p.post(Signal(self._port_i.signal.word, self._time))
             else:
                 for i, p in enumerate(self._ports_o):
-                    p.post((Unknown, self._time))
+                    p.post(Signal(Unknown, self._time))
             self._set_inputs_unchanged(ports_i)
         return (ports_i, None)
 
@@ -371,13 +372,13 @@ class Junction(Device):
         """Creates a junction.
 
         Args:
-            width: The data word width in bits.
+            width: The word width in bits.
             ninputs: The number of the input ports.
 
         """
         super().__init__()
         self._width: int = width
-        """The data word width in bits."""
+        """The word width in bits."""
         self._ports_i: tuple[InputPort, ...] = tuple(InputPort(width) for _ in range(ninputs))
         """The input ports."""
         self._port_o: OutputPort = OutputPort(width)
@@ -385,7 +386,7 @@ class Junction(Device):
 
     @property
     def width(self) -> int:
-        """The data word width in bits."""
+        """The word width in bits."""
         return self._width
 
     @property
@@ -412,29 +413,29 @@ class Junction(Device):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         ports_i: list[InputPort] = [*self._ports_i]
         if self._update_time_and_check_inputs(time, ports_i):
-            bs: list[DataWord] = [p.data[0] for p in self._ports_i if p.connected and p.data[0] is not HighZ]
+            bs: list[Word] = [p.signal.word for p in self._ports_i if p.connected and p.signal.word is not HighZ]
             if len(bs) == 0:
-                self._port_o.post((HighZ, self._time))
+                self._port_o.post(Signal(HighZ, self._time))
             elif all((b == bs[0] for b in bs)):
-                self._port_o.post((bs[0], self._time))
+                self._port_o.post(Signal(bs[0], self._time))
             else:
-                self._port_o.post((Unknown, self._time))
+                self._port_o.post(Signal(Unknown, self._time))
             self._set_inputs_unchanged(ports_i)
         elif time is None and all((not p.connected for p in self._ports_i)):  # if all input ports are dangling or no input port exists
-            self._port_o.post((HighZ, self._time))
+            self._port_o.post(Signal(HighZ, self._time))
         return (ports_i, None)
 
 
 class Distributor(Device):
     """A distributor.
 
-    This device forwards the input data to multiple output ports.
+    This device forwards the input word to multiple output ports.
     Its behavior is that of directly connected multiple output wires.
 
     """
@@ -443,13 +444,13 @@ class Distributor(Device):
         """Creates a distributor.
 
         Args:
-            width: The data word width in bits.
+            width: The word width in bits.
             noutputs: The number of the output ports.
 
         """
         super().__init__()
         self._width: int = width
-        """The data word width in bits."""
+        """The word width in bits."""
         self._port_i: InputPort = InputPort(width)
         """The input port."""
         self._ports_o: tuple[OutputPort, ...] = tuple(OutputPort(width) for _ in range(noutputs))
@@ -457,7 +458,7 @@ class Distributor(Device):
 
     @property
     def width(self) -> int:
-        """The data word width in bits."""
+        """The word width in bits."""
         return self._width
 
     @property
@@ -484,16 +485,16 @@ class Distributor(Device):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         ports_i: list[InputPort] = [self._port_i]
         if self._update_time_and_check_inputs(time, ports_i):
             for p in self._ports_o:
-                p.post((self._port_i.data[0], self._time))
+                p.post(Signal(self._port_i.signal.word, self._time))
             self._set_inputs_unchanged(ports_i)
         elif time is None and not self._port_i.connected:  # if the input port is dangling
             for p in self._ports_o:
-                p.post((HighZ, self._time))
+                p.post(Signal(HighZ, self._time))
         return (ports_i, None)

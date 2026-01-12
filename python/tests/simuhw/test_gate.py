@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 from simuhw import (
-    DataWord, Unknown, Source, Drain,
+    Word, Unknown, Source, Drain,
     ANDGate, ORGate, XORGate, NANDGate, NORGate, XNORGate,
     ChannelProbe, Simulator
 )
@@ -29,7 +29,7 @@ from simuhw import (
 _EPS: float = 1e-18
 
 
-_test_data: list[tuple[tuple[int, int], list[list[tuple[DataWord, float]]], dict[type, list[tuple[DataWord, float]]]]] = [
+_test_data: list[tuple[tuple[int, int], list[list[tuple[Word, float]]], dict[type, list[tuple[Word, float]]]]] = [
     (
         (1, 1),
         [
@@ -137,11 +137,11 @@ def test_ANDGate() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[DataWord, float]] = t[2][ANDGate]
-        assert len(po.data) == len(r)
-        for o, q in zip(po.data, r):
-            assert o[0] == q[0]
-            assert abs(o[1] - q[1]) <= _EPS
+        r: list[tuple[Word, float]] = t[2][ANDGate]
+        assert len(po.signals) == len(r)
+        for o, q in zip(po.signals, r):
+            assert o.word == q[0]
+            assert abs(o.time - q[1]) <= _EPS
 
 
 def test_ORGate() -> None:
@@ -158,11 +158,11 @@ def test_ORGate() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[DataWord, float]] = t[2][ORGate]
-        assert len(po.data) == len(r)
-        for o, q in zip(po.data, r):
-            assert o[0] == q[0]
-            assert abs(o[1] - q[1]) <= _EPS
+        r: list[tuple[Word, float]] = t[2][ORGate]
+        assert len(po.signals) == len(r)
+        for o, q in zip(po.signals, r):
+            assert o.word == q[0]
+            assert abs(o.time - q[1]) <= _EPS
 
 
 def test_XORGate() -> None:
@@ -179,11 +179,11 @@ def test_XORGate() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[DataWord, float]] = t[2][XORGate]
-        assert len(po.data) == len(r)
-        for o, q in zip(po.data, r):
-            assert o[0] == q[0]
-            assert abs(o[1] - q[1]) <= _EPS
+        r: list[tuple[Word, float]] = t[2][XORGate]
+        assert len(po.signals) == len(r)
+        for o, q in zip(po.signals, r):
+            assert o.word == q[0]
+            assert abs(o.time - q[1]) <= _EPS
 
 
 def test_NANDGate() -> None:
@@ -200,11 +200,11 @@ def test_NANDGate() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[DataWord, float]] = t[2][NANDGate]
-        assert len(po.data) == len(r)
-        for o, q in zip(po.data, r):
-            assert o[0] == q[0]
-            assert abs(o[1] - q[1]) <= _EPS
+        r: list[tuple[Word, float]] = t[2][NANDGate]
+        assert len(po.signals) == len(r)
+        for o, q in zip(po.signals, r):
+            assert o.word == q[0]
+            assert abs(o.time - q[1]) <= _EPS
 
 
 def test_NORGate() -> None:
@@ -221,11 +221,11 @@ def test_NORGate() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[DataWord, float]] = t[2][NORGate]
-        assert len(po.data) == len(r)
-        for o, q in zip(po.data, r):
-            assert o[0] == q[0]
-            assert abs(o[1] - q[1]) <= _EPS
+        r: list[tuple[Word, float]] = t[2][NORGate]
+        assert len(po.signals) == len(r)
+        for o, q in zip(po.signals, r):
+            assert o.word == q[0]
+            assert abs(o.time - q[1]) <= _EPS
 
 
 def test_XNORGate() -> None:
@@ -242,8 +242,8 @@ def test_XNORGate() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[DataWord, float]] = t[2][XNORGate]
-        assert len(po.data) == len(r)
-        for o, q in zip(po.data, r):
-            assert o[0] == q[0]
-            assert abs(o[1] - q[1]) <= _EPS
+        r: list[tuple[Word, float]] = t[2][XNORGate]
+        assert len(po.signals) == len(r)
+        for o, q in zip(po.signals, r):
+            assert o.word == q[0]
+            assert abs(o.time - q[1]) <= _EPS

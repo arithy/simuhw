@@ -22,7 +22,7 @@
 
 from functools import reduce
 
-from simuhw import DataWord, Source, Drain, ChannelProbe, Simulator
+from simuhw import Word, Source, Drain, ChannelProbe, Simulator
 import simuhw.fp as hwf
 import simuhw.fp.riscv as rv
 
@@ -574,7 +574,7 @@ def test_FRSqrt7() -> None:
     sf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
     sf.set_rounding_mode(hwf.RoundingMode.MIN)
     sf.set_exception_flags(0)
-    test_i: list[tuple[type, list[int], list[list[tuple[DataWord, float]]]]] = [
+    test_i: list[tuple[type, list[int], list[list[tuple[Word, float]]]]] = [
         (
             f,
             [f.size(), 1, 3, 5],  # type: ignore[attr-defined]
@@ -596,7 +596,7 @@ def test_FRSqrt7() -> None:
         )
         for f in [hwf.Float16, hwf.Float32, hwf.Float64]
     ]
-    test_o: list[list[list[tuple[DataWord, float]]]] = [
+    test_o: list[list[list[tuple[Word, float]]]] = [
         [
             [
                 (u[1], 1e-9 * (1 + i))
@@ -624,10 +624,10 @@ def test_FRSqrt7() -> None:
         sim: Simulator = Simulator([*ti, *to, dev])
         sim.start(show_time=True)
         for p, r in zip(po, [[o[i] for i in range(len(o)) if i == 0 or o[i][0] != o[i - 1][0]] for o in s]):
-            assert len(p.data) == len(r)
-            for o, q in zip(p.data, r):
-                assert o[0] == q[0]
-                assert abs(o[1] - q[1]) <= _EPS
+            assert len(p.signals) == len(r)
+            for o, q in zip(p.signals, r):
+                assert o.word == q[0]
+                assert abs(o.time - q[1]) <= _EPS
 
 
 @skipif_unavailable
@@ -637,7 +637,7 @@ def test_SIMD_FRSqrt7() -> None:
     sf.set_exception_flags(0)
     test_w: int = 256
     test_f: list[hwf.Float] = [hwf.Float16, hwf.Float32, hwf.Float64]
-    test_i: list[tuple[list[int], list[hwf.Float], list[list[tuple[DataWord, float]]]]] = [
+    test_i: list[tuple[list[int], list[hwf.Float], list[list[tuple[Word, float]]]]] = [
         (
             [test_w, 2, 1, 3, 5],
             test_f,
@@ -669,7 +669,7 @@ def test_SIMD_FRSqrt7() -> None:
             ]
         )
     ]
-    test_o: list[list[list[tuple[DataWord, float]]]] = [
+    test_o: list[list[list[tuple[Word, float]]]] = [
         [
             [
                 (
@@ -708,7 +708,7 @@ def test_SIMD_FRSqrt7() -> None:
         sim: Simulator = Simulator([*ti, *to, dev])
         sim.start(show_time=True)
         for p, r in zip(po, [[o[i] for i in range(len(o)) if i == 0 or o[i][0] != o[i - 1][0]] for o in s]):
-            assert len(p.data) == len(r)
-            for o, q in zip(p.data, r):
-                assert o[0] == q[0]
-                assert abs(o[1] - q[1]) <= _EPS
+            assert len(p.signals) == len(r)
+            for o, q in zip(p.signals, r):
+                assert o.word == q[0]
+                assert abs(o.time - q[1]) <= _EPS

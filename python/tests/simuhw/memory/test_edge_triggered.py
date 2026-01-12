@@ -23,7 +23,7 @@
 from typing import cast
 from collections.abc import Callable
 
-from simuhw import DataWord, Unknown, Source, Drain, ChannelProbe, MemoryProbe, Simulator
+from simuhw import Word, Unknown, Source, Drain, ChannelProbe, MemoryProbe, Simulator
 from simuhw.memory import EdgeTriggeredMemory
 from simuhw.memory.model import MockMemorizingModel, RealMemorizingModel
 
@@ -31,17 +31,17 @@ _EPS: float = 1e-18
 
 
 def test_EdgeTriggeredMemory_Mock() -> None:
-    test_data: list[tuple[tuple[int, int, Callable[[DataWord], DataWord], bool, bytes], list[list[tuple[DataWord, float]]]]] = [
+    test_data: list[tuple[tuple[int, int, Callable[[Word], Word], bool, bytes], list[list[tuple[Word, float]]]]] = [
         (
             (8, 4, lambda x: Unknown if not isinstance(x, bytes) else (int.from_bytes(x) + 0xf0).to_bytes(1), False, b'\x0c'),
             [
-                [(cast(list[DataWord], [Unknown, b'\x00', b'\x01', b'\x00'])[i % 4], 1e-9 * (2 * i + 1)) for i in range(36 * 2)],
-                [(cast(list[DataWord], [b'\x01', b'\x00'])[(i // 36) % 2], 1e-9 * (2 * i)) for i in range(0, 36 * 2, 36)],
-                [(cast(list[DataWord], [Unknown, b'\x0c', b'\x02'])[(i // 12) % 3], 1e-9 * (2 * i)) for i in range(0, 36 * 2, 12)],
+                [(cast(list[Word], [Unknown, b'\x00', b'\x01', b'\x00'])[i % 4], 1e-9 * (2 * i + 1)) for i in range(36 * 2)],
+                [(cast(list[Word], [b'\x01', b'\x00'])[(i // 36) % 2], 1e-9 * (2 * i)) for i in range(0, 36 * 2, 36)],
+                [(cast(list[Word], [Unknown, b'\x0c', b'\x02'])[(i // 12) % 3], 1e-9 * (2 * i)) for i in range(0, 36 * 2, 12)],
                 [(Unknown if i % 3 == 0 else (0xa0 + i).to_bytes(1), 1e-9 * (2 * i)) for i in range(36 * 2)],
                 [
                     (Unknown, 1e-9 * (2 * i)) if i % 36 == 0 else
-                    (Unknown if i % 4 == 0 else cast(list[DataWord], [Unknown, b'\xfc', b'\xf2'])[(i // 12) % 3], 1e-9 * (2 * i + 1))
+                    (Unknown if i % 4 == 0 else cast(list[Word], [Unknown, b'\xfc', b'\xf2'])[(i // 12) % 3], 1e-9 * (2 * i + 1))
                     for i in [14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 50, 52, 54, 56, 58, 60, 62, 64, 66, 68, 70]
                 ],
                 [
@@ -53,13 +53,13 @@ def test_EdgeTriggeredMemory_Mock() -> None:
         (
             (8, 4, lambda x: Unknown if not isinstance(x, bytes) else (int.from_bytes(x) + 0xf0).to_bytes(1), True, b'\x0c'),
             [
-                [(cast(list[DataWord], [Unknown, b'\x01', b'\x00', b'\x01'])[i % 4], 1e-9 * (2 * i + 1)) for i in range(36 * 2)],
-                [(cast(list[DataWord], [b'\x01', b'\x00'])[(i // 36) % 2], 1e-9 * (2 * i)) for i in range(0, 36 * 2, 36)],
-                [(cast(list[DataWord], [Unknown, b'\x0c', b'\x02'])[(i // 12) % 3], 1e-9 * (2 * i)) for i in range(0, 36 * 2, 12)],
+                [(cast(list[Word], [Unknown, b'\x01', b'\x00', b'\x01'])[i % 4], 1e-9 * (2 * i + 1)) for i in range(36 * 2)],
+                [(cast(list[Word], [b'\x01', b'\x00'])[(i // 36) % 2], 1e-9 * (2 * i)) for i in range(0, 36 * 2, 36)],
+                [(cast(list[Word], [Unknown, b'\x0c', b'\x02'])[(i // 12) % 3], 1e-9 * (2 * i)) for i in range(0, 36 * 2, 12)],
                 [(Unknown if i % 3 == 0 else (0xa0 + i).to_bytes(1), 1e-9 * (2 * i)) for i in range(36 * 2)],
                 [
                     (Unknown, 1e-9 * (2 * i)) if i % 36 == 0 else
-                    (Unknown if i % 4 == 0 else cast(list[DataWord], [Unknown, b'\xfc', b'\xf2'])[(i // 12) % 3], 1e-9 * (2 * i + 1))
+                    (Unknown if i % 4 == 0 else cast(list[Word], [Unknown, b'\xfc', b'\xf2'])[(i // 12) % 3], 1e-9 * (2 * i + 1))
                     for i in [14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 50, 52, 54, 56, 58, 60, 62, 64, 66, 68, 70]
                 ],
                 [
@@ -87,20 +87,20 @@ def test_EdgeTriggeredMemory_Mock() -> None:
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         for p, r in zip([po, pm], t[1][4:6]):
-            assert len(p.data) == len(r)
-            for o, q in zip(p.data, r):
-                assert o[0] == q[0]
-                assert abs(o[1] - q[1]) <= _EPS
+            assert len(p.signals) == len(r)
+            for o, q in zip(p.signals, r):
+                assert o.word == q[0]
+                assert abs(o.time - q[1]) <= _EPS
 
 
 def test_EdgeTriggeredMemory_Real() -> None:
-    test_data: list[tuple[tuple[int, int, bytes, bool, bytes], list[list[tuple[DataWord, float]]]]] = [
+    test_data: list[tuple[tuple[int, int, bytes, bool, bytes], list[list[tuple[Word, float]]]]] = [
         (
             (8, 4, b'\xa5', False, b'\x0c'),
             [
-                [(cast(list[DataWord], [Unknown, b'\x00', b'\x01', b'\x00'])[i % 4], 1e-9 * (2 * i + 1)) for i in range(36 * 2)],
-                [(cast(list[DataWord], [b'\x01', b'\x00'])[(i // 36) % 2], 1e-9 * (2 * i)) for i in range(0, 36 * 2, 36)],
-                [(cast(list[DataWord], [Unknown, b'\x0c', b'\x02'])[(i // 12) % 3], 1e-9 * (2 * i)) for i in range(0, 36 * 2, 12)],
+                [(cast(list[Word], [Unknown, b'\x00', b'\x01', b'\x00'])[i % 4], 1e-9 * (2 * i + 1)) for i in range(36 * 2)],
+                [(cast(list[Word], [b'\x01', b'\x00'])[(i // 36) % 2], 1e-9 * (2 * i)) for i in range(0, 36 * 2, 36)],
+                [(cast(list[Word], [Unknown, b'\x0c', b'\x02'])[(i // 12) % 3], 1e-9 * (2 * i)) for i in range(0, 36 * 2, 12)],
                 [(Unknown if i % 3 == 0 else (0xa0 + i).to_bytes(1), 1e-9 * (2 * i)) for i in range(36 * 2)],
                 [
                     (Unknown, 1e-9 * (2 * i)) if i % 36 == 0 else
@@ -120,9 +120,9 @@ def test_EdgeTriggeredMemory_Real() -> None:
         (
             (8, 4, b'\xa5', True, b'\x0c'),
             [
-                [(cast(list[DataWord], [Unknown, b'\x01', b'\x00', b'\x01'])[i % 4], 1e-9 * (2 * i + 1)) for i in range(36 * 2)],
-                [(cast(list[DataWord], [b'\x01', b'\x00'])[(i // 36) % 2], 1e-9 * (2 * i)) for i in range(0, 36 * 2, 36)],
-                [(cast(list[DataWord], [Unknown, b'\x0c', b'\x02'])[(i // 12) % 3], 1e-9 * (2 * i)) for i in range(0, 36 * 2, 12)],
+                [(cast(list[Word], [Unknown, b'\x01', b'\x00', b'\x01'])[i % 4], 1e-9 * (2 * i + 1)) for i in range(36 * 2)],
+                [(cast(list[Word], [b'\x01', b'\x00'])[(i // 36) % 2], 1e-9 * (2 * i)) for i in range(0, 36 * 2, 36)],
+                [(cast(list[Word], [Unknown, b'\x0c', b'\x02'])[(i // 12) % 3], 1e-9 * (2 * i)) for i in range(0, 36 * 2, 12)],
                 [(Unknown if i % 3 == 0 else (0xa0 + i).to_bytes(1), 1e-9 * (2 * i)) for i in range(36 * 2)],
                 [
                     (Unknown, 1e-9 * (2 * i)) if i % 36 == 0 else
@@ -158,7 +158,7 @@ def test_EdgeTriggeredMemory_Real() -> None:
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         for p, r in zip([po, pm], t[1][4:6]):
-            assert len(p.data) == len(r)
-            for o, q in zip(p.data, r):
-                assert o[0] == q[0]
-                assert abs(o[1] - q[1]) <= _EPS
+            assert len(p.signals) == len(r)
+            for o, q in zip(p.signals, r):
+                assert o.word == q[0]
+                assert abs(o.time - q[1]) <= _EPS

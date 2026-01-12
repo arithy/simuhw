@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from ._word import Unknown
+from ._type import Unknown, Signal
 from ._base import InputPort, OutputPort, Device
 
 
@@ -31,13 +31,13 @@ class DLatch(Device):
         """Creates a D latch.
 
         Args:
-            width: The data word width in bits.
+            width: The word width in bits.
             neg_leveled: ``True`` if negative-leveled, ``False`` otherwise.
 
         """
         super().__init__()
         self._width: int = width
-        """The data word width in bits."""
+        """The word width in bits."""
         self._neg_leveled = neg_leveled
         """``True`` if negative-leveled, ``False`` otherwise."""
         self._port_g: InputPort = InputPort(1)
@@ -49,7 +49,7 @@ class DLatch(Device):
 
     @property
     def width(self) -> int:
-        """The data word width in bits."""
+        """The word width in bits."""
         return self._width
 
     @property
@@ -86,15 +86,15 @@ class DLatch(Device):
             time: The current time in seconds. ``None`` when starting to make the device work.
 
         Returns:
-            A tuple of the list of the input ports that are to be watched receive a data word, and the next resuming time in seconds.
+            A tuple of the list of the input ports that are to be watched receive a signal, and the next resuming time in seconds.
             The next resuming time can be ``None`` if resumable anytime.
 
         """
         ports_i: list[InputPort] = [self._port_g, self._port_i]
         if self._update_time_and_check_inputs(time, ports_i):
-            if not isinstance(self._port_g.data[0], bytes):
-                self._port_o.post((Unknown, self._time))
-            elif int.from_bytes(self._port_g.data[0]) == (0 if self._neg_leveled else 1):
-                self._port_o.post((self._port_i.data[0], self._time))
+            if not isinstance(self._port_g.signal.word, bytes):
+                self._port_o.post(Signal(Unknown, self._time))
+            elif int.from_bytes(self._port_g.signal.word) == (0 if self._neg_leveled else 1):
+                self._port_o.post(Signal(self._port_i.signal.word, self._time))
             self._set_inputs_unchanged(ports_i)
         return (ports_i, None)

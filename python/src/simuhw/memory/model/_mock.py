@@ -22,50 +22,50 @@
 
 from collections.abc import Callable
 
-from ..._word import DataWord, Unknown
+from ..._type import Word, Unknown
 from ._base import MemorizingModel
 
 
 class MockMemorizingModel(MemorizingModel):
     """A mock memorizing model.
 
-    This model does not memorize any input data, and always outputs the same data at respective addresses.
+    This model does not memorize any input words, and always outputs the same words at respective addresses.
     It is intended to be used for experiments and tests.
 
     """
 
-    def __init__(self, data_func: Callable[[DataWord], DataWord] | None = None) -> None:
+    def __init__(self, word_func: Callable[[Word], Word] | None = None) -> None:
         """Creates a mock memorizing model.
 
         Args:
-            data_func: The function to return a mock data according to a given address.
+            word_func: The function to return a mock word according to a given address.
 
         """
-        self._data_func: Callable[[DataWord], DataWord] | None = data_func
-        """The function to return a mock data according to a given address."""
+        self._word_func: Callable[[Word], Word] | None = word_func
+        """The function to return a mock word according to a given address."""
 
     def reset(self) -> None:
         """Resets the states."""
         pass
 
-    def read(self, address: DataWord) -> DataWord:
-        """Reads the data word from the memory device.
+    def read(self, address: Word) -> Word:
+        """Reads the word from the memory device.
 
         Args:
-            address: The memory address whose data is to be read.
+            address: The memory address whose word is to be read.
 
         Returns:
-            The data word read form the specified memory address.
+            The word read form the specified memory address.
 
         """
-        return Unknown if self._data_func is None else self._data_func(address)
+        return Unknown if self._word_func is None else self._word_func(address)
 
-    def write(self, address: DataWord, data: DataWord) -> None:
-        """Writes the data word to the memory device.
+    def write(self, address: Word, word: Word) -> None:
+        """Writes the word to the memory device.
 
         Args:
-            address: The memory address whose data is to be written.
-            data: the data word to be written to the specified memory address.
+            address: The memory address whose word is to be updated.
+            word: the word to be written to the specified memory address.
 
         """
         pass

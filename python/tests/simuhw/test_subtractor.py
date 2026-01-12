@@ -23,7 +23,7 @@
 from typing import cast
 
 from simuhw import (
-    DataWord, Unknown, Source, Drain,
+    Word, Unknown, Source, Drain,
     Subtractor, HalfSubtractor, FullSubtractor, SIMD_Subtractor,
     ChannelProbe, Simulator
 )
@@ -31,7 +31,7 @@ from simuhw import (
 _EPS: float = 1e-18
 
 
-_test_data: list[tuple[int, list[list[list[tuple[DataWord, float]]]]]] = [
+_test_data: list[tuple[int, list[list[list[tuple[Word, float]]]]]] = [
     (
         1,
         [
@@ -147,11 +147,11 @@ def test_Subtractor() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[DataWord, float]] = t[1][1][0]
-        assert len(po.data) == len(r)
-        for o, q in zip(po.data, r):
-            assert o[0] == q[0]
-            assert abs(o[1] - q[1]) <= _EPS
+        r: list[tuple[Word, float]] = t[1][1][0]
+        assert len(po.signals) == len(r)
+        for o, q in zip(po.signals, r):
+            assert o.word == q[0]
+            assert abs(o.time - q[1]) <= _EPS
 
 
 def test_HalfSubtractor() -> None:
@@ -170,10 +170,10 @@ def test_HalfSubtractor() -> None:
         sim: Simulator = Simulator([*ti, *to, dev])
         sim.start(show_time=True)
         for p, r in zip(po, t[1][1]):
-            assert len(p.data) == len(r)
-            for o, q in zip(p.data, r):
-                assert o[0] == q[0]
-                assert abs(o[1] - q[1]) <= _EPS
+            assert len(p.signals) == len(r)
+            for o, q in zip(p.signals, r):
+                assert o.word == q[0]
+                assert abs(o.time - q[1]) <= _EPS
 
 
 def test_FullSubtractor() -> None:
@@ -181,7 +181,7 @@ def test_FullSubtractor() -> None:
         w: int = t[0]
         for j, ci in enumerate([b'\x00', b'\x01', Unknown]):
             po: list[ChannelProbe] = [ChannelProbe('out', w), ChannelProbe('carry', 1)]
-            ti: list[Source] = [Source(u, d) for u, d in zip([w, w, 1], [*t[1][0], cast(list[tuple[DataWord, float]], [(ci, 0.0)])])]
+            ti: list[Source] = [Source(u, d) for u, d in zip([w, w, 1], [*t[1][0], cast(list[tuple[Word, float]], [(ci, 0.0)])])]
             to: list[Drain] = [Drain(w), Drain(1)]
             dev: FullSubtractor = FullSubtractor(w)
             dev.port_o.connect(to[0].port_i)
@@ -194,14 +194,14 @@ def test_FullSubtractor() -> None:
             sim: Simulator = Simulator([*ti, *to, dev])
             sim.start(show_time=True)
             for p, r in zip(po, t[1][1 + j]):
-                assert len(p.data) == len(r)
-                for o, q in zip(p.data, r):
-                    assert o[0] == q[0]
-                    assert abs(o[1] - q[1]) <= _EPS
+                assert len(p.signals) == len(r)
+                for o, q in zip(p.signals, r):
+                    assert o.word == q[0]
+                    assert abs(o.time - q[1]) <= _EPS
 
 
 def test_SIMD_Subtractor() -> None:
-    test_data: list[tuple[list[int], list[int], list[list[tuple[DataWord, float]]], list[tuple[DataWord, float]]]] = [
+    test_data: list[tuple[list[int], list[int], list[list[tuple[Word, float]]], list[tuple[Word, float]]]] = [
         (
             [32, 2],
             [4, 8, 16, 32],
@@ -213,7 +213,7 @@ def test_SIMD_Subtractor() -> None:
                     (b'\x02\x01\xff\xfd', 10e-9)
                 ],
                 [
-                    (cast(list[DataWord], [Unknown, b'\x00', b'\x01', b'\x02', b'\x03'])[i % 5], 1e-9 * i) for i in range(20)
+                    (cast(list[Word], [Unknown, b'\x00', b'\x01', b'\x02', b'\x03'])[i % 5], 1e-9 * i) for i in range(20)
                 ]
             ],
             [
@@ -236,8 +236,8 @@ def test_SIMD_Subtractor() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[DataWord, float]] = t[3]
-        assert len(po.data) == len(r)
-        for o, q in zip(po.data, r):
-            assert o[0] == q[0]
-            assert abs(o[1] - q[1]) <= _EPS
+        r: list[tuple[Word, float]] = t[3]
+        assert len(po.signals) == len(r)
+        for o, q in zip(po.signals, r):
+            assert o.word == q[0]
+            assert abs(o.time - q[1]) <= _EPS

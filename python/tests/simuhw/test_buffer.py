@@ -23,7 +23,7 @@
 from typing import cast
 
 from simuhw import (
-    DataWord, Unknown, HighZ, Source, Drain,
+    Word, Unknown, HighZ, Source, Drain,
     Buffer, Inverter, TriStateBuffer, TriStateInverter,
     ChannelProbe, Simulator
 )
@@ -31,46 +31,46 @@ from simuhw import (
 _EPS: float = 1e-18
 
 
-_test_data: list[tuple[int, list[list[tuple[DataWord, float]]], dict[type, list[list[tuple[DataWord, float]]]]]] = [
+_test_data: list[tuple[int, list[list[tuple[Word, float]]], dict[type, list[list[tuple[Word, float]]]]]] = [
     (
         1,
         [
-            [(cast(list[DataWord], [b'\x00', b'\x01', HighZ, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(16)],
-            [(cast(list[DataWord], [b'\x00', b'\x01', HighZ, Unknown])[i % 4], (1 + 4 * i) * 1e-9) for i in range(4)]
+            [(cast(list[Word], [b'\x00', b'\x01', HighZ, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(16)],
+            [(cast(list[Word], [b'\x00', b'\x01', HighZ, Unknown])[i % 4], (1 + 4 * i) * 1e-9) for i in range(4)]
         ],
         {
             Buffer: [
-                [(cast(list[DataWord], [b'\x00', b'\x01', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(16)]
+                [(cast(list[Word], [b'\x00', b'\x01', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(16)]
             ],
             Inverter: [
-                [(cast(list[DataWord], [b'\x01', b'\x00', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(16)]
+                [(cast(list[Word], [b'\x01', b'\x00', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(16)]
             ],
             TriStateBuffer: [
                 [
-                    *((cast(list[DataWord], [HighZ, HighZ, HighZ, HighZ])[i % 4], (1 + i) * 1e-9) for i in range(0, 4)),
-                    *((cast(list[DataWord], [b'\x00', b'\x01', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(4, 8)),
-                    *((cast(list[DataWord], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(8, 12)),
-                    *((cast(list[DataWord], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(12, 16))
+                    *((cast(list[Word], [HighZ, HighZ, HighZ, HighZ])[i % 4], (1 + i) * 1e-9) for i in range(0, 4)),
+                    *((cast(list[Word], [b'\x00', b'\x01', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(4, 8)),
+                    *((cast(list[Word], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(8, 12)),
+                    *((cast(list[Word], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(12, 16))
                 ],
                 [
-                    *((cast(list[DataWord], [b'\x00', b'\x01', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(0, 4)),
-                    *((cast(list[DataWord], [HighZ, HighZ, HighZ, HighZ])[i % 4], (1 + i) * 1e-9) for i in range(4, 8)),
-                    *((cast(list[DataWord], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(8, 12)),
-                    *((cast(list[DataWord], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(12, 16))
+                    *((cast(list[Word], [b'\x00', b'\x01', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(0, 4)),
+                    *((cast(list[Word], [HighZ, HighZ, HighZ, HighZ])[i % 4], (1 + i) * 1e-9) for i in range(4, 8)),
+                    *((cast(list[Word], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(8, 12)),
+                    *((cast(list[Word], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(12, 16))
                 ]
             ],
             TriStateInverter: [
                 [
-                    *((cast(list[DataWord], [HighZ, HighZ, HighZ, HighZ])[i % 4], (1 + i) * 1e-9) for i in range(0, 4)),
-                    *((cast(list[DataWord], [b'\x01', b'\x00', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(4, 8)),
-                    *((cast(list[DataWord], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(8, 12)),
-                    *((cast(list[DataWord], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(12, 16))
+                    *((cast(list[Word], [HighZ, HighZ, HighZ, HighZ])[i % 4], (1 + i) * 1e-9) for i in range(0, 4)),
+                    *((cast(list[Word], [b'\x01', b'\x00', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(4, 8)),
+                    *((cast(list[Word], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(8, 12)),
+                    *((cast(list[Word], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(12, 16))
                 ],
                 [
-                    *((cast(list[DataWord], [b'\x01', b'\x00', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(0, 4)),
-                    *((cast(list[DataWord], [HighZ, HighZ, HighZ, HighZ])[i % 4], (1 + i) * 1e-9) for i in range(4, 8)),
-                    *((cast(list[DataWord], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(8, 12)),
-                    *((cast(list[DataWord], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(12, 16))
+                    *((cast(list[Word], [b'\x01', b'\x00', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(0, 4)),
+                    *((cast(list[Word], [HighZ, HighZ, HighZ, HighZ])[i % 4], (1 + i) * 1e-9) for i in range(4, 8)),
+                    *((cast(list[Word], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(8, 12)),
+                    *((cast(list[Word], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(12, 16))
                 ]
             ]
         }
@@ -78,42 +78,42 @@ _test_data: list[tuple[int, list[list[tuple[DataWord, float]]], dict[type, list[
     (
         8,
         [
-            [(cast(list[DataWord], [b'\x1a', b'\xe5', HighZ, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(16)],
-            [(cast(list[DataWord], [b'\x00', b'\x01', HighZ, Unknown])[i % 4], (1 + 4 * i) * 1e-9) for i in range(4)]
+            [(cast(list[Word], [b'\x1a', b'\xe5', HighZ, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(16)],
+            [(cast(list[Word], [b'\x00', b'\x01', HighZ, Unknown])[i % 4], (1 + 4 * i) * 1e-9) for i in range(4)]
         ],
         {
             Buffer: [
-                [(cast(list[DataWord], [b'\x1a', b'\xe5', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(16)],
+                [(cast(list[Word], [b'\x1a', b'\xe5', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(16)],
             ],
             Inverter: [
-                [(cast(list[DataWord], [b'\xe5', b'\x1a', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(16)],
+                [(cast(list[Word], [b'\xe5', b'\x1a', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(16)],
             ],
             TriStateBuffer: [
                 [
-                    *((cast(list[DataWord], [HighZ, HighZ, HighZ, HighZ])[i % 4], (1 + i) * 1e-9) for i in range(0, 4)),
-                    *((cast(list[DataWord], [b'\x1a', b'\xe5', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(4, 8)),
-                    *((cast(list[DataWord], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(8, 12)),
-                    *((cast(list[DataWord], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(12, 16))
+                    *((cast(list[Word], [HighZ, HighZ, HighZ, HighZ])[i % 4], (1 + i) * 1e-9) for i in range(0, 4)),
+                    *((cast(list[Word], [b'\x1a', b'\xe5', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(4, 8)),
+                    *((cast(list[Word], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(8, 12)),
+                    *((cast(list[Word], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(12, 16))
                 ],
                 [
-                    *((cast(list[DataWord], [b'\x1a', b'\xe5', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(0, 4)),
-                    *((cast(list[DataWord], [HighZ, HighZ, HighZ, HighZ])[i % 4], (1 + i) * 1e-9) for i in range(4, 8)),
-                    *((cast(list[DataWord], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(8, 12)),
-                    *((cast(list[DataWord], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(12, 16))
+                    *((cast(list[Word], [b'\x1a', b'\xe5', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(0, 4)),
+                    *((cast(list[Word], [HighZ, HighZ, HighZ, HighZ])[i % 4], (1 + i) * 1e-9) for i in range(4, 8)),
+                    *((cast(list[Word], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(8, 12)),
+                    *((cast(list[Word], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(12, 16))
                 ]
             ],
             TriStateInverter: [
                 [
-                    *((cast(list[DataWord], [HighZ, HighZ, HighZ, HighZ])[i % 4], (1 + i) * 1e-9) for i in range(0, 4)),
-                    *((cast(list[DataWord], [b'\xe5', b'\x1a', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(4, 8)),
-                    *((cast(list[DataWord], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(8, 12)),
-                    *((cast(list[DataWord], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(12, 16))
+                    *((cast(list[Word], [HighZ, HighZ, HighZ, HighZ])[i % 4], (1 + i) * 1e-9) for i in range(0, 4)),
+                    *((cast(list[Word], [b'\xe5', b'\x1a', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(4, 8)),
+                    *((cast(list[Word], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(8, 12)),
+                    *((cast(list[Word], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(12, 16))
                 ],
                 [
-                    *((cast(list[DataWord], [b'\xe5', b'\x1a', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(0, 4)),
-                    *((cast(list[DataWord], [HighZ, HighZ, HighZ, HighZ])[i % 4], (1 + i) * 1e-9) for i in range(4, 8)),
-                    *((cast(list[DataWord], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(8, 12)),
-                    *((cast(list[DataWord], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(12, 16))
+                    *((cast(list[Word], [b'\xe5', b'\x1a', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(0, 4)),
+                    *((cast(list[Word], [HighZ, HighZ, HighZ, HighZ])[i % 4], (1 + i) * 1e-9) for i in range(4, 8)),
+                    *((cast(list[Word], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(8, 12)),
+                    *((cast(list[Word], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(12, 16))
                 ]
             ]
         }
@@ -121,42 +121,42 @@ _test_data: list[tuple[int, list[list[tuple[DataWord, float]]], dict[type, list[
     (
         33,
         [
-            [(cast(list[DataWord], [b'\x01\x55\x55\xaa\xaa', b'\x00\xaa\xaa\x55\x55', HighZ, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(16)],
-            [(cast(list[DataWord], [b'\x00', b'\x01', HighZ, Unknown])[i % 4], (1 + 4 * i) * 1e-9) for i in range(4)]
+            [(cast(list[Word], [b'\x01\x55\x55\xaa\xaa', b'\x00\xaa\xaa\x55\x55', HighZ, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(16)],
+            [(cast(list[Word], [b'\x00', b'\x01', HighZ, Unknown])[i % 4], (1 + 4 * i) * 1e-9) for i in range(4)]
         ],
         {
             Buffer: [
-                [(cast(list[DataWord], [b'\x01\x55\x55\xaa\xaa', b'\x00\xaa\xaa\x55\x55', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(16)],
+                [(cast(list[Word], [b'\x01\x55\x55\xaa\xaa', b'\x00\xaa\xaa\x55\x55', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(16)],
             ],
             Inverter: [
-                [(cast(list[DataWord], [b'\x00\xaa\xaa\x55\x55', b'\x01\x55\x55\xaa\xaa', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(16)],
+                [(cast(list[Word], [b'\x00\xaa\xaa\x55\x55', b'\x01\x55\x55\xaa\xaa', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(16)],
             ],
             TriStateBuffer: [
                 [
-                    *((cast(list[DataWord], [HighZ, HighZ, HighZ, HighZ])[i % 4], (1 + i) * 1e-9) for i in range(0, 4)),
-                    *((cast(list[DataWord], [b'\x01\x55\x55\xaa\xaa', b'\x00\xaa\xaa\x55\x55', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(4, 8)),
-                    *((cast(list[DataWord], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(8, 12)),
-                    *((cast(list[DataWord], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(12, 16))
+                    *((cast(list[Word], [HighZ, HighZ, HighZ, HighZ])[i % 4], (1 + i) * 1e-9) for i in range(0, 4)),
+                    *((cast(list[Word], [b'\x01\x55\x55\xaa\xaa', b'\x00\xaa\xaa\x55\x55', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(4, 8)),
+                    *((cast(list[Word], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(8, 12)),
+                    *((cast(list[Word], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(12, 16))
                 ],
                 [
-                    *((cast(list[DataWord], [b'\x01\x55\x55\xaa\xaa', b'\x00\xaa\xaa\x55\x55', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(0, 4)),
-                    *((cast(list[DataWord], [HighZ, HighZ, HighZ, HighZ])[i % 4], (1 + i) * 1e-9) for i in range(4, 8)),
-                    *((cast(list[DataWord], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(8, 12)),
-                    *((cast(list[DataWord], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(12, 16))
+                    *((cast(list[Word], [b'\x01\x55\x55\xaa\xaa', b'\x00\xaa\xaa\x55\x55', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(0, 4)),
+                    *((cast(list[Word], [HighZ, HighZ, HighZ, HighZ])[i % 4], (1 + i) * 1e-9) for i in range(4, 8)),
+                    *((cast(list[Word], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(8, 12)),
+                    *((cast(list[Word], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(12, 16))
                 ]
             ],
             TriStateInverter: [
                 [
-                    *((cast(list[DataWord], [HighZ, HighZ, HighZ, HighZ])[i % 4], (1 + i) * 1e-9) for i in range(0, 4)),
-                    *((cast(list[DataWord], [b'\x00\xaa\xaa\x55\x55', b'\x01\x55\x55\xaa\xaa', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(4, 8)),
-                    *((cast(list[DataWord], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(8, 12)),
-                    *((cast(list[DataWord], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(12, 16))
+                    *((cast(list[Word], [HighZ, HighZ, HighZ, HighZ])[i % 4], (1 + i) * 1e-9) for i in range(0, 4)),
+                    *((cast(list[Word], [b'\x00\xaa\xaa\x55\x55', b'\x01\x55\x55\xaa\xaa', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(4, 8)),
+                    *((cast(list[Word], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(8, 12)),
+                    *((cast(list[Word], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(12, 16))
                 ],
                 [
-                    *((cast(list[DataWord], [b'\x00\xaa\xaa\x55\x55', b'\x01\x55\x55\xaa\xaa', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(0, 4)),
-                    *((cast(list[DataWord], [HighZ, HighZ, HighZ, HighZ])[i % 4], (1 + i) * 1e-9) for i in range(4, 8)),
-                    *((cast(list[DataWord], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(8, 12)),
-                    *((cast(list[DataWord], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(12, 16))
+                    *((cast(list[Word], [b'\x00\xaa\xaa\x55\x55', b'\x01\x55\x55\xaa\xaa', Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(0, 4)),
+                    *((cast(list[Word], [HighZ, HighZ, HighZ, HighZ])[i % 4], (1 + i) * 1e-9) for i in range(4, 8)),
+                    *((cast(list[Word], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(8, 12)),
+                    *((cast(list[Word], [Unknown, Unknown, Unknown, Unknown])[i % 4], (1 + i) * 1e-9) for i in range(12, 16))
                 ]
             ]
         }
@@ -176,12 +176,12 @@ def test_Buffer() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([ti, to, dev])
         sim.start(show_time=True)
-        a: list[tuple[DataWord, float]] = t[2][Buffer][0]
-        r: list[tuple[DataWord, float]] = [a[i] for i in range(len(a)) if i == 0 or a[i][0] != a[i - 1][0]]
-        assert len(po.data) == len(r)
-        for o, q in zip(po.data, r):
-            assert o[0] == q[0]
-            assert abs(o[1] - q[1]) <= _EPS
+        a: list[tuple[Word, float]] = t[2][Buffer][0]
+        r: list[tuple[Word, float]] = [a[i] for i in range(len(a)) if i == 0 or a[i][0] != a[i - 1][0]]
+        assert len(po.signals) == len(r)
+        for o, q in zip(po.signals, r):
+            assert o.word == q[0]
+            assert abs(o.time - q[1]) <= _EPS
 
 
 def test_Inverter() -> None:
@@ -196,12 +196,12 @@ def test_Inverter() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([ti, to, dev])
         sim.start(show_time=True)
-        a: list[tuple[DataWord, float]] = t[2][Inverter][0]
-        r: list[tuple[DataWord, float]] = [a[i] for i in range(len(a)) if i == 0 or a[i][0] != a[i - 1][0]]
-        assert len(po.data) == len(r)
-        for o, q in zip(po.data, r):
-            assert o[0] == q[0]
-            assert abs(o[1] - q[1]) <= _EPS
+        a: list[tuple[Word, float]] = t[2][Inverter][0]
+        r: list[tuple[Word, float]] = [a[i] for i in range(len(a)) if i == 0 or a[i][0] != a[i - 1][0]]
+        assert len(po.signals) == len(r)
+        for o, q in zip(po.signals, r):
+            assert o.word == q[0]
+            assert abs(o.time - q[1]) <= _EPS
 
 
 def test_TriStateBuffer() -> None:
@@ -218,12 +218,12 @@ def test_TriStateBuffer() -> None:
             dev.port_o.add_probe(po)
             sim: Simulator = Simulator([*ti, to, dev])
             sim.start(show_time=True)
-            a: list[tuple[DataWord, float]] = t[2][TriStateBuffer][j]
-            r: list[tuple[DataWord, float]] = [a[i] for i in range(len(a)) if i == 0 or a[i][0] != a[i - 1][0]]
-            assert len(po.data) == len(r)
-            for o, q in zip(po.data, r):
-                assert o[0] == q[0]
-                assert abs(o[1] - q[1]) <= _EPS
+            a: list[tuple[Word, float]] = t[2][TriStateBuffer][j]
+            r: list[tuple[Word, float]] = [a[i] for i in range(len(a)) if i == 0 or a[i][0] != a[i - 1][0]]
+            assert len(po.signals) == len(r)
+            for o, q in zip(po.signals, r):
+                assert o.word == q[0]
+                assert abs(o.time - q[1]) <= _EPS
 
 
 def test_TriStateInverter() -> None:
@@ -240,9 +240,9 @@ def test_TriStateInverter() -> None:
             dev.port_o.add_probe(po)
             sim: Simulator = Simulator([*ti, to, dev])
             sim.start(show_time=True)
-            a: list[tuple[DataWord, float]] = t[2][TriStateInverter][j]
-            r: list[tuple[DataWord, float]] = [a[i] for i in range(len(a)) if i == 0 or a[i][0] != a[i - 1][0]]
-            assert len(po.data) == len(r)
-            for o, q in zip(po.data, r):
-                assert o[0] == q[0]
-                assert abs(o[1] - q[1]) <= _EPS
+            a: list[tuple[Word, float]] = t[2][TriStateInverter][j]
+            r: list[tuple[Word, float]] = [a[i] for i in range(len(a)) if i == 0 or a[i][0] != a[i - 1][0]]
+            assert len(po.signals) == len(r)
+            for o, q in zip(po.signals, r):
+                assert o.word == q[0]
+                assert abs(o.time - q[1]) <= _EPS

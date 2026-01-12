@@ -23,7 +23,7 @@
 from typing import cast
 
 from simuhw import (
-    DataWord, Unknown, Source, Drain,
+    Word, Unknown, Source, Drain,
     LeftShifter, RightShifter, ArithmeticRightShifter, LeftRotator, RightRotator,
     SIMD_LeftShifter, SIMD_RightShifter, SIMD_ArithmeticRightShifter, SIMD_LeftRotator, SIMD_RightRotator,
     ChannelProbe, Simulator
@@ -32,17 +32,17 @@ from simuhw import (
 _EPS: float = 1e-18
 
 
-_test_data: list[tuple[int, list[list[tuple[DataWord, float]]], dict[type, list[tuple[DataWord, float]]]]] = [
+_test_data: list[tuple[int, list[list[tuple[Word, float]]], dict[type, list[tuple[Word, float]]]]] = [
     (
         2,
         [
             [
-                (cast(list[DataWord], [
+                (cast(list[Word], [
                     b'\x00', b'\x01', b'\x02', b'\x03', Unknown
                 ])[i % 5], (1 + 5 * i) * 1e-9) for i in range(5)
             ],
             [
-                (cast(list[DataWord], [
+                (cast(list[Word], [
                     b'\x00', b'\x01', b'\x02', b'\x03', Unknown
                 ])[i % 5], (1 + i) * 1e-9) for i in range(25)
             ]
@@ -84,12 +84,12 @@ _test_data: list[tuple[int, list[list[tuple[DataWord, float]]], dict[type, list[
         8,
         [
             [
-                (cast(list[DataWord], [
+                (cast(list[Word], [
                     b'\x00', b'\x01', b'\xb9', b'\x80', b'\xff', Unknown
                 ])[i % 6], (1 + 8 * i) * 1e-9) for i in range(6)
             ],
             [
-                (cast(list[DataWord], [
+                (cast(list[Word], [
                     b'\x00', b'\x01', b'\x02', b'\x06', b'\x07', b'\x08', b'\x09', Unknown
                 ])[i % 8], (1 + i) * 1e-9) for i in range(48)
             ]
@@ -137,7 +137,7 @@ _test_data: list[tuple[int, list[list[tuple[DataWord, float]]], dict[type, list[
         [
             [
                 (
-                    cast(list[DataWord], [
+                    cast(list[Word], [
                         b'\x00\x00\x00\x00\x00', b'\x00\x00\x00\x00\x01', b'\x01\xb6\xf3\x8c\x29', b'\x01\x00\x00\x00\x00', b'\x01\xff\xff\xff\xff', Unknown
                     ])[i % 6],
                     (1 + 8 * i) * 1e-9
@@ -145,7 +145,7 @@ _test_data: list[tuple[int, list[list[tuple[DataWord, float]]], dict[type, list[
             ],
             [
                 (
-                    cast(list[DataWord], [
+                    cast(list[Word], [
                         b'\x00\x00\x00\x00\x00', b'\x00\x00\x00\x00\x01', b'\x00\x00\x00\x00\x02', b'\x00\x00\x00\x00\x1f',
                         b'\x00\x00\x00\x00\x20', b'\x00\x00\x00\x00\x21', b'\x00\x00\x00\x00\x22', Unknown
                     ])[i % 8], (1 + i) * 1e-9
@@ -220,11 +220,11 @@ def test_LeftShifter() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[DataWord, float]] = t[2][LeftShifter]
-        assert len(po.data) == len(r)
-        for o, q in zip(po.data, r):
-            assert o[0] == q[0]
-            assert abs(o[1] - q[1]) <= _EPS
+        r: list[tuple[Word, float]] = t[2][LeftShifter]
+        assert len(po.signals) == len(r)
+        for o, q in zip(po.signals, r):
+            assert o.word == q[0]
+            assert abs(o.time - q[1]) <= _EPS
 
 
 def test_RightShifter() -> None:
@@ -240,11 +240,11 @@ def test_RightShifter() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[DataWord, float]] = t[2][RightShifter]
-        assert len(po.data) == len(r)
-        for o, q in zip(po.data, r):
-            assert o[0] == q[0]
-            assert abs(o[1] - q[1]) <= _EPS
+        r: list[tuple[Word, float]] = t[2][RightShifter]
+        assert len(po.signals) == len(r)
+        for o, q in zip(po.signals, r):
+            assert o.word == q[0]
+            assert abs(o.time - q[1]) <= _EPS
 
 
 def test_ArithmeticRightShifter() -> None:
@@ -260,11 +260,11 @@ def test_ArithmeticRightShifter() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[DataWord, float]] = t[2][ArithmeticRightShifter]
-        assert len(po.data) == len(r)
-        for o, q in zip(po.data, r):
-            assert o[0] == q[0]
-            assert abs(o[1] - q[1]) <= _EPS
+        r: list[tuple[Word, float]] = t[2][ArithmeticRightShifter]
+        assert len(po.signals) == len(r)
+        for o, q in zip(po.signals, r):
+            assert o.word == q[0]
+            assert abs(o.time - q[1]) <= _EPS
 
 
 def test_LeftRotator() -> None:
@@ -280,11 +280,11 @@ def test_LeftRotator() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[DataWord, float]] = t[2][LeftRotator]
-        assert len(po.data) == len(r)
-        for o, q in zip(po.data, r):
-            assert o[0] == q[0]
-            assert abs(o[1] - q[1]) <= _EPS
+        r: list[tuple[Word, float]] = t[2][LeftRotator]
+        assert len(po.signals) == len(r)
+        for o, q in zip(po.signals, r):
+            assert o.word == q[0]
+            assert abs(o.time - q[1]) <= _EPS
 
 
 def test_RightRotator() -> None:
@@ -300,15 +300,15 @@ def test_RightRotator() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[DataWord, float]] = t[2][RightRotator]
-        assert len(po.data) == len(r)
-        for o, q in zip(po.data, r):
-            assert o[0] == q[0]
-            assert abs(o[1] - q[1]) <= _EPS
+        r: list[tuple[Word, float]] = t[2][RightRotator]
+        assert len(po.signals) == len(r)
+        for o, q in zip(po.signals, r):
+            assert o.word == q[0]
+            assert abs(o.time - q[1]) <= _EPS
 
 
 def test_SIMD_LeftShifter() -> None:
-    test_data: list[tuple[list[int], list[int], list[list[tuple[DataWord, float]]], list[tuple[DataWord, float]]]] = [
+    test_data: list[tuple[list[int], list[int], list[list[tuple[Word, float]]], list[tuple[Word, float]]]] = [
         (
             [32, 2],
             [4, 8, 16, 32],
@@ -317,12 +317,12 @@ def test_SIMD_LeftShifter() -> None:
                     (b'\xf6\xc7\x42\x21', 5e-9), (Unknown, 15e-9)
                 ],
                 [
-                    (cast(list[DataWord], [
+                    (cast(list[Word], [
                         Unknown, b'\x01\x23\x45\x67', b'\x08\x01\x06\x07', b'\x00\x03\x00\x0f', b'\x00\x00\x00\x11'
                     ])[i % 5], 1e-9 * (10 + i)) for i in range(10)
                 ],
                 [
-                    (cast(list[DataWord], [
+                    (cast(list[Word], [
                         Unknown, b'\x00', b'\x01', b'\x02', b'\x03'
                     ])[i % 5], 1e-9 * i) for i in range(20)
                 ]
@@ -347,15 +347,15 @@ def test_SIMD_LeftShifter() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[DataWord, float]] = t[3]
-        assert len(po.data) == len(r)
-        for o, q in zip(po.data, r):
-            assert o[0] == q[0]
-            assert abs(o[1] - q[1]) <= _EPS
+        r: list[tuple[Word, float]] = t[3]
+        assert len(po.signals) == len(r)
+        for o, q in zip(po.signals, r):
+            assert o.word == q[0]
+            assert abs(o.time - q[1]) <= _EPS
 
 
 def test_SIMD_RightShifter() -> None:
-    test_data: list[tuple[list[int], list[int], list[list[tuple[DataWord, float]]], list[tuple[DataWord, float]]]] = [
+    test_data: list[tuple[list[int], list[int], list[list[tuple[Word, float]]], list[tuple[Word, float]]]] = [
         (
             [32, 2],
             [4, 8, 16, 32],
@@ -364,12 +364,12 @@ def test_SIMD_RightShifter() -> None:
                     (b'\xf6\xc7\x42\x21', 5e-9), (Unknown, 15e-9)
                 ],
                 [
-                    (cast(list[DataWord], [
+                    (cast(list[Word], [
                         Unknown, b'\x01\x23\x45\x67', b'\x08\x01\x06\x07', b'\x00\x03\x00\x0f', b'\x00\x00\x00\x11'
                     ])[i % 5], 1e-9 * (10 + i)) for i in range(10)
                 ],
                 [
-                    (cast(list[DataWord], [
+                    (cast(list[Word], [
                         Unknown, b'\x00', b'\x01', b'\x02', b'\x03'
                     ])[i % 5], 1e-9 * i) for i in range(20)
                 ]
@@ -394,15 +394,15 @@ def test_SIMD_RightShifter() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[DataWord, float]] = t[3]
-        assert len(po.data) == len(r)
-        for o, q in zip(po.data, r):
-            assert o[0] == q[0]
-            assert abs(o[1] - q[1]) <= _EPS
+        r: list[tuple[Word, float]] = t[3]
+        assert len(po.signals) == len(r)
+        for o, q in zip(po.signals, r):
+            assert o.word == q[0]
+            assert abs(o.time - q[1]) <= _EPS
 
 
 def test_SIMD_ArithmeticRightShifter() -> None:
-    test_data: list[tuple[list[int], list[int], list[list[tuple[DataWord, float]]], list[tuple[DataWord, float]]]] = [
+    test_data: list[tuple[list[int], list[int], list[list[tuple[Word, float]]], list[tuple[Word, float]]]] = [
         (
             [32, 2],
             [4, 8, 16, 32],
@@ -411,12 +411,12 @@ def test_SIMD_ArithmeticRightShifter() -> None:
                     (b'\xf6\xc7\x42\x21', 5e-9), (Unknown, 15e-9)
                 ],
                 [
-                    (cast(list[DataWord], [
+                    (cast(list[Word], [
                         Unknown, b'\x01\x23\x45\x67', b'\x08\x01\x06\x07', b'\x00\x03\x00\x0f', b'\x00\x00\x00\x11'
                     ])[i % 5], 1e-9 * (10 + i)) for i in range(10)
                 ],
                 [
-                    (cast(list[DataWord], [
+                    (cast(list[Word], [
                         Unknown, b'\x00', b'\x01', b'\x02', b'\x03'
                     ])[i % 5], 1e-9 * i) for i in range(20)
                 ]
@@ -441,15 +441,15 @@ def test_SIMD_ArithmeticRightShifter() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[DataWord, float]] = t[3]
-        assert len(po.data) == len(r)
-        for o, q in zip(po.data, r):
-            assert o[0] == q[0]
-            assert abs(o[1] - q[1]) <= _EPS
+        r: list[tuple[Word, float]] = t[3]
+        assert len(po.signals) == len(r)
+        for o, q in zip(po.signals, r):
+            assert o.word == q[0]
+            assert abs(o.time - q[1]) <= _EPS
 
 
 def test_SIMD_LeftRotator() -> None:
-    test_data: list[tuple[list[int], list[int], list[list[tuple[DataWord, float]]], list[tuple[DataWord, float]]]] = [
+    test_data: list[tuple[list[int], list[int], list[list[tuple[Word, float]]], list[tuple[Word, float]]]] = [
         (
             [32, 2],
             [4, 8, 16, 32],
@@ -458,12 +458,12 @@ def test_SIMD_LeftRotator() -> None:
                     (b'\xf6\xc7\x42\x21', 5e-9), (Unknown, 15e-9)
                 ],
                 [
-                    (cast(list[DataWord], [
+                    (cast(list[Word], [
                         Unknown, b'\x01\x23\x45\x67', b'\x08\x01\x06\x07', b'\x00\x03\x00\x0f', b'\x00\x00\x00\x11'
                     ])[i % 5], 1e-9 * (10 + i)) for i in range(10)
                 ],
                 [
-                    (cast(list[DataWord], [
+                    (cast(list[Word], [
                         Unknown, b'\x00', b'\x01', b'\x02', b'\x03'
                     ])[i % 5], 1e-9 * i) for i in range(20)
                 ]
@@ -488,15 +488,15 @@ def test_SIMD_LeftRotator() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[DataWord, float]] = t[3]
-        assert len(po.data) == len(r)
-        for o, q in zip(po.data, r):
-            assert o[0] == q[0]
-            assert abs(o[1] - q[1]) <= _EPS
+        r: list[tuple[Word, float]] = t[3]
+        assert len(po.signals) == len(r)
+        for o, q in zip(po.signals, r):
+            assert o.word == q[0]
+            assert abs(o.time - q[1]) <= _EPS
 
 
 def test_SIMD_RightRotator() -> None:
-    test_data: list[tuple[list[int], list[int], list[list[tuple[DataWord, float]]], list[tuple[DataWord, float]]]] = [
+    test_data: list[tuple[list[int], list[int], list[list[tuple[Word, float]]], list[tuple[Word, float]]]] = [
         (
             [32, 2],
             [4, 8, 16, 32],
@@ -505,12 +505,12 @@ def test_SIMD_RightRotator() -> None:
                     (b'\xf6\xc7\x42\x21', 5e-9), (Unknown, 15e-9)
                 ],
                 [
-                    (cast(list[DataWord], [
+                    (cast(list[Word], [
                         Unknown, b'\x01\x23\x45\x67', b'\x08\x01\x06\x07', b'\x00\x03\x00\x0f', b'\x00\x00\x00\x11'
                     ])[i % 5], 1e-9 * (10 + i)) for i in range(10)
                 ],
                 [
-                    (cast(list[DataWord], [
+                    (cast(list[Word], [
                         Unknown, b'\x00', b'\x01', b'\x02', b'\x03'
                     ])[i % 5], 1e-9 * i) for i in range(20)
                 ]
@@ -535,8 +535,8 @@ def test_SIMD_RightRotator() -> None:
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
-        r: list[tuple[DataWord, float]] = t[3]
-        assert len(po.data) == len(r)
-        for o, q in zip(po.data, r):
-            assert o[0] == q[0]
-            assert abs(o[1] - q[1]) <= _EPS
+        r: list[tuple[Word, float]] = t[3]
+        assert len(po.signals) == len(r)
+        for o, q in zip(po.signals, r):
+            assert o.word == q[0]
+            assert abs(o.time - q[1]) <= _EPS

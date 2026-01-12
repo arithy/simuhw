@@ -57,7 +57,7 @@ import simuhw as hw
       - [`LogicLowSource`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.LogicLowSource)
       - [`LogicHighSource`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.LogicHighSource)
       - [`LogicUnknownSource`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.LogicUnknownSource)
-      - [`LogicHighZSource`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.LogicHighZSource)
+      - [`HighZSource`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.HighZSource)
       - [`Drain`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.Drain)
       - [`Delay`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.Delay)
       - [`Group`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.Group)
@@ -66,11 +66,11 @@ import simuhw as hw
     - Channel
       - [`Channel`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.Channel)
     - Branch
-      - [`DataCombiner`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.DataCombiner)
-      - [`DataSplitter`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.DataSplitter)
+      - [`WordCombiner`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.WordCombiner)
+      - [`WordSplitter`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.WordSplitter)
       - [`Multiplexer`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.Multiplexer)
       - [`Demultiplexer`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.Demultiplexer)
-      - [`DataRetainDemultiplexer`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.DataRetainDemultiplexer)
+      - [`WordRetainDemultiplexer`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.WordRetainDemultiplexer)
       - [`Junction`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.Junction)
       - [`Distributor`](https://arithy.github.io/simuhw/apidoc/simuhw.html#simuhw.Distributor)
     - Elementary Combinational Circuit

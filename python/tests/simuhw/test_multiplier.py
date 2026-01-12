@@ -23,7 +23,7 @@
 from typing import cast
 
 from simuhw import (
-    DataWord, Unknown, Source, Drain,
+    Word, Unknown, Source, Drain,
     Multiplier, SignedMultiplier, SIMD_Multiplier, SIMD_SignedMultiplier,
     ChannelProbe, Simulator
 )
@@ -31,7 +31,7 @@ from simuhw import (
 _EPS: float = 1e-18
 
 
-_test_data: list[tuple[int, list[list[tuple[DataWord, float]]], list[list[list[tuple[DataWord, float]]]]]] = [
+_test_data: list[tuple[int, list[list[tuple[Word, float]]], list[list[list[tuple[Word, float]]]]]] = [
     (
         1,
         [
@@ -140,10 +140,10 @@ def test_Multiplier() -> None:
         sim: Simulator = Simulator([*ti, *to, dev])
         sim.start(show_time=True)
         for p, r in zip(po, t[2][0]):
-            assert len(p.data) == len(r)
-            for o, q in zip(p.data, r):
-                assert o[0] == q[0]
-                assert abs(o[1] - q[1]) <= _EPS
+            assert len(p.signals) == len(r)
+            for o, q in zip(p.signals, r):
+                assert o.word == q[0]
+                assert abs(o.time - q[1]) <= _EPS
 
 
 def test_SignedMultiplier() -> None:
@@ -162,14 +162,14 @@ def test_SignedMultiplier() -> None:
         sim: Simulator = Simulator([*ti, *to, dev])
         sim.start(show_time=True)
         for p, r in zip(po, t[2][1]):
-            assert len(p.data) == len(r)
-            for o, q in zip(p.data, r):
-                assert o[0] == q[0]
-                assert abs(o[1] - q[1]) <= _EPS
+            assert len(p.signals) == len(r)
+            for o, q in zip(p.signals, r):
+                assert o.word == q[0]
+                assert abs(o.time - q[1]) <= _EPS
 
 
 def test_SIMD_Multiplier() -> None:
-    test_data: list[tuple[list[int], list[int], list[list[tuple[DataWord, float]]], list[list[tuple[DataWord, float]]]]] = [
+    test_data: list[tuple[list[int], list[int], list[list[tuple[Word, float]]], list[list[tuple[Word, float]]]]] = [
         (
             [32, 2],
             [4, 8, 16, 32],
@@ -181,7 +181,7 @@ def test_SIMD_Multiplier() -> None:
                     (b'\x01\x02\x02\x01', 10e-9)
                 ],
                 [
-                    (cast(list[DataWord], [Unknown, b'\x00', b'\x01', b'\x02', b'\x03'])[i % 5], 1e-9 * i) for i in range(20)
+                    (cast(list[Word], [Unknown, b'\x00', b'\x01', b'\x02', b'\x03'])[i % 5], 1e-9 * i) for i in range(20)
                 ]
             ],
             [
@@ -213,14 +213,14 @@ def test_SIMD_Multiplier() -> None:
         sim: Simulator = Simulator([*ti, *to, dev])
         sim.start(show_time=True)
         for p, r in zip(po, t[3]):
-            assert len(p.data) == len(r)
-            for o, q in zip(p.data, r):
-                assert o[0] == q[0]
-                assert abs(o[1] - q[1]) <= _EPS
+            assert len(p.signals) == len(r)
+            for o, q in zip(p.signals, r):
+                assert o.word == q[0]
+                assert abs(o.time - q[1]) <= _EPS
 
 
 def test_SIMD_SignedMultiplier() -> None:
-    test_data: list[tuple[list[int], list[int], list[list[tuple[DataWord, float]]], list[list[tuple[DataWord, float]]]]] = [
+    test_data: list[tuple[list[int], list[int], list[list[tuple[Word, float]]], list[list[tuple[Word, float]]]]] = [
         (
             [32, 2],
             [4, 8, 16, 32],
@@ -232,7 +232,7 @@ def test_SIMD_SignedMultiplier() -> None:
                     (b'\x01\x02\x03\x02', 10e-9)
                 ],
                 [
-                    (cast(list[DataWord], [Unknown, b'\x00', b'\x01', b'\x02', b'\x03'])[i % 5], 1e-9 * i) for i in range(20)
+                    (cast(list[Word], [Unknown, b'\x00', b'\x01', b'\x02', b'\x03'])[i % 5], 1e-9 * i) for i in range(20)
                 ]
             ],
             [
@@ -264,7 +264,7 @@ def test_SIMD_SignedMultiplier() -> None:
         sim: Simulator = Simulator([*ti, *to, dev])
         sim.start(show_time=True)
         for p, r in zip(po, t[3]):
-            assert len(p.data) == len(r)
-            for o, q in zip(p.data, r):
-                assert o[0] == q[0]
-                assert abs(o[1] - q[1]) <= _EPS
+            assert len(p.signals) == len(r)
+            for o, q in zip(p.signals, r):
+                assert o.word == q[0]
+                assert abs(o.time - q[1]) <= _EPS

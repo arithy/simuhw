@@ -22,7 +22,7 @@
 
 import math
 
-from simuhw import DataWord, Unknown, Source, Drain, ChannelProbe, Simulator
+from simuhw import Word, Unknown, Source, Drain, ChannelProbe, Simulator
 from simuhw.counter import SynchronousBinaryCounter74161, SynchronousBinaryCounter74163
 
 _EPS: float = 1e-18
@@ -47,7 +47,7 @@ _S_END: int = _S_CLR_1_H + _S_CYCLE * 4
 
 
 def test_SynchronousBinaryCounter74161() -> None:
-    test_data: list[tuple[int, list[list[tuple[DataWord, float]]], list[list[tuple[DataWord, float]]]]] = [
+    test_data: list[tuple[int, list[list[tuple[Word, float]]], list[list[tuple[Word, float]]]]] = [
         (
             1,
             [
@@ -297,14 +297,14 @@ def test_SynchronousBinaryCounter74161() -> None:
         sim: Simulator = Simulator([*ti, *to, dev])
         sim.start(show_time=True)
         for p, r in zip(po, t[2]):
-            assert len(p.data) == len(r)
-            for o, q in zip(p.data, r):
-                assert o[0] == q[0]
-                assert abs(o[1] - q[1]) <= _EPS
+            assert len(p.signals) == len(r)
+            for o, q in zip(p.signals, r):
+                assert o.word == q[0]
+                assert abs(o.time - q[1]) <= _EPS
 
 
 def test_SynchronousBinaryCounter74163() -> None:
-    test_data: list[tuple[int, list[list[tuple[DataWord, float]]], list[list[tuple[DataWord, float]]]]] = [
+    test_data: list[tuple[int, list[list[tuple[Word, float]]], list[list[tuple[Word, float]]]]] = [
         (
             1,
             [
@@ -554,7 +554,7 @@ def test_SynchronousBinaryCounter74163() -> None:
         sim: Simulator = Simulator([*ti, *to, dev])
         sim.start(show_time=True)
         for p, r in zip(po, t[2]):
-            assert len(p.data) == len(r)
-            for o, q in zip(p.data, r):
-                assert o[0] == q[0]
-                assert abs(o[1] - q[1]) <= _EPS
+            assert len(p.signals) == len(r)
+            for o, q in zip(p.signals, r):
+                assert o.word == q[0]
+                assert abs(o.time - q[1]) <= _EPS
