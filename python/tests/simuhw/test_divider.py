@@ -150,19 +150,18 @@ def test_Divider() -> None:
         ti: list[Source] = [Source(w, d) for d in t[1]]
         to: list[Drain] = [Drain(w), Drain(1)]
         dev: Divider = Divider(w)
-        dev.port_o.connect(to[0].port_i)
-        dev.port_e.connect(to[1].port_i)
-        for i in range(2):
-            ti[i].port_o.connect(dev.ports_i[i])
-        dev.port_o.add_probe(po[0])
-        dev.port_e.add_probe(po[1])
+        for i, p in enumerate(dev.ports_i):
+            ti[i].port_o.connect(p)
+        for i, q in enumerate([dev.port_o, dev.port_e]):
+            q.connect(to[i].port_i)
+            q.add_probe(po[i])
         sim: Simulator = Simulator([*ti, *to, dev])
         sim.start(show_time=True)
-        for p, r in zip(po, t[2][0]):
-            assert len(p) == len(r)
-            for o, q in zip(p, r):
-                assert o.word == q[0]
-                assert abs(o.time - q[1]) <= _EPS
+        for ro, rp in zip(po, t[2][0]):
+            assert len(ro) == len(rp)
+            for ru, rv in zip(ro, rp):
+                assert ru.word == rv[0]
+                assert abs(ru.time - rv[1]) <= _EPS
 
 
 def test_SignedDivider() -> None:
@@ -172,19 +171,18 @@ def test_SignedDivider() -> None:
         ti: list[Source] = [Source(w, d) for d in t[1]]
         to: list[Drain] = [Drain(w), Drain(1)]
         dev: SignedDivider = SignedDivider(w)
-        dev.port_o.connect(to[0].port_i)
-        dev.port_e.connect(to[1].port_i)
-        for i in range(2):
-            ti[i].port_o.connect(dev.ports_i[i])
-        dev.port_o.add_probe(po[0])
-        dev.port_e.add_probe(po[1])
+        for i, p in enumerate(dev.ports_i):
+            ti[i].port_o.connect(p)
+        for i, q in enumerate([dev.port_o, dev.port_e]):
+            q.connect(to[i].port_i)
+            q.add_probe(po[i])
         sim: Simulator = Simulator([*ti, *to, dev])
         sim.start(show_time=True)
-        for p, r in zip(po, t[2][1]):
-            assert len(p) == len(r)
-            for o, q in zip(p, r):
-                assert o.word == q[0]
-                assert abs(o.time - q[1]) <= _EPS
+        for ro, rp in zip(po, t[2][1]):
+            assert len(ro) == len(rp)
+            for ru, rv in zip(ro, rp):
+                assert ru.word == rv[0]
+                assert abs(ru.time - rv[1]) <= _EPS
 
 
 def test_SIMD_Divider() -> None:
@@ -222,20 +220,18 @@ def test_SIMD_Divider() -> None:
         ti: list[Source] = [Source(u, d) for u, d in zip([w, w, s], t[2])]
         to: list[Drain] = [Drain(w), Drain(1)]
         dev: SIMD_Divider = SIMD_Divider(w, t[1])
-        dev.port_o.connect(to[0].port_i)
-        dev.port_e.connect(to[1].port_i)
-        ti[0].port_o.connect(dev.ports_i[0])
-        ti[1].port_o.connect(dev.ports_i[1])
-        ti[2].port_o.connect(dev.port_s)
-        dev.port_o.add_probe(po[0])
-        dev.port_e.add_probe(po[1])
+        for i, p in enumerate([*dev.ports_i, dev.port_s]):
+            ti[i].port_o.connect(p)
+        for i, q in enumerate([dev.port_o, dev.port_e]):
+            q.connect(to[i].port_i)
+            q.add_probe(po[i])
         sim: Simulator = Simulator([*ti, *to, dev])
         sim.start(show_time=True)
-        for p, r in zip(po, t[3]):
-            assert len(p) == len(r)
-            for o, q in zip(p, r):
-                assert o.word == q[0]
-                assert abs(o.time - q[1]) <= _EPS
+        for ro, rp in zip(po, t[3]):
+            assert len(ro) == len(rp)
+            for ru, rv in zip(ro, rp):
+                assert ru.word == rv[0]
+                assert abs(ru.time - rv[1]) <= _EPS
 
 
 def test_SIMD_SignedDivider() -> None:
@@ -273,17 +269,15 @@ def test_SIMD_SignedDivider() -> None:
         ti: list[Source] = [Source(u, d) for u, d in zip([w, w, s], t[2])]
         to: list[Drain] = [Drain(w), Drain(1)]
         dev: SIMD_SignedDivider = SIMD_SignedDivider(w, t[1])
-        dev.port_o.connect(to[0].port_i)
-        dev.port_e.connect(to[1].port_i)
-        ti[0].port_o.connect(dev.ports_i[0])
-        ti[1].port_o.connect(dev.ports_i[1])
-        ti[2].port_o.connect(dev.port_s)
-        dev.port_o.add_probe(po[0])
-        dev.port_e.add_probe(po[1])
+        for i, p in enumerate([*dev.ports_i, dev.port_s]):
+            ti[i].port_o.connect(p)
+        for i, q in enumerate([dev.port_o, dev.port_e]):
+            q.connect(to[i].port_i)
+            q.add_probe(po[i])
         sim: Simulator = Simulator([*ti, *to, dev])
         sim.start(show_time=True)
-        for p, r in zip(po, t[3]):
-            assert len(p) == len(r)
-            for o, q in zip(p, r):
-                assert o.word == q[0]
-                assert abs(o.time - q[1]) <= _EPS
+        for ro, rp in zip(po, t[3]):
+            assert len(ro) == len(rp)
+            for ru, rv in zip(ro, rp):
+                assert ru.word == rv[0]
+                assert abs(ru.time - rv[1]) <= _EPS

@@ -221,18 +221,18 @@ def test_FPToIntegerRounder() -> None:
         ti: list[Source] = [Source(u, d) for u, d in zip(t[1], t[2])]
         to: list[Drain] = [Drain(w), Drain(hwf.FPToIntegerRounder.width_fe)]
         dev: hwf.FPToIntegerRounder = hwf.FPToIntegerRounder(f)
-        for i, u in enumerate([dev.port_o, dev.port_fe_o]):
-            u.connect(to[i].port_i)
-            u.add_probe(po[i])
-        for i, v in enumerate([*dev.ports_i, dev.port_ft, dev.port_fr, dev.port_fe_i]):
-            ti[i].port_o.connect(v)
+        for i, p in enumerate([*dev.ports_i, dev.port_ft, dev.port_fr, dev.port_fe_i]):
+            ti[i].port_o.connect(p)
+        for i, q in enumerate([dev.port_o, dev.port_fe_o]):
+            q.connect(to[i].port_i)
+            q.add_probe(po[i])
         sim: Simulator = Simulator([*ti, *to, dev])
         sim.start(show_time=True)
-        for p, r in zip(po, s):
-            assert len(p) == len(r)
-            for o, q in zip(p, r):
-                assert o.word == q[0]
-                assert abs(o.time - q[1]) <= _EPS
+        for ro, rp in zip(po, s):
+            assert len(ro) == len(rp)
+            for ru, rv in zip(ro, rp):
+                assert ru.word == rv[0]
+                assert abs(ru.time - rv[1]) <= _EPS
 
 
 @skipif_unavailable
@@ -421,15 +421,15 @@ def test_SIMD_FPToIntegerRounder() -> None:
         ti: list[Source] = [Source(u, d) for u, d in zip(t[0], t[2])]
         to: list[Drain] = [Drain(w), Drain(e)]
         dev: hwf.SIMD_FPToIntegerRounder = hwf.SIMD_FPToIntegerRounder(w, t[1])
-        for i, u in enumerate([dev.port_o, dev.port_fe_o]):
-            u.connect(to[i].port_i)
-            u.add_probe(po[i])
-        for i, v in enumerate([*dev.ports_i, dev.port_s, dev.port_ft, dev.port_fr, dev.port_fe_i]):
-            ti[i].port_o.connect(v)
+        for i, p in enumerate([*dev.ports_i, dev.port_s, dev.port_ft, dev.port_fr, dev.port_fe_i]):
+            ti[i].port_o.connect(p)
+        for i, q in enumerate([dev.port_o, dev.port_fe_o]):
+            q.connect(to[i].port_i)
+            q.add_probe(po[i])
         sim: Simulator = Simulator([*ti, *to, dev])
         sim.start(show_time=True)
-        for p, r in zip(po, s):
-            assert len(p) == len(r)
-            for o, q in zip(p, r):
-                assert o.word == q[0]
-                assert abs(o.time - q[1]) <= _EPS
+        for ro, rp in zip(po, s):
+            assert len(ro) == len(rp)
+            for ru, rv in zip(ro, rp):
+                assert ru.word == rv[0]
+                assert abs(ru.time - rv[1]) <= _EPS

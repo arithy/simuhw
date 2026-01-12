@@ -24,7 +24,7 @@ from functools import reduce
 
 from simuhw import Word, Source, Drain, ChannelProbe, Simulator
 import simuhw.fp as hwf
-import simuhw.fp.riscv as rv
+import simuhw.fp.riscv as riscv
 
 from ..skipif import skipif_unavailable
 from .. import skipif as sf
@@ -612,22 +612,22 @@ def test_FRec7() -> None:
     for t, s in zip(test_i, test_o):
         f: hwf.Float = t[0]
         w: int = f.size()
-        po: list[ChannelProbe] = [ChannelProbe('out', w), ChannelProbe('fe', rv.FRec7.width_fe)]
+        po: list[ChannelProbe] = [ChannelProbe('out', w), ChannelProbe('fe', riscv.FRec7.width_fe)]
         ti: list[Source] = [Source(u, d) for u, d in zip(t[1], t[2])]
-        to: list[Drain] = [Drain(w), Drain(rv.FRec7.width_fe)]
-        dev: rv.FRec7 = rv.FRec7(f)
-        for i, u in enumerate([dev.port_o, dev.port_fe_o]):
-            u.connect(to[i].port_i)
-            u.add_probe(po[i])
-        for i, v in enumerate([*dev.ports_i, dev.port_ft, dev.port_fr, dev.port_fe_i]):
-            ti[i].port_o.connect(v)
+        to: list[Drain] = [Drain(w), Drain(riscv.FRec7.width_fe)]
+        dev: riscv.FRec7 = riscv.FRec7(f)
+        for i, p in enumerate([*dev.ports_i, dev.port_ft, dev.port_fr, dev.port_fe_i]):
+            ti[i].port_o.connect(p)
+        for i, q in enumerate([dev.port_o, dev.port_fe_o]):
+            q.connect(to[i].port_i)
+            q.add_probe(po[i])
         sim: Simulator = Simulator([*ti, *to, dev])
         sim.start(show_time=True)
-        for p, r in zip(po, [[o[i] for i in range(len(o)) if i == 0 or o[i][0] != o[i - 1][0]] for o in s]):
-            assert len(p) == len(r)
-            for o, q in zip(p, r):
-                assert o.word == q[0]
-                assert abs(o.time - q[1]) <= _EPS
+        for ro, rp in zip(po, [[o[i] for i in range(len(o)) if i == 0 or o[i][0] != o[i - 1][0]] for o in s]):
+            assert len(ro) == len(rp)
+            for ru, rv in zip(ro, rp):
+                assert ru.word == rv[0]
+                assert abs(ru.time - rv[1]) <= _EPS
 
 
 @skipif_unavailable
@@ -696,19 +696,19 @@ def test_SIMD_FRec7() -> None:
         ]
     ]
     for t, s in zip(test_i, test_o):
-        po: list[ChannelProbe] = [ChannelProbe('out', test_w), ChannelProbe('fe', rv.SIMD_FRec7.width_fe)]
+        po: list[ChannelProbe] = [ChannelProbe('out', test_w), ChannelProbe('fe', riscv.SIMD_FRec7.width_fe)]
         ti: list[Source] = [Source(u, d) for u, d in zip(t[0], t[2])]
-        to: list[Drain] = [Drain(test_w), Drain(rv.SIMD_FRec7.width_fe)]
-        dev: rv.SIMD_FRec7 = rv.SIMD_FRec7(test_w, t[1])
-        for i, u in enumerate([dev.port_o, dev.port_fe_o]):
-            u.connect(to[i].port_i)
-            u.add_probe(po[i])
-        for i, v in enumerate([*dev.ports_i, dev.port_s, dev.port_ft, dev.port_fr, dev.port_fe_i]):
-            ti[i].port_o.connect(v)
+        to: list[Drain] = [Drain(test_w), Drain(riscv.SIMD_FRec7.width_fe)]
+        dev: riscv.SIMD_FRec7 = riscv.SIMD_FRec7(test_w, t[1])
+        for i, p in enumerate([*dev.ports_i, dev.port_s, dev.port_ft, dev.port_fr, dev.port_fe_i]):
+            ti[i].port_o.connect(p)
+        for i, q in enumerate([dev.port_o, dev.port_fe_o]):
+            q.connect(to[i].port_i)
+            q.add_probe(po[i])
         sim: Simulator = Simulator([*ti, *to, dev])
         sim.start(show_time=True)
-        for p, r in zip(po, [[o[i] for i in range(len(o)) if i == 0 or o[i][0] != o[i - 1][0]] for o in s]):
-            assert len(p) == len(r)
-            for o, q in zip(p, r):
-                assert o.word == q[0]
-                assert abs(o.time - q[1]) <= _EPS
+        for ro, rp in zip(po, [[o[i] for i in range(len(o)) if i == 0 or o[i][0] != o[i - 1][0]] for o in s]):
+            assert len(ro) == len(rp)
+            for ru, rv in zip(ro, rp):
+                assert ru.word == rv[0]
+                assert abs(ru.time - rv[1]) <= _EPS

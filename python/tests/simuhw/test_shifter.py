@@ -214,17 +214,17 @@ def test_LeftShifter() -> None:
         ti: list[Source] = [Source(w, d) for d in t[1]]
         to: Drain = Drain(w)
         dev: LeftShifter = LeftShifter(w)
+        for i, p in enumerate(dev.ports_i):
+            ti[i].port_o.connect(p)
         dev.port_o.connect(to.port_i)
-        for i in range(2):
-            ti[i].port_o.connect(dev.ports_i[i])
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[Word, float]] = t[2][LeftShifter]
         assert len(po) == len(r)
-        for o, q in zip(po, r):
-            assert o.word == q[0]
-            assert abs(o.time - q[1]) <= _EPS
+        for ru, rv in zip(po, r):
+            assert ru.word == rv[0]
+            assert abs(ru.time - rv[1]) <= _EPS
 
 
 def test_RightShifter() -> None:
@@ -234,17 +234,17 @@ def test_RightShifter() -> None:
         ti: list[Source] = [Source(w, d) for d in t[1]]
         to: Drain = Drain(w)
         dev: RightShifter = RightShifter(w)
+        for i, p in enumerate(dev.ports_i):
+            ti[i].port_o.connect(p)
         dev.port_o.connect(to.port_i)
-        for i in range(2):
-            ti[i].port_o.connect(dev.ports_i[i])
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[Word, float]] = t[2][RightShifter]
         assert len(po) == len(r)
-        for o, q in zip(po, r):
-            assert o.word == q[0]
-            assert abs(o.time - q[1]) <= _EPS
+        for ru, rv in zip(po, r):
+            assert ru.word == rv[0]
+            assert abs(ru.time - rv[1]) <= _EPS
 
 
 def test_ArithmeticRightShifter() -> None:
@@ -254,17 +254,17 @@ def test_ArithmeticRightShifter() -> None:
         ti: list[Source] = [Source(w, d) for d in t[1]]
         to: Drain = Drain(w)
         dev: ArithmeticRightShifter = ArithmeticRightShifter(w)
+        for i, p in enumerate(dev.ports_i):
+            ti[i].port_o.connect(p)
         dev.port_o.connect(to.port_i)
-        for i in range(2):
-            ti[i].port_o.connect(dev.ports_i[i])
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[Word, float]] = t[2][ArithmeticRightShifter]
         assert len(po) == len(r)
-        for o, q in zip(po, r):
-            assert o.word == q[0]
-            assert abs(o.time - q[1]) <= _EPS
+        for ru, rv in zip(po, r):
+            assert ru.word == rv[0]
+            assert abs(ru.time - rv[1]) <= _EPS
 
 
 def test_LeftRotator() -> None:
@@ -274,17 +274,17 @@ def test_LeftRotator() -> None:
         ti: list[Source] = [Source(w, d) for d in t[1]]
         to: Drain = Drain(w)
         dev: LeftRotator = LeftRotator(w)
+        for i, p in enumerate(dev.ports_i):
+            ti[i].port_o.connect(p)
         dev.port_o.connect(to.port_i)
-        for i in range(2):
-            ti[i].port_o.connect(dev.ports_i[i])
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[Word, float]] = t[2][LeftRotator]
         assert len(po) == len(r)
-        for o, q in zip(po, r):
-            assert o.word == q[0]
-            assert abs(o.time - q[1]) <= _EPS
+        for ru, rv in zip(po, r):
+            assert ru.word == rv[0]
+            assert abs(ru.time - rv[1]) <= _EPS
 
 
 def test_RightRotator() -> None:
@@ -294,17 +294,17 @@ def test_RightRotator() -> None:
         ti: list[Source] = [Source(w, d) for d in t[1]]
         to: Drain = Drain(w)
         dev: RightRotator = RightRotator(w)
+        for i, p in enumerate(dev.ports_i):
+            ti[i].port_o.connect(p)
         dev.port_o.connect(to.port_i)
-        for i in range(2):
-            ti[i].port_o.connect(dev.ports_i[i])
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[Word, float]] = t[2][RightRotator]
         assert len(po) == len(r)
-        for o, q in zip(po, r):
-            assert o.word == q[0]
-            assert abs(o.time - q[1]) <= _EPS
+        for ru, rv in zip(po, r):
+            assert ru.word == rv[0]
+            assert abs(ru.time - rv[1]) <= _EPS
 
 
 def test_SIMD_LeftShifter() -> None:
@@ -340,18 +340,17 @@ def test_SIMD_LeftShifter() -> None:
         ti: list[Source] = [Source(u, d) for u, d in zip([w, w, s], t[2])]
         to: Drain = Drain(w)
         dev: SIMD_LeftShifter = SIMD_LeftShifter(w, t[1])
+        for i, p in enumerate([*dev.ports_i, dev.port_s]):
+            ti[i].port_o.connect(p)
         dev.port_o.connect(to.port_i)
-        ti[0].port_o.connect(dev.ports_i[0])
-        ti[1].port_o.connect(dev.ports_i[1])
-        ti[2].port_o.connect(dev.port_s)
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[Word, float]] = t[3]
         assert len(po) == len(r)
-        for o, q in zip(po, r):
-            assert o.word == q[0]
-            assert abs(o.time - q[1]) <= _EPS
+        for ru, rv in zip(po, r):
+            assert ru.word == rv[0]
+            assert abs(ru.time - rv[1]) <= _EPS
 
 
 def test_SIMD_RightShifter() -> None:
@@ -387,18 +386,17 @@ def test_SIMD_RightShifter() -> None:
         ti: list[Source] = [Source(u, d) for u, d in zip([w, w, s], t[2])]
         to: Drain = Drain(w)
         dev: SIMD_RightShifter = SIMD_RightShifter(w, t[1])
+        for i, p in enumerate([*dev.ports_i, dev.port_s]):
+            ti[i].port_o.connect(p)
         dev.port_o.connect(to.port_i)
-        ti[0].port_o.connect(dev.ports_i[0])
-        ti[1].port_o.connect(dev.ports_i[1])
-        ti[2].port_o.connect(dev.port_s)
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[Word, float]] = t[3]
         assert len(po) == len(r)
-        for o, q in zip(po, r):
-            assert o.word == q[0]
-            assert abs(o.time - q[1]) <= _EPS
+        for ru, rv in zip(po, r):
+            assert ru.word == rv[0]
+            assert abs(ru.time - rv[1]) <= _EPS
 
 
 def test_SIMD_ArithmeticRightShifter() -> None:
@@ -434,18 +432,17 @@ def test_SIMD_ArithmeticRightShifter() -> None:
         ti: list[Source] = [Source(u, d) for u, d in zip([w, w, s], t[2])]
         to: Drain = Drain(w)
         dev: SIMD_ArithmeticRightShifter = SIMD_ArithmeticRightShifter(w, t[1])
+        for i, p in enumerate([*dev.ports_i, dev.port_s]):
+            ti[i].port_o.connect(p)
         dev.port_o.connect(to.port_i)
-        ti[0].port_o.connect(dev.ports_i[0])
-        ti[1].port_o.connect(dev.ports_i[1])
-        ti[2].port_o.connect(dev.port_s)
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[Word, float]] = t[3]
         assert len(po) == len(r)
-        for o, q in zip(po, r):
-            assert o.word == q[0]
-            assert abs(o.time - q[1]) <= _EPS
+        for ru, rv in zip(po, r):
+            assert ru.word == rv[0]
+            assert abs(ru.time - rv[1]) <= _EPS
 
 
 def test_SIMD_LeftRotator() -> None:
@@ -481,18 +478,17 @@ def test_SIMD_LeftRotator() -> None:
         ti: list[Source] = [Source(u, d) for u, d in zip([w, w, s], t[2])]
         to: Drain = Drain(w)
         dev: SIMD_LeftRotator = SIMD_LeftRotator(w, t[1])
+        for i, p in enumerate([*dev.ports_i, dev.port_s]):
+            ti[i].port_o.connect(p)
         dev.port_o.connect(to.port_i)
-        ti[0].port_o.connect(dev.ports_i[0])
-        ti[1].port_o.connect(dev.ports_i[1])
-        ti[2].port_o.connect(dev.port_s)
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[Word, float]] = t[3]
         assert len(po) == len(r)
-        for o, q in zip(po, r):
-            assert o.word == q[0]
-            assert abs(o.time - q[1]) <= _EPS
+        for ru, rv in zip(po, r):
+            assert ru.word == rv[0]
+            assert abs(ru.time - rv[1]) <= _EPS
 
 
 def test_SIMD_RightRotator() -> None:
@@ -528,15 +524,14 @@ def test_SIMD_RightRotator() -> None:
         ti: list[Source] = [Source(u, d) for u, d in zip([w, w, s], t[2])]
         to: Drain = Drain(w)
         dev: SIMD_RightRotator = SIMD_RightRotator(w, t[1])
+        for i, p in enumerate([*dev.ports_i, dev.port_s]):
+            ti[i].port_o.connect(p)
         dev.port_o.connect(to.port_i)
-        ti[0].port_o.connect(dev.ports_i[0])
-        ti[1].port_o.connect(dev.ports_i[1])
-        ti[2].port_o.connect(dev.port_s)
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[Word, float]] = t[3]
         assert len(po) == len(r)
-        for o, q in zip(po, r):
-            assert o.word == q[0]
-            assert abs(o.time - q[1]) <= _EPS
+        for ru, rv in zip(po, r):
+            assert ru.word == rv[0]
+            assert abs(ru.time - rv[1]) <= _EPS

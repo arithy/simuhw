@@ -68,14 +68,14 @@ def test_DFlipFlop() -> None:
         ti: list[Source] = [Source(1, t[1]), Source(w, t[2])]
         to: Drain = Drain(w)
         dev: DFlipFlop = DFlipFlop(w, neg_edged=t[0][1])
-        ti[0].port_o.connect(dev.port_c)
-        ti[1].port_o.connect(dev.port_i)
+        for i, p in enumerate([dev.port_c, dev.port_i]):
+            ti[i].port_o.connect(p)
         dev.port_o.connect(to.port_i)
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[Word, float]] = t[3]
         assert len(po) == len(r)
-        for o, q in zip(po, r):
-            assert o.word == q[0]
-            assert abs(o.time - q[1]) <= _EPS
+        for ru, rv in zip(po, r):
+            assert ru.word == rv[0]
+            assert abs(ru.time - rv[1]) <= _EPS

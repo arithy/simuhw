@@ -52,13 +52,13 @@ def test_LookupTable() -> None:
         ti: Source = Source(wi, t[2])
         to: Drain = Drain(wo)
         dev: LookupTable = LookupTable(wi, wo, t[1])
-        dev.port_o.connect(to.port_i)
         ti.port_o.connect(dev.port_i)
+        dev.port_o.connect(to.port_i)
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[Word, float]] = t[3]
         assert len(po) == len(r)
-        for o, q in zip(po, r):
-            assert o.word == q[0]
-            assert abs(o.time - q[1]) <= _EPS
+        for ru, rv in zip(po, r):
+            assert ru.word == rv[0]
+            assert abs(ru.time - rv[1]) <= _EPS

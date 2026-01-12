@@ -141,17 +141,17 @@ def test_Subtractor() -> None:
         ti: list[Source] = [Source(w, d) for d in t[1][0]]
         to: Drain = Drain(w)
         dev: Subtractor = Subtractor(w)
+        for i, p in enumerate(dev.ports_i):
+            ti[i].port_o.connect(p)
         dev.port_o.connect(to.port_i)
-        ti[0].port_o.connect(dev.ports_i[0])
-        ti[1].port_o.connect(dev.ports_i[1])
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[Word, float]] = t[1][1][0]
         assert len(po) == len(r)
-        for o, q in zip(po, r):
-            assert o.word == q[0]
-            assert abs(o.time - q[1]) <= _EPS
+        for ru, rv in zip(po, r):
+            assert ru.word == rv[0]
+            assert abs(ru.time - rv[1]) <= _EPS
 
 
 def test_HalfSubtractor() -> None:
@@ -161,19 +161,17 @@ def test_HalfSubtractor() -> None:
         ti: list[Source] = [Source(w, d) for d in t[1][0]]
         to: list[Drain] = [Drain(w), Drain(1)]
         dev: HalfSubtractor = HalfSubtractor(w)
-        dev.port_o.connect(to[0].port_i)
-        dev.port_co.connect(to[1].port_i)
-        ti[0].port_o.connect(dev.ports_i[0])
-        ti[1].port_o.connect(dev.ports_i[1])
-        dev.port_o.add_probe(po[0])
-        dev.port_co.add_probe(po[1])
+        for i, p in enumerate(dev.ports_i):
+            ti[i].port_o.connect(p)
+        for i, q in enumerate([dev.port_o, dev.port_co]):
+            q.add_probe(po[i])
         sim: Simulator = Simulator([*ti, *to, dev])
         sim.start(show_time=True)
-        for p, r in zip(po, t[1][1]):
-            assert len(p) == len(r)
-            for o, q in zip(p, r):
-                assert o.word == q[0]
-                assert abs(o.time - q[1]) <= _EPS
+        for ro, rp in zip(po, t[1][1]):
+            assert len(ro) == len(rp)
+            for ru, rv in zip(ro, rp):
+                assert ru.word == rv[0]
+                assert abs(ru.time - rv[1]) <= _EPS
 
 
 def test_FullSubtractor() -> None:
@@ -184,20 +182,18 @@ def test_FullSubtractor() -> None:
             ti: list[Source] = [Source(u, d) for u, d in zip([w, w, 1], [*t[1][0], cast(list[tuple[Word, float]], [(ci, 0.0)])])]
             to: list[Drain] = [Drain(w), Drain(1)]
             dev: FullSubtractor = FullSubtractor(w)
-            dev.port_o.connect(to[0].port_i)
-            dev.port_co.connect(to[1].port_i)
-            ti[0].port_o.connect(dev.ports_i[0])
-            ti[1].port_o.connect(dev.ports_i[1])
-            ti[2].port_o.connect(dev.port_ci)
-            dev.port_o.add_probe(po[0])
-            dev.port_co.add_probe(po[1])
+            for i, p in enumerate([*dev.ports_i, dev.port_ci]):
+                ti[i].port_o.connect(p)
+            for i, q in enumerate([dev.port_o, dev.port_co]):
+                q.connect(to[i].port_i)
+                q.add_probe(po[i])
             sim: Simulator = Simulator([*ti, *to, dev])
             sim.start(show_time=True)
-            for p, r in zip(po, t[1][1 + j]):
-                assert len(p) == len(r)
-                for o, q in zip(p, r):
-                    assert o.word == q[0]
-                    assert abs(o.time - q[1]) <= _EPS
+            for ro, rp in zip(po, t[1][1 + j]):
+                assert len(ro) == len(rp)
+                for ru, rv in zip(ro, rp):
+                    assert ru.word == rv[0]
+                    assert abs(ru.time - rv[1]) <= _EPS
 
 
 def test_SIMD_Subtractor() -> None:
@@ -229,15 +225,14 @@ def test_SIMD_Subtractor() -> None:
         ti: list[Source] = [Source(u, d) for u, d in zip([w, w, s], t[2])]
         to: Drain = Drain(w)
         dev: SIMD_Subtractor = SIMD_Subtractor(w, t[1])
+        for i, p in enumerate([*dev.ports_i, dev.port_s]):
+            ti[i].port_o.connect(p)
         dev.port_o.connect(to.port_i)
-        ti[0].port_o.connect(dev.ports_i[0])
-        ti[1].port_o.connect(dev.ports_i[1])
-        ti[2].port_o.connect(dev.port_s)
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[Word, float]] = t[3]
         assert len(po) == len(r)
-        for o, q in zip(po, r):
-            assert o.word == q[0]
-            assert abs(o.time - q[1]) <= _EPS
+        for ru, rv in zip(po, r):
+            assert ru.word == rv[0]
+            assert abs(ru.time - rv[1]) <= _EPS

@@ -131,17 +131,17 @@ def test_ANDGate() -> None:
         ti: list[Source] = [Source(w, d) for d in t[1]]
         to: Drain = Drain(w)
         dev: ANDGate = ANDGate(w, ninputs=n)
-        dev.port_o.connect(to.port_i)
         for i in range(n):
             ti[i].port_o.connect(dev.ports_i[i])
+        dev.port_o.connect(to.port_i)
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[Word, float]] = t[2][ANDGate]
         assert len(po) == len(r)
-        for o, q in zip(po, r):
-            assert o.word == q[0]
-            assert abs(o.time - q[1]) <= _EPS
+        for ru, rv in zip(po, r):
+            assert ru.word == rv[0]
+            assert abs(ru.time - rv[1]) <= _EPS
 
 
 def test_ORGate() -> None:
@@ -152,17 +152,17 @@ def test_ORGate() -> None:
         ti: list[Source] = [Source(w, d) for d in t[1]]
         to: Drain = Drain(w)
         dev: ORGate = ORGate(w, ninputs=n)
-        dev.port_o.connect(to.port_i)
         for i in range(n):
             ti[i].port_o.connect(dev.ports_i[i])
+        dev.port_o.connect(to.port_i)
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[Word, float]] = t[2][ORGate]
         assert len(po) == len(r)
-        for o, q in zip(po, r):
-            assert o.word == q[0]
-            assert abs(o.time - q[1]) <= _EPS
+        for ru, rv in zip(po, r):
+            assert ru.word == rv[0]
+            assert abs(ru.time - rv[1]) <= _EPS
 
 
 def test_XORGate() -> None:
@@ -173,17 +173,17 @@ def test_XORGate() -> None:
         ti: list[Source] = [Source(w, d) for d in t[1]]
         to: Drain = Drain(w)
         dev: XORGate = XORGate(w, ninputs=n)
-        dev.port_o.connect(to.port_i)
         for i in range(n):
             ti[i].port_o.connect(dev.ports_i[i])
+        dev.port_o.connect(to.port_i)
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[Word, float]] = t[2][XORGate]
         assert len(po) == len(r)
-        for o, q in zip(po, r):
-            assert o.word == q[0]
-            assert abs(o.time - q[1]) <= _EPS
+        for ru, rv in zip(po, r):
+            assert ru.word == rv[0]
+            assert abs(ru.time - rv[1]) <= _EPS
 
 
 def test_NANDGate() -> None:
@@ -194,17 +194,17 @@ def test_NANDGate() -> None:
         ti: list[Source] = [Source(w, d) for d in t[1]]
         to: Drain = Drain(w)
         dev: NANDGate = NANDGate(w, ninputs=n)
-        dev.port_o.connect(to.port_i)
         for i in range(n):
             ti[i].port_o.connect(dev.ports_i[i])
+        dev.port_o.connect(to.port_i)
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[Word, float]] = t[2][NANDGate]
         assert len(po) == len(r)
-        for o, q in zip(po, r):
-            assert o.word == q[0]
-            assert abs(o.time - q[1]) <= _EPS
+        for ru, rv in zip(po, r):
+            assert ru.word == rv[0]
+            assert abs(ru.time - rv[1]) <= _EPS
 
 
 def test_NORGate() -> None:
@@ -215,17 +215,17 @@ def test_NORGate() -> None:
         ti: list[Source] = [Source(w, d) for d in t[1]]
         to: Drain = Drain(w)
         dev: NORGate = NORGate(w, ninputs=n)
-        dev.port_o.connect(to.port_i)
         for i in range(n):
             ti[i].port_o.connect(dev.ports_i[i])
+        dev.port_o.connect(to.port_i)
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[Word, float]] = t[2][NORGate]
         assert len(po) == len(r)
-        for o, q in zip(po, r):
-            assert o.word == q[0]
-            assert abs(o.time - q[1]) <= _EPS
+        for ru, rv in zip(po, r):
+            assert ru.word == rv[0]
+            assert abs(ru.time - rv[1]) <= _EPS
 
 
 def test_XNORGate() -> None:
@@ -236,14 +236,14 @@ def test_XNORGate() -> None:
         ti: list[Source] = [Source(w, d) for d in t[1]]
         to: Drain = Drain(w)
         dev: XNORGate = XNORGate(w, ninputs=n)
-        dev.port_o.connect(to.port_i)
         for i in range(n):
             ti[i].port_o.connect(dev.ports_i[i])
+        dev.port_o.connect(to.port_i)
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[Word, float]] = t[2][XNORGate]
         assert len(po) == len(r)
-        for o, q in zip(po, r):
-            assert o.word == q[0]
-            assert abs(o.time - q[1]) <= _EPS
+        for ru, rv in zip(po, r):
+            assert ru.word == rv[0]
+            assert abs(ru.time - rv[1]) <= _EPS

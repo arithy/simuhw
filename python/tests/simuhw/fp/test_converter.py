@@ -117,18 +117,18 @@ def test_FPToIntegerConverter() -> None:
             ti: list[Source] = [Source(u, d) for u, d in zip([wi, 1, 3, 5], t[0])]
             to: list[Drain] = [Drain(wo), Drain(5)]
             dev: hwf.FPToIntegerConverter = hwf.FPToIntegerConverter(fi, wo)  # type: ignore[arg-type]
-            for i, u in enumerate([dev.port_o, dev.port_fe_o]):
-                u.connect(to[i].port_i)
-                u.add_probe(po[i])
-            for i, v in enumerate([*dev.ports_i, dev.port_ft, dev.port_fr, dev.port_fe_i]):
-                ti[i].port_o.connect(v)
+            for i, p in enumerate([*dev.ports_i, dev.port_ft, dev.port_fr, dev.port_fe_i]):
+                ti[i].port_o.connect(p)
+            for i, q in enumerate([dev.port_o, dev.port_fe_o]):
+                q.connect(to[i].port_i)
+                q.add_probe(po[i])
             sim: Simulator = Simulator([*ti, *to, dev])
             sim.start(show_time=True)
-            for p, r in zip(po, [[o[i] for i in range(len(o)) if i == 0 or o[i][0] != o[i - 1][0]] for o in t[1]]):
-                assert len(p) == len(r)
-                for o, q in zip(p, r):
-                    assert o.word == q[0]
-                    assert abs(o.time - q[1]) <= _EPS
+            for ro, rp in zip(po, [[o[i] for i in range(len(o)) if i == 0 or o[i][0] != o[i - 1][0]] for o in t[1]]):
+                assert len(ro) == len(rp)
+                for ru, rv in zip(ro, rp):
+                    assert ru.word == rv[0]
+                    assert abs(ru.time - rv[1]) <= _EPS
 
 
 @skipif_unavailable
@@ -180,18 +180,18 @@ def test_FPFromIntegerConverter() -> None:
             ti: list[Source] = [Source(u, d) for u, d in zip([wi, 1, 3, 5], t[0])]
             to: list[Drain] = [Drain(wo), Drain(5)]
             dev: hwf.FPFromIntegerConverter = hwf.FPFromIntegerConverter(wi, fo)  # type: ignore[arg-type]
-            for i, u in enumerate([dev.port_o, dev.port_fe_o]):
-                u.connect(to[i].port_i)
-                u.add_probe(po[i])
-            for i, v in enumerate([*dev.ports_i, dev.port_ft, dev.port_fr, dev.port_fe_i]):
-                ti[i].port_o.connect(v)
+            for i, p in enumerate([*dev.ports_i, dev.port_ft, dev.port_fr, dev.port_fe_i]):
+                ti[i].port_o.connect(p)
+            for i, q in enumerate([dev.port_o, dev.port_fe_o]):
+                q.connect(to[i].port_i)
+                q.add_probe(po[i])
             sim: Simulator = Simulator([*ti, *to, dev])
             sim.start(show_time=True)
-            for p, r in zip(po, [[o[i] for i in range(len(o)) if i == 0 or o[i][0] != o[i - 1][0]] for o in t[1]]):
-                assert len(p) == len(r)
-                for o, q in zip(p, r):
-                    assert o.word == q[0]
-                    assert abs(o.time - q[1]) <= _EPS
+            for ro, rp in zip(po, [[o[i] for i in range(len(o)) if i == 0 or o[i][0] != o[i - 1][0]] for o in t[1]]):
+                assert len(ro) == len(rp)
+                for ru, rv in zip(ro, rp):
+                    assert ru.word == rv[0]
+                    assert abs(ru.time - rv[1]) <= _EPS
 
 
 @skipif_unavailable
@@ -249,18 +249,18 @@ def test_FPToSignedIntegerConverter() -> None:
             ti: list[Source] = [Source(u, d) for u, d in zip([wi, 1, 3, 5], t[0])]
             to: list[Drain] = [Drain(wo), Drain(5)]
             dev: hwf.FPToSignedIntegerConverter = hwf.FPToSignedIntegerConverter(fi, wo)  # type: ignore[arg-type]
-            for i, u in enumerate([dev.port_o, dev.port_fe_o]):
-                u.connect(to[i].port_i)
-                u.add_probe(po[i])
-            for i, v in enumerate([*dev.ports_i, dev.port_ft, dev.port_fr, dev.port_fe_i]):
-                ti[i].port_o.connect(v)
+            for i, p in enumerate([*dev.ports_i, dev.port_ft, dev.port_fr, dev.port_fe_i]):
+                ti[i].port_o.connect(p)
+            for i, q in enumerate([dev.port_o, dev.port_fe_o]):
+                q.connect(to[i].port_i)
+                q.add_probe(po[i])
             sim: Simulator = Simulator([*ti, *to, dev])
             sim.start(show_time=True)
-            for p, r in zip(po, [[o[i] for i in range(len(o)) if i == 0 or o[i][0] != o[i - 1][0]] for o in t[1]]):
-                assert len(p) == len(r)
-                for o, q in zip(p, r):
-                    assert o.word == q[0]
-                    assert abs(o.time - q[1]) <= _EPS
+            for ro, rp in zip(po, [[o[i] for i in range(len(o)) if i == 0 or o[i][0] != o[i - 1][0]] for o in t[1]]):
+                assert len(ro) == len(rp)
+                for ru, rv in zip(ro, rp):
+                    assert ru.word == rv[0]
+                    assert abs(ru.time - rv[1]) <= _EPS
 
 
 @skipif_unavailable
@@ -312,18 +312,18 @@ def test_FPFromSignedIntegerConverter() -> None:
             ti: list[Source] = [Source(u, d) for u, d in zip([wi, 1, 3, 5], t[0])]
             to: list[Drain] = [Drain(wo), Drain(5)]
             dev: hwf.FPFromSignedIntegerConverter = hwf.FPFromSignedIntegerConverter(wi, fo)  # type: ignore[arg-type]
-            for i, u in enumerate([dev.port_o, dev.port_fe_o]):
-                u.connect(to[i].port_i)
-                u.add_probe(po[i])
-            for i, v in enumerate([*dev.ports_i, dev.port_ft, dev.port_fr, dev.port_fe_i]):
-                ti[i].port_o.connect(v)
+            for i, p in enumerate([*dev.ports_i, dev.port_ft, dev.port_fr, dev.port_fe_i]):
+                ti[i].port_o.connect(p)
+            for i, q in enumerate([dev.port_o, dev.port_fe_o]):
+                q.connect(to[i].port_i)
+                q.add_probe(po[i])
             sim: Simulator = Simulator([*ti, *to, dev])
             sim.start(show_time=True)
-            for p, r in zip(po, [[o[i] for i in range(len(o)) if i == 0 or o[i][0] != o[i - 1][0]] for o in t[1]]):
-                assert len(p) == len(r)
-                for o, q in zip(p, r):
-                    assert o.word == q[0]
-                    assert abs(o.time - q[1]) <= _EPS
+            for ro, rp in zip(po, [[o[i] for i in range(len(o)) if i == 0 or o[i][0] != o[i - 1][0]] for o in t[1]]):
+                assert len(ro) == len(rp)
+                for ru, rv in zip(ro, rp):
+                    assert ru.word == rv[0]
+                    assert abs(ru.time - rv[1]) <= _EPS
 
 
 @skipif_unavailable
@@ -385,18 +385,18 @@ def test_FPConverter() -> None:
             ti: list[Source] = [Source(u, d) for u, d in zip([wi, 1, 3, 5], t[0])]
             to: list[Drain] = [Drain(wo), Drain(5)]
             dev: hwf.FPConverter = hwf.FPConverter(fi, fo)  # type: ignore[arg-type]
-            for i, u in enumerate([dev.port_o, dev.port_fe_o]):
-                u.connect(to[i].port_i)
-                u.add_probe(po[i])
-            for i, v in enumerate([*dev.ports_i, dev.port_ft, dev.port_fr, dev.port_fe_i]):
-                ti[i].port_o.connect(v)
+            for i, p in enumerate([*dev.ports_i, dev.port_ft, dev.port_fr, dev.port_fe_i]):
+                ti[i].port_o.connect(p)
+            for i, q in enumerate([dev.port_o, dev.port_fe_o]):
+                q.connect(to[i].port_i)
+                q.add_probe(po[i])
             sim: Simulator = Simulator([*ti, *to, dev])
             sim.start(show_time=True)
-            for p, r in zip(po, [[o[i] for i in range(len(o)) if i == 0 or o[i][0] != o[i - 1][0]] for o in t[1]]):
-                assert len(p) == len(r)
-                for o, q in zip(p, r):
-                    assert o.word == q[0]
-                    assert abs(o.time - q[1]) <= _EPS
+            for ro, rp in zip(po, [[o[i] for i in range(len(o)) if i == 0 or o[i][0] != o[i - 1][0]] for o in t[1]]):
+                assert len(ro) == len(rp)
+                for ru, rv in zip(ro, rp):
+                    assert ru.word == rv[0]
+                    assert abs(ru.time - rv[1]) <= _EPS
 
 
 @skipif_unavailable
@@ -474,18 +474,18 @@ def test_SIMD_FPToIntegerConverter() -> None:
             ti: list[Source] = [Source(u, d) for u, d in zip([wi * m, 1, 3, 5], t[0])]
             to: list[Drain] = [Drain(wo * m), Drain(5)]
             dev: hwf.SIMD_FPToIntegerConverter = hwf.SIMD_FPToIntegerConverter(m, fi, wo)  # type: ignore[arg-type]
-            for i, u in enumerate([dev.port_o, dev.port_fe_o]):
-                u.connect(to[i].port_i)
-                u.add_probe(po[i])
-            for i, v in enumerate([*dev.ports_i, dev.port_ft, dev.port_fr, dev.port_fe_i]):
-                ti[i].port_o.connect(v)
+            for i, p in enumerate([*dev.ports_i, dev.port_ft, dev.port_fr, dev.port_fe_i]):
+                ti[i].port_o.connect(p)
+            for i, q in enumerate([dev.port_o, dev.port_fe_o]):
+                q.connect(to[i].port_i)
+                q.add_probe(po[i])
             sim: Simulator = Simulator([*ti, *to, dev])
             sim.start(show_time=True)
-            for p, r in zip(po, [[o[i] for i in range(len(o)) if i == 0 or o[i][0] != o[i - 1][0]] for o in t[1]]):
-                assert len(p) == len(r)
-                for o, q in zip(p, r):
-                    assert o.word == q[0]
-                    assert abs(o.time - q[1]) <= _EPS
+            for ro, rp in zip(po, [[o[i] for i in range(len(o)) if i == 0 or o[i][0] != o[i - 1][0]] for o in t[1]]):
+                assert len(ro) == len(rp)
+                for ru, rv in zip(ro, rp):
+                    assert ru.word == rv[0]
+                    assert abs(ru.time - rv[1]) <= _EPS
 
 
 @skipif_unavailable
@@ -551,18 +551,18 @@ def test_SIMD_FPFromIntegerConverter() -> None:
             ti: list[Source] = [Source(u, d) for u, d in zip([wi * m, 1, 3, 5], t[0])]
             to: list[Drain] = [Drain(wo * m), Drain(5)]
             dev: hwf.SIMD_FPFromIntegerConverter = hwf.SIMD_FPFromIntegerConverter(m, wi, fo)  # type: ignore[arg-type]
-            for i, u in enumerate([dev.port_o, dev.port_fe_o]):
-                u.connect(to[i].port_i)
-                u.add_probe(po[i])
-            for i, v in enumerate([*dev.ports_i, dev.port_ft, dev.port_fr, dev.port_fe_i]):
-                ti[i].port_o.connect(v)
+            for i, p in enumerate([*dev.ports_i, dev.port_ft, dev.port_fr, dev.port_fe_i]):
+                ti[i].port_o.connect(p)
+            for i, q in enumerate([dev.port_o, dev.port_fe_o]):
+                q.connect(to[i].port_i)
+                q.add_probe(po[i])
             sim: Simulator = Simulator([*ti, *to, dev])
             sim.start(show_time=True)
-            for p, r in zip(po, [[o[i] for i in range(len(o)) if i == 0 or o[i][0] != o[i - 1][0]] for o in t[1]]):
-                assert len(p) == len(r)
-                for o, q in zip(p, r):
-                    assert o.word == q[0]
-                    assert abs(o.time - q[1]) <= _EPS
+            for ro, rp in zip(po, [[o[i] for i in range(len(o)) if i == 0 or o[i][0] != o[i - 1][0]] for o in t[1]]):
+                assert len(ro) == len(rp)
+                for ru, rv in zip(ro, rp):
+                    assert ru.word == rv[0]
+                    assert abs(ru.time - rv[1]) <= _EPS
 
 
 @skipif_unavailable
@@ -640,18 +640,18 @@ def test_SIMD_FPToSignedIntegerConverter() -> None:
             ti: list[Source] = [Source(u, d) for u, d in zip([wi * m, 1, 3, 5], t[0])]
             to: list[Drain] = [Drain(wo * m), Drain(5)]
             dev: hwf.SIMD_FPToSignedIntegerConverter = hwf.SIMD_FPToSignedIntegerConverter(m, fi, wo)  # type: ignore[arg-type]
-            for i, u in enumerate([dev.port_o, dev.port_fe_o]):
-                u.connect(to[i].port_i)
-                u.add_probe(po[i])
-            for i, v in enumerate([*dev.ports_i, dev.port_ft, dev.port_fr, dev.port_fe_i]):
-                ti[i].port_o.connect(v)
+            for i, p in enumerate([*dev.ports_i, dev.port_ft, dev.port_fr, dev.port_fe_i]):
+                ti[i].port_o.connect(p)
+            for i, q in enumerate([dev.port_o, dev.port_fe_o]):
+                q.connect(to[i].port_i)
+                q.add_probe(po[i])
             sim: Simulator = Simulator([*ti, *to, dev])
             sim.start(show_time=True)
-            for p, r in zip(po, [[o[i] for i in range(len(o)) if i == 0 or o[i][0] != o[i - 1][0]] for o in t[1]]):
-                assert len(p) == len(r)
-                for o, q in zip(p, r):
-                    assert o.word == q[0]
-                    assert abs(o.time - q[1]) <= _EPS
+            for ro, rp in zip(po, [[o[i] for i in range(len(o)) if i == 0 or o[i][0] != o[i - 1][0]] for o in t[1]]):
+                assert len(ro) == len(rp)
+                for ru, rv in zip(ro, rp):
+                    assert ru.word == rv[0]
+                    assert abs(ru.time - rv[1]) <= _EPS
 
 
 @skipif_unavailable
@@ -717,18 +717,18 @@ def test_SIMD_FPFromSignedIntegerConverter() -> None:
             ti: list[Source] = [Source(u, d) for u, d in zip([wi * m, 1, 3, 5], t[0])]
             to: list[Drain] = [Drain(wo * m), Drain(5)]
             dev: hwf.SIMD_FPFromSignedIntegerConverter = hwf.SIMD_FPFromSignedIntegerConverter(m, wi, fo)  # type: ignore[arg-type]
-            for i, u in enumerate([dev.port_o, dev.port_fe_o]):
-                u.connect(to[i].port_i)
-                u.add_probe(po[i])
-            for i, v in enumerate([*dev.ports_i, dev.port_ft, dev.port_fr, dev.port_fe_i]):
-                ti[i].port_o.connect(v)
+            for i, p in enumerate([*dev.ports_i, dev.port_ft, dev.port_fr, dev.port_fe_i]):
+                ti[i].port_o.connect(p)
+            for i, q in enumerate([dev.port_o, dev.port_fe_o]):
+                q.connect(to[i].port_i)
+                q.add_probe(po[i])
             sim: Simulator = Simulator([*ti, *to, dev])
             sim.start(show_time=True)
-            for p, r in zip(po, [[o[i] for i in range(len(o)) if i == 0 or o[i][0] != o[i - 1][0]] for o in t[1]]):
-                assert len(p) == len(r)
-                for o, q in zip(p, r):
-                    assert o.word == q[0]
-                    assert abs(o.time - q[1]) <= _EPS
+            for ro, rp in zip(po, [[o[i] for i in range(len(o)) if i == 0 or o[i][0] != o[i - 1][0]] for o in t[1]]):
+                assert len(ro) == len(rp)
+                for ru, rv in zip(ro, rp):
+                    assert ru.word == rv[0]
+                    assert abs(ru.time - rv[1]) <= _EPS
 
 
 @skipif_unavailable
@@ -812,15 +812,15 @@ def test_SIMD_FPConverter() -> None:
             ti: list[Source] = [Source(u, d) for u, d in zip([wi * m, 1, 3, 5], t[0])]
             to: list[Drain] = [Drain(wo * m), Drain(5)]
             dev: hwf.SIMD_FPConverter = hwf.SIMD_FPConverter(m, fi, fo)  # type: ignore[arg-type]
-            for i, u in enumerate([dev.port_o, dev.port_fe_o]):
-                u.connect(to[i].port_i)
-                u.add_probe(po[i])
-            for i, v in enumerate([*dev.ports_i, dev.port_ft, dev.port_fr, dev.port_fe_i]):
-                ti[i].port_o.connect(v)
+            for i, p in enumerate([*dev.ports_i, dev.port_ft, dev.port_fr, dev.port_fe_i]):
+                ti[i].port_o.connect(p)
+            for i, q in enumerate([dev.port_o, dev.port_fe_o]):
+                q.connect(to[i].port_i)
+                q.add_probe(po[i])
             sim: Simulator = Simulator([*ti, *to, dev])
             sim.start(show_time=True)
-            for p, r in zip(po, [[o[i] for i in range(len(o)) if i == 0 or o[i][0] != o[i - 1][0]] for o in t[1]]):
-                assert len(p) == len(r)
-                for o, q in zip(p, r):
-                    assert o.word == q[0]
-                    assert abs(o.time - q[1]) <= _EPS
+            for ro, rp in zip(po, [[o[i] for i in range(len(o)) if i == 0 or o[i][0] != o[i - 1][0]] for o in t[1]]):
+                assert len(ro) == len(rp)
+                for ru, rv in zip(ro, rp):
+                    assert ru.word == rv[0]
+                    assert abs(ru.time - rv[1]) <= _EPS

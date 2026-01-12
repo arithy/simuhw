@@ -59,17 +59,17 @@ def test_WordCombiner() -> None:
         ti: list[Source] = [Source(t[0][i], t[1][i]) for i in range(len(t[0]))]
         to: Drain = Drain(sum(t[0]))
         dev: WordCombiner = WordCombiner(t[0])
+        for i, p in enumerate(dev.ports_i):
+            ti[i].port_o.connect(p)
         dev.port_o.connect(to.port_i)
-        for i in range(len(t[0])):
-            ti[i].port_o.connect(dev.ports_i[i])
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[Word, float]] = t[2]
         assert len(po) == len(r)
-        for o, q in zip(po, r):
-            assert o.word == q[0]
-            assert abs(o.time - q[1]) <= _EPS
+        for ru, rv in zip(po, r):
+            assert ru.word == rv[0]
+            assert abs(ru.time - rv[1]) <= _EPS
 
 
 def test_WordSplitter() -> None:
@@ -110,16 +110,16 @@ def test_WordSplitter() -> None:
         to: list[Drain] = [Drain(t[0][i]) for i in range(len(t[0]))]
         dev: WordSplitter = WordSplitter(t[0])
         ti.port_o.connect(dev.port_i)
-        for i in range(len(t[0])):
-            dev.ports_o[i].connect(to[i].port_i)
-            dev.ports_o[i].add_probe(po[i])
+        for i, q in enumerate(dev.ports_o):
+            q.connect(to[i].port_i)
+            q.add_probe(po[i])
         sim: Simulator = Simulator([ti, *to, dev])
         sim.start(show_time=True)
-        for p, r in zip(po, t[2]):
-            assert len(p) == len(r)
-            for o, q in zip(p, r):
-                assert o.word == q[0]
-                assert abs(o.time - q[1]) <= _EPS
+        for ro, rp in zip(po, t[2]):
+            assert len(ro) == len(rp)
+            for ru, rv in zip(ro, rp):
+                assert ru.word == rv[0]
+                assert abs(ru.time - rv[1]) <= _EPS
 
 
 def test_Multiplexer() -> None:
@@ -161,9 +161,9 @@ def test_Multiplexer() -> None:
         a: list[tuple[Word, float]] = t[3]
         r: list[tuple[Word, float]] = [a[i] for i in range(len(a)) if i == 0 or a[i][0] != a[i - 1][0]]
         assert len(po) == len(r)
-        for o, q in zip(po, r):
-            assert o.word == q[0]
-            assert abs(o.time - q[1]) <= _EPS
+        for ru, rv in zip(po, r):
+            assert ru.word == rv[0]
+            assert abs(ru.time - rv[1]) <= _EPS
 
 
 def test_Demultiplexer() -> None:
@@ -197,19 +197,19 @@ def test_Demultiplexer() -> None:
         ti: list[Source] = [Source(w, t[1]), Source(s, t[2])]
         to: list[Drain] = [Drain(w) for _ in range(n)]
         dev: Demultiplexer = Demultiplexer(w, n, deselected=d)
-        ti[0].port_o.connect(dev.port_i)
-        ti[1].port_o.connect(dev.port_s)
-        for i in range(n):
-            dev.ports_o[i].connect(to[i].port_i)
-            dev.ports_o[i].add_probe(po[i])
+        for i, p in enumerate([dev.port_i, dev.port_s]):
+            ti[i].port_o.connect(p)
+        for i, q in enumerate(dev.ports_o):
+            q.connect(to[i].port_i)
+            q.add_probe(po[i])
         sim: Simulator = Simulator([*ti, *to, dev])
         sim.start(show_time=True)
-        for p, a in zip(po, t[3]):
-            r: list[tuple[Word, float]] = [a[i] for i in range(len(a)) if i == 0 or a[i][0] != a[i - 1][0]]
-            assert len(p) == len(r)
-            for o, q in zip(p, r):
-                assert o.word == q[0]
-                assert abs(o.time - q[1]) <= _EPS
+        for ro, a in zip(po, t[3]):
+            rp: list[tuple[Word, float]] = [a[i] for i in range(len(a)) if i == 0 or a[i][0] != a[i - 1][0]]
+            assert len(ro) == len(rp)
+            for ru, rv in zip(ro, rp):
+                assert ru.word == rv[0]
+                assert abs(ru.time - rv[1]) <= _EPS
 
 
 def test_WordRetainingDemultiplexer() -> None:
@@ -242,19 +242,19 @@ def test_WordRetainingDemultiplexer() -> None:
         ti: list[Source] = [Source(w, t[1]), Source(s, t[2])]
         to: list[Drain] = [Drain(w) for _ in range(n)]
         dev: WordRetainingDemultiplexer = WordRetainingDemultiplexer(w, n)
-        ti[0].port_o.connect(dev.port_i)
-        ti[1].port_o.connect(dev.port_s)
-        for i in range(n):
-            dev.ports_o[i].connect(to[i].port_i)
-            dev.ports_o[i].add_probe(po[i])
+        for i, p in enumerate([dev.port_i, dev.port_s]):
+            ti[i].port_o.connect(p)
+        for i, q in enumerate(dev.ports_o):
+            q.connect(to[i].port_i)
+            q.add_probe(po[i])
         sim: Simulator = Simulator([*ti, *to, dev])
         sim.start(show_time=True)
-        for p, a in zip(po, t[3]):
-            r: list[tuple[Word, float]] = [a[i] for i in range(len(a)) if i == 0 or a[i][0] != a[i - 1][0]]
-            assert len(p) == len(r)
-            for o, q in zip(p, r):
-                assert o.word == q[0]
-                assert abs(o.time - q[1]) <= _EPS
+        for ro, a in zip(po, t[3]):
+            rp: list[tuple[Word, float]] = [a[i] for i in range(len(a)) if i == 0 or a[i][0] != a[i - 1][0]]
+            assert len(ro) == len(rp)
+            for ru, rv in zip(ro, rp):
+                assert ru.word == rv[0]
+                assert abs(ru.time - rv[1]) <= _EPS
 
 
 def test_Junction() -> None:
@@ -299,9 +299,9 @@ def test_Junction() -> None:
         a: list[tuple[Word, float]] = t[2]
         r: list[tuple[Word, float]] = [a[i] for i in range(len(a)) if i == 0 or a[i][0] != a[i - 1][0]]
         assert len(po) == len(r)
-        for o, q in zip(po, r):
-            assert o.word == q[0]
-            assert abs(o.time - q[1]) <= _EPS
+        for ru, rv in zip(po, r):
+            assert ru.word == rv[0]
+            assert abs(ru.time - rv[1]) <= _EPS
 
 
 def test_Distributor() -> None:
@@ -331,9 +331,9 @@ def test_Distributor() -> None:
         po: list[ChannelProbe] = [ChannelProbe(f'out{i}', t[0]) for i in range(n)]
         to: list[Drain] = [Drain(t[0]) for _ in range(n)]
         dev: Distributor = Distributor(t[0], n)
-        for i in range(n):
-            dev.ports_o[i].connect(to[i].port_i)
-            dev.ports_o[i].add_probe(po[i])
+        for i, q in enumerate(dev.ports_o):
+            q.connect(to[i].port_i)
+            q.add_probe(po[i])
         sim: Simulator = Simulator([*to, dev])
         sim.start(show_time=True)
         for p in po:
@@ -347,13 +347,13 @@ def test_Distributor() -> None:
         to: list[Drain] = [Drain(t[0]) for _ in range(n)]  # type: ignore[no-redef]
         dev: Distributor = Distributor(t[0], n)  # type: ignore[no-redef]
         ti.port_o.connect(dev.port_i)
-        for i in range(n):
-            dev.ports_o[i].connect(to[i].port_i)
-            dev.ports_o[i].add_probe(po[i])
+        for i, q in enumerate(dev.ports_o):
+            q.connect(to[i].port_i)
+            q.add_probe(po[i])
         sim: Simulator = Simulator([ti, *to, dev])  # type: ignore[no-redef]
         sim.start(show_time=True)
-        for p, r in zip(po, t[2]):
-            assert len(p) == len(r)
-            for o, q in zip(p, r):
-                assert o.word == q[0]
-                assert abs(o.time - q[1]) <= _EPS
+        for ro, rp in zip(po, t[2]):
+            assert len(ro) == len(rp)
+            for ru, rv in zip(ro, rp):
+                assert ru.word == rv[0]
+                assert abs(ru.time - rv[1]) <= _EPS

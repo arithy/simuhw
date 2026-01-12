@@ -284,23 +284,18 @@ def test_SynchronousBinaryCounter74161() -> None:
         ti: list[Source] = [Source(u, d) for u, d in zip([1, 1, 1, 1, 1, w], t[1])]
         to: list[Drain] = [Drain(w), Drain(1)]
         dev: SynchronousBinaryCounter74161 = SynchronousBinaryCounter74161(w)
-        dev.port_q.connect(to[0].port_i)
-        dev.port_co.connect(to[1].port_i)
-        ti[0].port_o.connect(dev.port_ck)
-        ti[1].port_o.connect(dev.port_clr)
-        ti[2].port_o.connect(dev.port_enp)
-        ti[3].port_o.connect(dev.port_ent)
-        ti[4].port_o.connect(dev.port_load)
-        ti[5].port_o.connect(dev.port_d)
-        dev.port_q.add_probe(po[0])
-        dev.port_co.add_probe(po[1])
+        for i, p in enumerate([dev.port_ck, dev.port_clr, dev.port_enp, dev.port_ent, dev.port_load, dev.port_d]):
+            ti[i].port_o.connect(p)
+        for i, q in enumerate([dev.port_q, dev.port_co]):
+            q.connect(to[i].port_i)
+            q.add_probe(po[i])
         sim: Simulator = Simulator([*ti, *to, dev])
         sim.start(show_time=True)
-        for p, r in zip(po, t[2]):
-            assert len(p) == len(r)
-            for o, q in zip(p, r):
-                assert o.word == q[0]
-                assert abs(o.time - q[1]) <= _EPS
+        for ro, rp in zip(po, t[2]):
+            assert len(ro) == len(rp)
+            for ru, rv in zip(ro, rp):
+                assert ru.word == rv[0]
+                assert abs(ru.time - rv[1]) <= _EPS
 
 
 def test_SynchronousBinaryCounter74163() -> None:
@@ -541,20 +536,15 @@ def test_SynchronousBinaryCounter74163() -> None:
         ti: list[Source] = [Source(u, d) for u, d in zip([1, 1, 1, 1, 1, w], t[1])]
         to: list[Drain] = [Drain(w), Drain(1)]
         dev: SynchronousBinaryCounter74163 = SynchronousBinaryCounter74163(w)
-        dev.port_q.connect(to[0].port_i)
-        dev.port_co.connect(to[1].port_i)
-        ti[0].port_o.connect(dev.port_ck)
-        ti[1].port_o.connect(dev.port_clr)
-        ti[2].port_o.connect(dev.port_enp)
-        ti[3].port_o.connect(dev.port_ent)
-        ti[4].port_o.connect(dev.port_load)
-        ti[5].port_o.connect(dev.port_d)
-        dev.port_q.add_probe(po[0])
-        dev.port_co.add_probe(po[1])
+        for i, p in enumerate([dev.port_ck, dev.port_clr, dev.port_enp, dev.port_ent, dev.port_load, dev.port_d]):
+            ti[i].port_o.connect(p)
+        for i, q in enumerate([dev.port_q, dev.port_co]):
+            q.connect(to[i].port_i)
+            q.add_probe(po[i])
         sim: Simulator = Simulator([*ti, *to, dev])
         sim.start(show_time=True)
-        for p, r in zip(po, t[2]):
-            assert len(p) == len(r)
-            for o, q in zip(p, r):
-                assert o.word == q[0]
-                assert abs(o.time - q[1]) <= _EPS
+        for ro, rp in zip(po, t[2]):
+            assert len(ro) == len(rp)
+            for ru, rv in zip(ro, rp):
+                assert ru.word == rv[0]
+                assert abs(ru.time - rv[1]) <= _EPS

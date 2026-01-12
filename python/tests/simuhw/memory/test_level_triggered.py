@@ -31,20 +31,21 @@ _EPS: float = 1e-18
 
 
 def test_LevelTriggeredMemory_Mock() -> None:
-    test_data: list[tuple[tuple[int, int, Callable[[Word], Word], bool, bytes], list[list[tuple[Word, float]]]]] = [
+    test_data: list[tuple[tuple[int, int, Callable[[Word], Word], bool, bytes], list[list[tuple[Word, float]]], list[list[tuple[Word, float]]]]] = [
         (
             (8, 4, lambda x: Unknown if not isinstance(x, bytes) else (int.from_bytes(x) + 0xf0).to_bytes(1), False, b'\x0c'),
             [
                 [(cast(list[Word], [Unknown, b'\x00', b'\x01'])[(i // 9) % 3], 1e-9 * i) for i in range(0, 27 * 2, 9)],
                 [(cast(list[Word], [Unknown, b'\x0c', b'\x02'])[(i // 3) % 3], 1e-9 * i) for i in range(0, 27 * 2, 3)],
-                [(Unknown if i % 3 == 0 else (0xc0 + i).to_bytes(1), 1e-9 * i) for i in range(27 * 2)],
+                [(Unknown if i % 3 == 0 else (0xc0 + i).to_bytes(1), 1e-9 * i) for i in range(27 * 2)]
+            ],
+            [
                 [
                     (Unknown if (i // 9) % 3 == 0 else cast(list[Word], [Unknown, b'\xfc', b'\xf2'])[(i // 3) % 3], 1e-9 * i)
                     for i in [12, 15, 18, 21, 24, 27, 39, 42, 45, 48, 51]
                 ],
                 [
-                    (b'\xfc', 1e-9 * i)
-                    for i in [0, 21, 22, 23, 48, 49, 50]
+                    (b'\xfc', 0e-9), *((Unknown if i % 3 == 0 else (0xc0 + i).to_bytes(1), 1e-9 * i) for i in [21, 22, 23, 48, 49, 50])
                 ]
             ]
         ),
@@ -53,14 +54,15 @@ def test_LevelTriggeredMemory_Mock() -> None:
             [
                 [(cast(list[Word], [Unknown, b'\x01', b'\x00'])[(i // 9) % 3], 1e-9 * i) for i in range(0, 27 * 2, 9)],
                 [(cast(list[Word], [Unknown, b'\x0c', b'\x02'])[(i // 3) % 3], 1e-9 * i) for i in range(0, 27 * 2, 3)],
-                [(Unknown if i % 3 == 0 else (0xc0 + i).to_bytes(1), 1e-9 * i) for i in range(27 * 2)],
+                [(Unknown if i % 3 == 0 else (0xc0 + i).to_bytes(1), 1e-9 * i) for i in range(27 * 2)]
+            ],
+            [
                 [
                     (Unknown if (i // 9) % 3 == 0 else cast(list[Word], [Unknown, b'\xfc', b'\xf2'])[(i // 3) % 3], 1e-9 * i)
                     for i in [12, 15, 18, 21, 24, 27, 39, 42, 45, 48, 51]
                 ],
                 [
-                    (b'\xfc', 1e-9 * i)
-                    for i in [0, 21, 22, 23, 48, 49, 50]
+                    (b'\xfc', 0e-9), *((Unknown if i % 3 == 0 else (0xc0 + i).to_bytes(1), 1e-9 * i) for i in [21, 22, 23, 48, 49, 50])
                 ]
             ]
         )
@@ -73,29 +75,30 @@ def test_LevelTriggeredMemory_Mock() -> None:
         ti: list[Source] = [Source(u, d) for u, d in zip([1, a, w], t[1])]
         to: Drain = Drain(w)
         dev: LevelTriggeredMemory = LevelTriggeredMemory(w, a, model=MockMemorizingModel(t[0][2]), neg_leveled=t[0][3])
-        ti[0].port_o.connect(dev.port_g)
-        ti[1].port_o.connect(dev.port_a)
-        ti[2].port_o.connect(dev.port_i)
+        for i, p in enumerate([dev.port_g, dev.port_a, dev.port_i]):
+            ti[i].port_o.connect(p)
         dev.port_o.connect(to.port_i)
         dev.port_o.add_probe(po)
         dev.add_probe(pm, t[0][4])
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
-        for p, r in zip([po, pm], t[1][3:5]):
-            assert len(p) == len(r)
-            for o, q in zip(p, r):
-                assert o.word == q[0]
-                assert abs(o.time - q[1]) <= _EPS
+        for ro, rp in zip([po, pm], t[2]):
+            assert len(ro) == len(rp)
+            for ru, rv in zip(ro, rp):
+                assert ru.word == rv[0]
+                assert abs(ru.time - rv[1]) <= _EPS
 
 
 def test_LevelTriggeredMemory_Real() -> None:
-    test_data: list[tuple[tuple[int, int, bytes, bool, bytes], list[list[tuple[Word, float]]]]] = [
+    test_data: list[tuple[tuple[int, int, bytes, bool, bytes], list[list[tuple[Word, float]]], list[list[tuple[Word, float]]]]] = [
         (
             (8, 4, b'\xa5', False, b'\x0c'),
             [
                 [(cast(list[Word], [Unknown, b'\x00', b'\x01'])[(i // 9) % 3], 1e-9 * i) for i in range(0, 27 * 2, 9)],
                 [(cast(list[Word], [Unknown, b'\x0c', b'\x02'])[(i // 3) % 3], 1e-9 * i) for i in range(0, 27 * 2, 3)],
-                [(Unknown if i % 3 == 0 else (0xc0 + i).to_bytes(1), 1e-9 * i) for i in range(27 * 2)],
+                [(Unknown if i % 3 == 0 else (0xc0 + i).to_bytes(1), 1e-9 * i) for i in range(27 * 2)]
+            ],
+            [
                 [
                     (Unknown if i % 3 == 0 else (0xc0 + i).to_bytes(1), 1e-9 * i) if i >= 0 else
                     (Unknown if (~i // 3) % 3 == 0 else b'\xa5' if ~i // 27 == 0 else (0xc0 + (~i - 9 - 7)).to_bytes(1), 1e-9 * ~i)
@@ -111,7 +114,9 @@ def test_LevelTriggeredMemory_Real() -> None:
             [
                 [(cast(list[Word], [Unknown, b'\x01', b'\x00'])[(i // 9) % 3], 1e-9 * i) for i in range(0, 27 * 2, 9)],
                 [(cast(list[Word], [Unknown, b'\x0c', b'\x02'])[(i // 3) % 3], 1e-9 * i) for i in range(0, 27 * 2, 3)],
-                [(Unknown if i % 3 == 0 else (0xc0 + i).to_bytes(1), 1e-9 * i) for i in range(27 * 2)],
+                [(Unknown if i % 3 == 0 else (0xc0 + i).to_bytes(1), 1e-9 * i) for i in range(27 * 2)]
+            ],
+            [
                 [
                     (Unknown if i % 3 == 0 else (0xc0 + i).to_bytes(1), 1e-9 * i) if i >= 0 else
                     (Unknown if (~i // 3) % 3 == 0 else b'\xa5' if ~i // 27 == 0 else (0xc0 + (~i - 9 - 7)).to_bytes(1), 1e-9 * ~i)
@@ -131,16 +136,15 @@ def test_LevelTriggeredMemory_Real() -> None:
         ti: list[Source] = [Source(u, d) for u, d in zip([1, a, w], t[1])]
         to: Drain = Drain(w)
         dev: LevelTriggeredMemory = LevelTriggeredMemory(w, a, model=RealMemorizingModel(t[0][2]), neg_leveled=t[0][3])
-        ti[0].port_o.connect(dev.port_g)
-        ti[1].port_o.connect(dev.port_a)
-        ti[2].port_o.connect(dev.port_i)
+        for i, p in enumerate([dev.port_g, dev.port_a, dev.port_i]):
+            ti[i].port_o.connect(p)
         dev.port_o.connect(to.port_i)
         dev.port_o.add_probe(po)
         dev.add_probe(pm, t[0][4])
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
-        for p, r in zip([po, pm], t[1][3:5]):
-            assert len(p) == len(r)
-            for o, q in zip(p, r):
-                assert o.word == q[0]
-                assert abs(o.time - q[1]) <= _EPS
+        for ro, rp in zip([po, pm], t[2]):
+            assert len(ro) == len(rp)
+            for ru, rv in zip(ro, rp):
+                assert ru.word == rv[0]
+                assert abs(ru.time - rv[1]) <= _EPS

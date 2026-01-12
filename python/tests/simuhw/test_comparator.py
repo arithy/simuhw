@@ -95,17 +95,17 @@ def test_Comparator() -> None:
         ti: list[Source] = [Source(w, d) for d in t[1][0]]
         to: Drain = Drain(w)
         dev: Comparator = Comparator(w)
+        for i, p in enumerate(dev.ports_i):
+            ti[i].port_o.connect(p)
         dev.port_o.connect(to.port_i)
-        ti[0].port_o.connect(dev.ports_i[0])
-        ti[1].port_o.connect(dev.ports_i[1])
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[Word, float]] = t[1][1][0]
         assert len(po) == len(r)
-        for o, q in zip(po, r):
-            assert o.word == q[0]
-            assert abs(o.time - q[1]) <= _EPS
+        for ru, rv in zip(po, r):
+            assert ru.word == rv[0]
+            assert abs(ru.time - rv[1]) <= _EPS
 
 
 def test_SignedComparator() -> None:
@@ -173,17 +173,17 @@ def test_SignedComparator() -> None:
         ti: list[Source] = [Source(w, d) for d in t[1][0]]
         to: Drain = Drain(w)
         dev: SignedComparator = SignedComparator(w)
+        for i, p in enumerate(dev.ports_i):
+            ti[i].port_o.connect(p)
         dev.port_o.connect(to.port_i)
-        ti[0].port_o.connect(dev.ports_i[0])
-        ti[1].port_o.connect(dev.ports_i[1])
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[Word, float]] = t[1][1][0]
         assert len(po) == len(r)
-        for o, q in zip(po, r):
-            assert o.word == q[0]
-            assert abs(o.time - q[1]) <= _EPS
+        for ru, rv in zip(po, r):
+            assert ru.word == rv[0]
+            assert abs(ru.time - rv[1]) <= _EPS
 
 
 def test_SIMD_Comparator() -> None:
@@ -215,18 +215,17 @@ def test_SIMD_Comparator() -> None:
         ti: list[Source] = [Source(u, d) for u, d in zip([w, w, s], t[2])]
         to: Drain = Drain(w)
         dev: SIMD_Comparator = SIMD_Comparator(w, t[1])
+        for i, p in enumerate([*dev.ports_i, dev.port_s]):
+            ti[i].port_o.connect(p)
         dev.port_o.connect(to.port_i)
-        ti[0].port_o.connect(dev.ports_i[0])
-        ti[1].port_o.connect(dev.ports_i[1])
-        ti[2].port_o.connect(dev.port_s)
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[Word, float]] = t[3]
         assert len(po) == len(r)
-        for o, q in zip(po, r):
-            assert o.word == q[0]
-            assert abs(o.time - q[1]) <= _EPS
+        for ru, rv in zip(po, r):
+            assert ru.word == rv[0]
+            assert abs(ru.time - rv[1]) <= _EPS
 
 
 def test_SIMD_SignedComparator() -> None:
@@ -258,15 +257,14 @@ def test_SIMD_SignedComparator() -> None:
         ti: list[Source] = [Source(u, d) for u, d in zip([w, w, s], t[2])]
         to: Drain = Drain(w)
         dev: SIMD_SignedComparator = SIMD_SignedComparator(w, t[1])
+        for i, p in enumerate([*dev.ports_i, dev.port_s]):
+            ti[i].port_o.connect(p)
         dev.port_o.connect(to.port_i)
-        ti[0].port_o.connect(dev.ports_i[0])
-        ti[1].port_o.connect(dev.ports_i[1])
-        ti[2].port_o.connect(dev.port_s)
         dev.port_o.add_probe(po)
         sim: Simulator = Simulator([*ti, to, dev])
         sim.start(show_time=True)
         r: list[tuple[Word, float]] = t[3]
         assert len(po) == len(r)
-        for o, q in zip(po, r):
-            assert o.word == q[0]
-            assert abs(o.time - q[1]) <= _EPS
+        for ru, rv in zip(po, r):
+            assert ru.word == rv[0]
+            assert abs(ru.time - rv[1]) <= _EPS

@@ -62,20 +62,21 @@ def test_to_signed_int() -> None:
 
 def test_Source_and_Drain() -> None:
     w: int = 10
-    d: list[tuple[Word, float]] = [
-        (b'\x00\x01', 1.0), (b'\x00\x80', 3.0), (b'\xab\xcd', 3.0), (Unknown, 4.0), (b'\x01\x00', 6.0), (b'\x02\x00', 10.0)
+    d: list[list[tuple[Word, float]]] = [
+        [(b'\x00\x01', 1.0), (b'\x00\x80', 3.0), (b'\xab\xcd', 3.0), (b'\x00\x80', 4.0), (b'\xab\xcd', 4.0), (Unknown, 5.0), (b'\x01\x00', 4.0), (b'\x02\x00', 6.0)],
+        [(b'\x00\x01', 1.0), (b'\xab\xcd', 3.0), (Unknown, 5.0), (b'\x02\x00', 6.0)]  # resulted from filtering by a probe
     ]
     po: ChannelProbe = ChannelProbe('out', w)
-    ti: Source = Source(w, d)
+    ti: Source = Source(w, d[0])
     to: Drain = Drain(w)
     ti.port_o.connect(to.port_i)
     to.port_i.add_probe(po)
     sim: Simulator = Simulator([ti, to])
     sim.start(show_time=True)
-    assert len(po) == len(d)
-    for o, q in zip(po, d):
-        assert o.word == q[0]
-        assert o.time == q[1]
+    assert len(po) == len(d[1])
+    for ru, rv in zip(po, d[1]):
+        assert ru.word == rv[0]
+        assert ru.time == rv[1]
 
 
 def test_LogicLowSource() -> None:
@@ -89,9 +90,9 @@ def test_LogicLowSource() -> None:
     sim: Simulator = Simulator([ti, to])
     sim.start(show_time=True)
     assert len(po) == len(d)
-    for o, q in zip(po, d):
-        assert o.word == q[0]
-        assert o.time == q[1]
+    for ru, rv in zip(po, d):
+        assert ru.word == rv[0]
+        assert ru.time == rv[1]
 
 
 def test_LogicHighSource() -> None:
@@ -105,9 +106,9 @@ def test_LogicHighSource() -> None:
     sim: Simulator = Simulator([ti, to])
     sim.start(show_time=True)
     assert len(po) == len(d)
-    for o, q in zip(po, d):
-        assert o.word == q[0]
-        assert o.time == q[1]
+    for ru, rv in zip(po, d):
+        assert ru.word == rv[0]
+        assert ru.time == rv[1]
 
 
 def test_LogicUnknownSource() -> None:
@@ -121,9 +122,9 @@ def test_LogicUnknownSource() -> None:
     sim: Simulator = Simulator([ti, to])
     sim.start(show_time=True)
     assert len(po) == len(d)
-    for o, q in zip(po, d):
-        assert o.word == q[0]
-        assert o.time == q[1]
+    for ru, rv in zip(po, d):
+        assert ru.word == rv[0]
+        assert ru.time == rv[1]
 
 
 def test_HighZSource() -> None:
@@ -137,6 +138,6 @@ def test_HighZSource() -> None:
     sim: Simulator = Simulator([ti, to])
     sim.start(show_time=True)
     assert len(po) == len(d)
-    for o, q in zip(po, d):
-        assert o.word == q[0]
-        assert o.time == q[1]
+    for ru, rv in zip(po, d):
+        assert ru.word == rv[0]
+        assert ru.time == rv[1]
