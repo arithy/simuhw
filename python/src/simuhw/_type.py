@@ -61,3 +61,6 @@ class Signal:
     def time(self) -> float:
         """The time in seconds."""
         return self._time
+
+    def __str__(self) -> str:
+        return f'{self.__class__.__name__}({self._word!r}, {self._time})'
