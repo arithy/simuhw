@@ -38,20 +38,32 @@ class FPToIntegerConverter(UnaryOperator, FPState):
 
     """
 
+    _max_width: int = 64
+    """The maximum supported integer width in bits."""
+
+    @classmethod
+    def max_width(cls) -> int:
+        """The maximum supported integer width in bits.
+
+        Currently, it is 64.
+
+        """
+        return cls._max_width
+
     def __init__(self, dtype_i: Float, width_o: int) -> None:
         """Creates a floating-point to integer converter.
 
         Args:
             dtype_i: The input floating-point type.
             width_o: The output word width in bits.
-                     Must be less than or equal to 64.
+                     Must be less than or equal to the value of :func:`FPToIntegerConverter.max_width()`.
 
         Raises:
-            ValueError: If ``width_o`` is greater than 64.
+            ValueError: If ``width_o`` is greater than the value of :func:`FPToIntegerConverter.max_width()`.
 
         """
-        if width_o > 64:
-            raise ValueError('output word width greater than 64')
+        if width_o > FPToIntegerConverter.max_width():
+            raise ValueError(f'output word width greater than {FPToIntegerConverter.max_width()}')
         super().__init__(dtype_i.size(), width_o)
         FPState.__init__(self)
         self._dtype_i: Float = dtype_i
@@ -160,6 +172,10 @@ class FPToSignedIntegerConverter(FPToIntegerConverter):
         Args:
             dtype_i: The input floating-point type.
             width_o: The output word width in bits.
+                     Must be less than or equal to the value of :func:`FPToIntegerConverter.max_width()`.
+
+        Raises:
+            ValueError: If ``width_o`` is greater than the value of :func:`FPToIntegerConverter.max_width()`.
 
         """
         super().__init__(dtype_i, width_o)
@@ -319,8 +335,14 @@ class SIMD_FPToIntegerConverter(SIMD_UnaryOperator, FPState):
             multi: The number of SIMD elements.
             dtype_i: The input floating-point type.
             dsize_o: The output word width in bits.
+                     Must be less than or equal to the value of :func:`FPToIntegerConverter.max_width()`.
+
+        Raises:
+            ValueError: If ``width_o`` is greater than the value of :func:`FPToIntegerConverter.max_width()`.
 
         """
+        if dsize_o > FPToIntegerConverter.max_width():
+            raise ValueError(f'output word width greater than {FPToIntegerConverter.max_width()}')
         super().__init__(dtype_i.size() * multi, dtype_i.size(), dsize_o * multi)
         FPState.__init__(self)
         self._dtype_i: Float = dtype_i
@@ -445,6 +467,10 @@ class SIMD_FPToSignedIntegerConverter(SIMD_FPToIntegerConverter):
             multi: The number of SIMD elements.
             dtype_i: The input floating-point type.
             dsize_o: The output word width in bits.
+                     Must be less than or equal to the value of :func:`FPToIntegerConverter.max_width()`.
+
+        Raises:
+            ValueError: If ``width_o`` is greater than the value of :func:`FPToIntegerConverter.max_width()`.
 
         """
         super().__init__(multi, dtype_i, dsize_o)
