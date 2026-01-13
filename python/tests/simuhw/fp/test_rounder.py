@@ -67,10 +67,10 @@ def test_FPToIntegerRounder() -> None:
                     for i in range(_float_data_count)
                 ],
                 [
-                    (hwf.TininessMode.AFTER_ROUNDING.to_bytes(1), 0e-9)
+                    (sf.get_tininess_mode().value.to_bytes(1), 0e-9)
                 ],
                 [
-                    (hwf.RoundingMode.MIN.to_bytes(1), 0e-9)
+                    (sf.get_rounding_mode().value.to_bytes(1), 0e-9)
                 ],
                 [
                     (b'\x00', 0e-9)
@@ -86,10 +86,10 @@ def test_FPToIntegerRounder() -> None:
                     for i in range(_float_data_count)
                 ],
                 [
-                    (hwf.TininessMode.AFTER_ROUNDING.to_bytes(1), 0e-9)
+                    (sf.get_tininess_mode().value.to_bytes(1), 0e-9)
                 ],
                 [
-                    (hwf.RoundingMode.MIN.to_bytes(1), 0e-9)
+                    (sf.get_rounding_mode().value.to_bytes(1), 0e-9)
                 ],
                 [
                     (b'\x00', 0e-9)
@@ -105,10 +105,10 @@ def test_FPToIntegerRounder() -> None:
                     for i in range(_float_data_count)
                 ],
                 [
-                    (hwf.TininessMode.AFTER_ROUNDING.to_bytes(1), 0e-9)
+                    (sf.get_tininess_mode().value.to_bytes(1), 0e-9)
                 ],
                 [
-                    (hwf.RoundingMode.MIN.to_bytes(1), 0e-9)
+                    (sf.get_rounding_mode().value.to_bytes(1), 0e-9)
                 ],
                 [
                     (b'\x00', 0e-9)
@@ -124,10 +124,10 @@ def test_FPToIntegerRounder() -> None:
                     for i in range(_float_data_count)
                 ],
                 [
-                    (hwf.TininessMode.AFTER_ROUNDING.to_bytes(1), 0e-9)
+                    (sf.get_tininess_mode().value.to_bytes(1), 0e-9)
                 ],
                 [
-                    (hwf.RoundingMode.MIN.to_bytes(1), 0e-9)
+                    (sf.get_rounding_mode().value.to_bytes(1), 0e-9)
                 ],
                 [
                     (b'\x00', 0e-9)
@@ -214,6 +214,7 @@ def test_FPToIntegerRounder() -> None:
         ]
         for t in test_t
     ]
+    sf.set_rounding_mode(hwf.RoundingMode.MAX)  # set an option different from intended one
     for t, s in zip(test_i, test_o):
         f: hwf.Float = t[0]
         w: int = f.size()
@@ -294,10 +295,10 @@ def test_SIMD_FPToIntegerRounder() -> None:
                     (b'\x03', 1e-9 * (1 + _float_data_count * 3))
                 ],
                 [
-                    (hwf.TininessMode.AFTER_ROUNDING.to_bytes(1), 0e-9)
+                    (sf.get_tininess_mode().value.to_bytes(1), 0e-9)
                 ],
                 [
-                    (hwf.RoundingMode.MIN.to_bytes(1), 0e-9)
+                    (sf.get_rounding_mode().value.to_bytes(1), 0e-9)
                 ],
                 [
                     (b'\x00', 0e-9)
@@ -414,6 +415,7 @@ def test_SIMD_FPToIntegerRounder() -> None:
         ]
         for t in test_t
     ]
+    sf.set_rounding_mode(hwf.RoundingMode.MAX)  # set an option different from intended one
     for t, s in zip(test_i, test_o):
         w: int = t[0][0]
         e: int = t[0][-1]

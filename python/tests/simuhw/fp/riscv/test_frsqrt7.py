@@ -584,10 +584,10 @@ def test_FRSqrt7() -> None:
                     for i, u in enumerate(_float_data[f])
                 ],
                 [
-                    (hwf.TininessMode.AFTER_ROUNDING.to_bytes(1), 0e-9)
+                    (sf.get_tininess_mode().value.to_bytes(1), 0e-9)
                 ],
                 [
-                    (hwf.RoundingMode.MIN.to_bytes(1), 0e-9)
+                    (sf.get_rounding_mode().value.to_bytes(1), 0e-9)
                 ],
                 [
                     (b'\x00', 0e-9)
@@ -609,6 +609,7 @@ def test_FRSqrt7() -> None:
         ]
         for f in [hwf.Float16, hwf.Float32, hwf.Float64]
     ]
+    sf.set_rounding_mode(hwf.RoundingMode.MAX)  # set an option different from intended one
     for t, s in zip(test_i, test_o):
         f: hwf.Float = t[0]
         w: int = f.size()
@@ -658,10 +659,10 @@ def test_SIMD_FRSqrt7() -> None:
                     for h in range(len(test_f))
                 ],
                 [
-                    (hwf.TininessMode.AFTER_ROUNDING.to_bytes(1), 0e-9)
+                    (sf.get_tininess_mode().value.to_bytes(1), 0e-9)
                 ],
                 [
-                    (hwf.RoundingMode.MIN.to_bytes(1), 0e-9)
+                    (sf.get_rounding_mode().value.to_bytes(1), 0e-9)
                 ],
                 [
                     (b'\x00', 0e-9)
@@ -695,6 +696,7 @@ def test_SIMD_FRSqrt7() -> None:
             ]
         ]
     ]
+    sf.set_rounding_mode(hwf.RoundingMode.MAX)  # set an option different from intended one
     for t, s in zip(test_i, test_o):
         po: list[ChannelProbe] = [ChannelProbe('out', test_w), ChannelProbe('fe', riscv.SIMD_FRSqrt7.width_fe)]
         ti: list[Source] = [Source(u, d) for u, d in zip(t[0], t[2])]

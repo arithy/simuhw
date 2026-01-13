@@ -64,12 +64,12 @@ def _to_signed_int(nbits: int, value: int) -> int:
 
 @skipif_unavailable
 def test_FPToIntegerConverter() -> None:
-    sf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
-    sf.set_rounding_mode(hwf.RoundingMode.NEAR_EVEN)
-    sf.set_exception_flags(0)
     for fi in [hwf.Float16, hwf.Float32, hwf.Float64, hwf.Float128]:
         for wo in [7, 33]:
             print(f'fi: {fi}, wo: {wo}')
+            sf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
+            sf.set_rounding_mode(hwf.RoundingMode.MIN)
+            sf.set_exception_flags(0)
             t: tuple[list[list[tuple[Word, float]]], list[list[tuple[Word, float]]]] = (
                 [
                     [
@@ -79,10 +79,10 @@ def test_FPToIntegerConverter() -> None:
                         ]))
                     ],
                     [
-                        (hwf.TininessMode.AFTER_ROUNDING.to_bytes(1), 0e-9)
+                        (sf.get_tininess_mode().value.to_bytes(1), 0e-9)
                     ],
                     [
-                        (hwf.RoundingMode.MIN.to_bytes(1), 0e-9)
+                        (sf.get_rounding_mode().value.to_bytes(1), 0e-9)
                     ],
                     [
                         (b'\x00', 0e-9)
@@ -92,7 +92,7 @@ def test_FPToIntegerConverter() -> None:
                     [
                         (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[Word], [
                             *(
-                                (fi.from_float(v).to_ui64(hwf.RoundingMode.MIN).to_int() & ((1 << wo) - 1)).to_bytes((wo + 7) >> 3)  # type: ignore[attr-defined]
+                                (fi.from_float(v).to_ui64().to_int() & ((1 << wo) - 1)).to_bytes((wo + 7) >> 3)  # type: ignore[attr-defined]
                                 for v in _float_data
                             ),
                             Unknown
@@ -104,7 +104,8 @@ def test_FPToIntegerConverter() -> None:
                                 e.to_bytes(1) for e in [
                                     hwf.ExceptionFlag.INVALID, hwf.ExceptionFlag.INVALID, hwf.ExceptionFlag.INVALID,
                                     hwf.ExceptionFlag.INVALID, 0, 0, hwf.ExceptionFlag.INEXACT,
-                                    hwf.ExceptionFlag.INVALID, hwf.ExceptionFlag.INVALID, hwf.ExceptionFlag.INVALID
+                                    hwf.ExceptionFlag.INVALID if fi.size() > 16 or wo < 16 else 0,  # type: ignore[attr-defined]
+                                    hwf.ExceptionFlag.INVALID, hwf.ExceptionFlag.INVALID
                                 ]
                             ),
                             Unknown
@@ -112,6 +113,7 @@ def test_FPToIntegerConverter() -> None:
                     ]
                 ]
             )
+            sf.set_rounding_mode(hwf.RoundingMode.MAX)  # set an option different from intended one
             wi: int = fi.size()  # type: ignore[attr-defined]
             po: list[ChannelProbe] = [ChannelProbe('out', wo), ChannelProbe('fe', 5)]
             ti: list[Source] = [Source(u, d) for u, d in zip([wi, 1, 3, 5], t[0])]
@@ -133,12 +135,12 @@ def test_FPToIntegerConverter() -> None:
 
 @skipif_unavailable
 def test_FPFromIntegerConverter() -> None:
-    sf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
-    sf.set_rounding_mode(hwf.RoundingMode.NEAR_EVEN)
-    sf.set_exception_flags(0)
     for fo in [hwf.Float16, hwf.Float32, hwf.Float64, hwf.Float128]:
         for wi in [7, 33]:
             print(f'wi: {wi}, fo: {fo}')
+            sf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
+            sf.set_rounding_mode(hwf.RoundingMode.MIN)
+            sf.set_exception_flags(0)
             t: tuple[list[list[tuple[Word, float]]], list[list[tuple[Word, float]]]] = (
                 [
                     [
@@ -148,10 +150,10 @@ def test_FPFromIntegerConverter() -> None:
                         ]))
                     ],
                     [
-                        (hwf.TininessMode.AFTER_ROUNDING.to_bytes(1), 0e-9)
+                        (sf.get_tininess_mode().value.to_bytes(1), 0e-9)
                     ],
                     [
-                        (hwf.RoundingMode.MIN.to_bytes(1), 0e-9)
+                        (sf.get_rounding_mode().value.to_bytes(1), 0e-9)
                     ],
                     [
                         (b'\x00', 0e-9)
@@ -175,6 +177,7 @@ def test_FPFromIntegerConverter() -> None:
                     ]
                 ]
             )
+            sf.set_rounding_mode(hwf.RoundingMode.MAX)  # set an option different from intended one
             wo: int = fo.size()  # type: ignore[attr-defined]
             po: list[ChannelProbe] = [ChannelProbe('out', wo), ChannelProbe('fe', 5)]
             ti: list[Source] = [Source(u, d) for u, d in zip([wi, 1, 3, 5], t[0])]
@@ -196,12 +199,12 @@ def test_FPFromIntegerConverter() -> None:
 
 @skipif_unavailable
 def test_FPToSignedIntegerConverter() -> None:
-    sf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
-    sf.set_rounding_mode(hwf.RoundingMode.NEAR_EVEN)
-    sf.set_exception_flags(0)
     for fi in [hwf.Float16, hwf.Float32, hwf.Float64, hwf.Float128]:
         for wo in [7, 33]:
             print(f'fi: {fi}, wo: {wo}')
+            sf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
+            sf.set_rounding_mode(hwf.RoundingMode.MIN)
+            sf.set_exception_flags(0)
             t: tuple[list[list[tuple[Word, float]]], list[list[tuple[Word, float]]]] = (
                 [
                     [
@@ -211,10 +214,10 @@ def test_FPToSignedIntegerConverter() -> None:
                         ]))
                     ],
                     [
-                        (hwf.TininessMode.AFTER_ROUNDING.to_bytes(1), 0e-9)
+                        (sf.get_tininess_mode().value.to_bytes(1), 0e-9)
                     ],
                     [
-                        (hwf.RoundingMode.MIN.to_bytes(1), 0e-9)
+                        (sf.get_rounding_mode().value.to_bytes(1), 0e-9)
                     ],
                     [
                         (b'\x00', 0e-9)
@@ -224,7 +227,7 @@ def test_FPToSignedIntegerConverter() -> None:
                     [
                         (d, (1 + i) * 1e-9) for i, d in enumerate(cast(list[Word], [
                             *(
-                                (fi.from_float(v).to_i64(hwf.RoundingMode.MIN).to_int() & ((1 << wo) - 1)).to_bytes((wo + 7) >> 3)  # type: ignore[attr-defined]
+                                (fi.from_float(v).to_i64().to_int() & ((1 << wo) - 1)).to_bytes((wo + 7) >> 3)  # type: ignore[attr-defined]
                                 for v in _float_data
                             ),
                             Unknown
@@ -236,7 +239,8 @@ def test_FPToSignedIntegerConverter() -> None:
                                 e.to_bytes(1) for e in [
                                     hwf.ExceptionFlag.INVALID, hwf.ExceptionFlag.INVALID, hwf.ExceptionFlag.INVALID,
                                     hwf.ExceptionFlag.INEXACT, 0, 0, hwf.ExceptionFlag.INEXACT,
-                                    hwf.ExceptionFlag.INVALID, hwf.ExceptionFlag.INVALID, hwf.ExceptionFlag.INVALID
+                                    hwf.ExceptionFlag.INVALID if fi.size() > 16 or wo < 16 else 0,  # type: ignore[attr-defined]
+                                    hwf.ExceptionFlag.INVALID, hwf.ExceptionFlag.INVALID
                                 ]
                             ),
                             Unknown
@@ -244,6 +248,7 @@ def test_FPToSignedIntegerConverter() -> None:
                     ]
                 ]
             )
+            sf.set_rounding_mode(hwf.RoundingMode.MAX)  # set an option different from intended one
             wi: int = fi.size()  # type: ignore[attr-defined]
             po: list[ChannelProbe] = [ChannelProbe('out', wo), ChannelProbe('fe', 5)]
             ti: list[Source] = [Source(u, d) for u, d in zip([wi, 1, 3, 5], t[0])]
@@ -265,12 +270,12 @@ def test_FPToSignedIntegerConverter() -> None:
 
 @skipif_unavailable
 def test_FPFromSignedIntegerConverter() -> None:
-    sf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
-    sf.set_rounding_mode(hwf.RoundingMode.NEAR_EVEN)
-    sf.set_exception_flags(0)
     for fo in [hwf.Float16, hwf.Float32, hwf.Float64, hwf.Float128]:
         for wi in [7, 33]:
             print(f'wi: {wi}, fo: {fo}')
+            sf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
+            sf.set_rounding_mode(hwf.RoundingMode.MIN)
+            sf.set_exception_flags(0)
             t: tuple[list[list[tuple[Word, float]]], list[list[tuple[Word, float]]]] = (
                 [
                     [
@@ -280,10 +285,10 @@ def test_FPFromSignedIntegerConverter() -> None:
                         ]))
                     ],
                     [
-                        (hwf.TininessMode.AFTER_ROUNDING.to_bytes(1), 0e-9)
+                        (sf.get_tininess_mode().value.to_bytes(1), 0e-9)
                     ],
                     [
-                        (hwf.RoundingMode.MIN.to_bytes(1), 0e-9)
+                        (sf.get_rounding_mode().value.to_bytes(1), 0e-9)
                     ],
                     [
                         (b'\x00', 0e-9)
@@ -307,6 +312,7 @@ def test_FPFromSignedIntegerConverter() -> None:
                     ]
                 ]
             )
+            sf.set_rounding_mode(hwf.RoundingMode.MAX)  # set an option different from intended one
             wo: int = fo.size()  # type: ignore[attr-defined]
             po: list[ChannelProbe] = [ChannelProbe('out', wo), ChannelProbe('fe', 5)]
             ti: list[Source] = [Source(u, d) for u, d in zip([wi, 1, 3, 5], t[0])]
@@ -328,12 +334,12 @@ def test_FPFromSignedIntegerConverter() -> None:
 
 @skipif_unavailable
 def test_FPConverter() -> None:
-    sf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
-    sf.set_rounding_mode(hwf.RoundingMode.MIN)
-    sf.set_exception_flags(0)
     for ii, fi in enumerate([hwf.Float16, hwf.Float32, hwf.Float64, hwf.Float128]):
         for fo in [hwf.Float16, hwf.Float32, hwf.Float64, hwf.Float128]:
             print(f'fi: {fi}, fo: {fo}')
+            sf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
+            sf.set_rounding_mode(hwf.RoundingMode.MIN)
+            sf.set_exception_flags(0)
             be: bool = (fo.size() >= fi.size() or fo.size() >= 64)  # type: ignore[attr-defined]
             bo: bool = (fo.size() <= 16)  # type: ignore[attr-defined]
             t: tuple[list[list[tuple[Word, float]]], list[list[tuple[Word, float]]]] = (
@@ -345,10 +351,10 @@ def test_FPConverter() -> None:
                         ]))
                     ],
                     [
-                        (hwf.TininessMode.AFTER_ROUNDING.to_bytes(1), 0e-9)
+                        (sf.get_tininess_mode().value.to_bytes(1), 0e-9)
                     ],
                     [
-                        (hwf.RoundingMode.MIN.to_bytes(1), 0e-9)
+                        (sf.get_rounding_mode().value.to_bytes(1), 0e-9)
                     ],
                     [
                         (b'\x00', 0e-9)
@@ -379,6 +385,7 @@ def test_FPConverter() -> None:
                     ]
                 ]
             )
+            sf.set_rounding_mode(hwf.RoundingMode.MAX)  # set an option different from intended one
             wi: int = fi.size()  # type: ignore[attr-defined]
             wo: int = fo.size()  # type: ignore[attr-defined]
             po: list[ChannelProbe] = [ChannelProbe('out', wo), ChannelProbe('fe', 5)]
@@ -401,13 +408,13 @@ def test_FPConverter() -> None:
 
 @skipif_unavailable
 def test_SIMD_FPToIntegerConverter() -> None:
-    sf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
-    sf.set_rounding_mode(hwf.RoundingMode.NEAR_EVEN)
-    sf.set_exception_flags(0)
     m: int = 4
     for fi in [hwf.Float16, hwf.Float32, hwf.Float64, hwf.Float128]:
         for wo in [7, 33]:
             print(f'fi: {fi}, wo: {wo}')
+            sf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
+            sf.set_rounding_mode(hwf.RoundingMode.MIN)
+            sf.set_exception_flags(0)
             t: tuple[list[list[tuple[Word, float]]], list[list[tuple[Word, float]]]] = (
                 [
                     [
@@ -424,10 +431,10 @@ def test_SIMD_FPToIntegerConverter() -> None:
                         (Unknown, (1 + _float_data_count) * 1e-9)
                     ],
                     [
-                        (hwf.TininessMode.AFTER_ROUNDING.to_bytes(1), 0e-9)
+                        (sf.get_tininess_mode().value.to_bytes(1), 0e-9)
                     ],
                     [
-                        (hwf.RoundingMode.MIN.to_bytes(1), 0e-9)
+                        (sf.get_rounding_mode().value.to_bytes(1), 0e-9)
                     ],
                     [
                         (b'\x00', 0e-9)
@@ -440,7 +447,7 @@ def test_SIMD_FPToIntegerConverter() -> None:
                                 reduce(lambda x, y: (x << wo) | y, (
                                     (
                                         fi.from_float(_float_data[(i + j) % _float_data_count])  # type: ignore[attr-defined]
-                                        .to_ui64(hwf.RoundingMode.MIN).to_int() & ((1 << wo) - 1)
+                                        .to_ui64().to_int() & ((1 << wo) - 1)
                                     )
                                     for j in range(m)
                                 ), 0).to_bytes((wo * m + 7) >> 3),
@@ -457,7 +464,8 @@ def test_SIMD_FPToIntegerConverter() -> None:
                                     [
                                         hwf.ExceptionFlag.INVALID, hwf.ExceptionFlag.INVALID, hwf.ExceptionFlag.INVALID,
                                         hwf.ExceptionFlag.INVALID, 0, 0, hwf.ExceptionFlag.INEXACT,
-                                        hwf.ExceptionFlag.INVALID, hwf.ExceptionFlag.INVALID, hwf.ExceptionFlag.INVALID
+                                        hwf.ExceptionFlag.INVALID if fi.size() > 16 or wo < 16 else 0,  # type: ignore[attr-defined]
+                                        hwf.ExceptionFlag.INVALID, hwf.ExceptionFlag.INVALID
                                     ][(i + j) % _float_data_count]
                                     for j in range(m)
                                 ), 0).to_bytes(1),
@@ -469,6 +477,7 @@ def test_SIMD_FPToIntegerConverter() -> None:
                     ]
                 ]
             )
+            sf.set_rounding_mode(hwf.RoundingMode.MAX)  # set an option different from intended one
             wi: int = fi.size()  # type: ignore[attr-defined]
             po: list[ChannelProbe] = [ChannelProbe('out', wo * m), ChannelProbe('fe', 5)]
             ti: list[Source] = [Source(u, d) for u, d in zip([wi * m, 1, 3, 5], t[0])]
@@ -490,13 +499,13 @@ def test_SIMD_FPToIntegerConverter() -> None:
 
 @skipif_unavailable
 def test_SIMD_FPFromIntegerConverter() -> None:
-    sf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
-    sf.set_rounding_mode(hwf.RoundingMode.NEAR_EVEN)
-    sf.set_exception_flags(0)
     m: int = 4
     for fo in [hwf.Float16, hwf.Float32, hwf.Float64, hwf.Float128]:
         for wi in [7, 33]:
             print(f'wi: {wi}, fo: {fo}')
+            sf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
+            sf.set_rounding_mode(hwf.RoundingMode.MIN)
+            sf.set_exception_flags(0)
             t: tuple[list[list[tuple[Word, float]]], list[list[tuple[Word, float]]]] = (
                 [
                     [
@@ -513,10 +522,10 @@ def test_SIMD_FPFromIntegerConverter() -> None:
                         (Unknown, (1 + _int_data_count) * 1e-9)
                     ],
                     [
-                        (hwf.TininessMode.AFTER_ROUNDING.to_bytes(1), 0e-9)
+                        (sf.get_tininess_mode().value.to_bytes(1), 0e-9)
                     ],
                     [
-                        (hwf.RoundingMode.MIN.to_bytes(1), 0e-9)
+                        (sf.get_rounding_mode().value.to_bytes(1), 0e-9)
                     ],
                     [
                         (b'\x00', 0e-9)
@@ -546,6 +555,7 @@ def test_SIMD_FPFromIntegerConverter() -> None:
                     ]
                 ]
             )
+            sf.set_rounding_mode(hwf.RoundingMode.MAX)  # set an option different from intended one
             wo: int = fo.size()  # type: ignore[attr-defined]
             po: list[ChannelProbe] = [ChannelProbe('out', wo * m), ChannelProbe('fe', 5)]
             ti: list[Source] = [Source(u, d) for u, d in zip([wi * m, 1, 3, 5], t[0])]
@@ -567,13 +577,13 @@ def test_SIMD_FPFromIntegerConverter() -> None:
 
 @skipif_unavailable
 def test_SIMD_FPToSignedIntegerConverter() -> None:
-    sf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
-    sf.set_rounding_mode(hwf.RoundingMode.NEAR_EVEN)
-    sf.set_exception_flags(0)
     m: int = 4
     for fi in [hwf.Float16, hwf.Float32, hwf.Float64, hwf.Float128]:
         for wo in [7, 33]:
             print(f'fi: {fi}, wo: {wo}')
+            sf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
+            sf.set_rounding_mode(hwf.RoundingMode.MIN)
+            sf.set_exception_flags(0)
             t: tuple[list[list[tuple[Word, float]]], list[list[tuple[Word, float]]]] = (
                 [
                     [
@@ -590,10 +600,10 @@ def test_SIMD_FPToSignedIntegerConverter() -> None:
                         (Unknown, (1 + _float_data_count) * 1e-9)
                     ],
                     [
-                        (hwf.TininessMode.AFTER_ROUNDING.to_bytes(1), 0e-9)
+                        (sf.get_tininess_mode().value.to_bytes(1), 0e-9)
                     ],
                     [
-                        (hwf.RoundingMode.MIN.to_bytes(1), 0e-9)
+                        (sf.get_rounding_mode().value.to_bytes(1), 0e-9)
                     ],
                     [
                         (b'\x00', 0e-9)
@@ -606,7 +616,7 @@ def test_SIMD_FPToSignedIntegerConverter() -> None:
                                 reduce(lambda x, y: (x << wo) | y, (
                                     (
                                         fi.from_float(_float_data[(i + j) % _float_data_count])  # type: ignore[attr-defined]
-                                        .to_i64(hwf.RoundingMode.MIN).to_int() & ((1 << wo) - 1)
+                                        .to_i64().to_int() & ((1 << wo) - 1)
                                     )
                                     for j in range(m)
                                 ), 0).to_bytes((wo * m + 7) >> 3),
@@ -623,7 +633,8 @@ def test_SIMD_FPToSignedIntegerConverter() -> None:
                                     [
                                         hwf.ExceptionFlag.INVALID, hwf.ExceptionFlag.INVALID, hwf.ExceptionFlag.INVALID,
                                         hwf.ExceptionFlag.INEXACT, 0, 0, hwf.ExceptionFlag.INEXACT,
-                                        hwf.ExceptionFlag.INVALID, hwf.ExceptionFlag.INVALID, hwf.ExceptionFlag.INVALID
+                                        hwf.ExceptionFlag.INVALID if fi.size() > 16 or wo < 16 else 0,  # type: ignore[attr-defined]
+                                        hwf.ExceptionFlag.INVALID, hwf.ExceptionFlag.INVALID
                                     ][(i + j) % _float_data_count]
                                     for j in range(m)
                                 ), 0).to_bytes(1),
@@ -635,6 +646,7 @@ def test_SIMD_FPToSignedIntegerConverter() -> None:
                     ]
                 ]
             )
+            sf.set_rounding_mode(hwf.RoundingMode.MAX)  # set an option different from intended one
             wi: int = fi.size()  # type: ignore[attr-defined]
             po: list[ChannelProbe] = [ChannelProbe('out', wo * m), ChannelProbe('fe', 5)]
             ti: list[Source] = [Source(u, d) for u, d in zip([wi * m, 1, 3, 5], t[0])]
@@ -656,13 +668,13 @@ def test_SIMD_FPToSignedIntegerConverter() -> None:
 
 @skipif_unavailable
 def test_SIMD_FPFromSignedIntegerConverter() -> None:
-    sf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
-    sf.set_rounding_mode(hwf.RoundingMode.NEAR_EVEN)
-    sf.set_exception_flags(0)
     m: int = 4
     for fo in [hwf.Float16, hwf.Float32, hwf.Float64, hwf.Float128]:
         for wi in [7, 33]:
             print(f'wi: {wi}, fo: {fo}')
+            sf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
+            sf.set_rounding_mode(hwf.RoundingMode.MIN)
+            sf.set_exception_flags(0)
             t: tuple[list[list[tuple[Word, float]]], list[list[tuple[Word, float]]]] = (
                 [
                     [
@@ -679,10 +691,10 @@ def test_SIMD_FPFromSignedIntegerConverter() -> None:
                         (Unknown, (1 + _int_data_count) * 1e-9)
                     ],
                     [
-                        (hwf.TininessMode.AFTER_ROUNDING.to_bytes(1), 0e-9)
+                        (sf.get_tininess_mode().value.to_bytes(1), 0e-9)
                     ],
                     [
-                        (hwf.RoundingMode.MIN.to_bytes(1), 0e-9)
+                        (sf.get_rounding_mode().value.to_bytes(1), 0e-9)
                     ],
                     [
                         (b'\x00', 0e-9)
@@ -712,6 +724,7 @@ def test_SIMD_FPFromSignedIntegerConverter() -> None:
                     ]
                 ]
             )
+            sf.set_rounding_mode(hwf.RoundingMode.MAX)  # set an option different from intended one
             wo: int = fo.size()  # type: ignore[attr-defined]
             po: list[ChannelProbe] = [ChannelProbe('out', wo * m), ChannelProbe('fe', 5)]
             ti: list[Source] = [Source(u, d) for u, d in zip([wi * m, 1, 3, 5], t[0])]
@@ -733,13 +746,13 @@ def test_SIMD_FPFromSignedIntegerConverter() -> None:
 
 @skipif_unavailable
 def test_SIMD_FPConverter() -> None:
-    sf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
-    sf.set_rounding_mode(hwf.RoundingMode.MIN)
-    sf.set_exception_flags(0)
     m: int = 4
     for ii, fi in enumerate([hwf.Float16, hwf.Float32, hwf.Float64, hwf.Float128]):
         for fo in [hwf.Float16, hwf.Float32, hwf.Float64, hwf.Float128]:
             print(f'fi: {fi}, fo: {fo}')
+            sf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
+            sf.set_rounding_mode(hwf.RoundingMode.MIN)
+            sf.set_exception_flags(0)
             be: bool = (fo.size() >= fi.size() or fo.size() >= 64)  # type: ignore[attr-defined]
             bo: bool = (fo.size() <= 16)  # type: ignore[attr-defined]
             t: tuple[list[list[tuple[Word, float]]], list[list[tuple[Word, float]]]] = (
@@ -758,10 +771,10 @@ def test_SIMD_FPConverter() -> None:
                         (Unknown, (1 + _float_data_count) * 1e-9)
                     ],
                     [
-                        (hwf.TininessMode.AFTER_ROUNDING.to_bytes(1), 0e-9)
+                        (sf.get_tininess_mode().value.to_bytes(1), 0e-9)
                     ],
                     [
-                        (hwf.RoundingMode.MIN.to_bytes(1), 0e-9)
+                        (sf.get_rounding_mode().value.to_bytes(1), 0e-9)
                     ],
                     [
                         (b'\x00', 0e-9)
@@ -806,6 +819,7 @@ def test_SIMD_FPConverter() -> None:
                     ]
                 ]
             )
+            sf.set_rounding_mode(hwf.RoundingMode.MAX)  # set an option different from intended one
             wi: int = fi.size()  # type: ignore[attr-defined]
             wo: int = fo.size()  # type: ignore[attr-defined]
             po: list[ChannelProbe] = [ChannelProbe('out', wo * m), ChannelProbe('fe', 5)]

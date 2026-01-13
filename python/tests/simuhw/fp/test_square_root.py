@@ -56,7 +56,7 @@ if hwf.is_available():
 @skipif_unavailable
 def test_FPSquareRoot() -> None:
     sf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
-    sf.set_rounding_mode(hwf.RoundingMode.NEAR_EVEN)
+    sf.set_rounding_mode(hwf.RoundingMode.MIN)
     sf.set_exception_flags(0)
     test_i: list[tuple[hwf.Float, list[int], list[list[tuple[Word, float]]]]] = [
         (
@@ -68,10 +68,10 @@ def test_FPSquareRoot() -> None:
                     for i in range(_float_data_count)
                 ],
                 [
-                    (hwf.TininessMode.AFTER_ROUNDING.to_bytes(1), 0e-9)
+                    (sf.get_tininess_mode().value.to_bytes(1), 0e-9)
                 ],
                 [
-                    (hwf.RoundingMode.NEAR_EVEN.to_bytes(1), 0e-9)
+                    (sf.get_rounding_mode().value.to_bytes(1), 0e-9)
                 ],
                 [
                     (b'\x00', 0e-9)
@@ -87,10 +87,10 @@ def test_FPSquareRoot() -> None:
                     for i in range(_float_data_count)
                 ],
                 [
-                    (hwf.TininessMode.AFTER_ROUNDING.to_bytes(1), 0e-9)
+                    (sf.get_tininess_mode().value.to_bytes(1), 0e-9)
                 ],
                 [
-                    (hwf.RoundingMode.NEAR_EVEN.to_bytes(1), 0e-9)
+                    (sf.get_rounding_mode().value.to_bytes(1), 0e-9)
                 ],
                 [
                     (b'\x00', 0e-9)
@@ -106,10 +106,10 @@ def test_FPSquareRoot() -> None:
                     for i in range(_float_data_count)
                 ],
                 [
-                    (hwf.TininessMode.AFTER_ROUNDING.to_bytes(1), 0e-9)
+                    (sf.get_tininess_mode().value.to_bytes(1), 0e-9)
                 ],
                 [
-                    (hwf.RoundingMode.NEAR_EVEN.to_bytes(1), 0e-9)
+                    (sf.get_rounding_mode().value.to_bytes(1), 0e-9)
                 ],
                 [
                     (b'\x00', 0e-9)
@@ -125,10 +125,10 @@ def test_FPSquareRoot() -> None:
                     for i in range(_float_data_count)
                 ],
                 [
-                    (hwf.TininessMode.AFTER_ROUNDING.to_bytes(1), 0e-9)
+                    (sf.get_tininess_mode().value.to_bytes(1), 0e-9)
                 ],
                 [
-                    (hwf.RoundingMode.NEAR_EVEN.to_bytes(1), 0e-9)
+                    (sf.get_rounding_mode().value.to_bytes(1), 0e-9)
                 ],
                 [
                     (b'\x00', 0e-9)
@@ -215,6 +215,7 @@ def test_FPSquareRoot() -> None:
         ]
         for t in test_t
     ]
+    sf.set_rounding_mode(hwf.RoundingMode.MAX)  # set an option different from intended one
     for t, s in zip(test_i, test_o):
         f: hwf.Float = t[0]
         w: int = f.size()
@@ -239,7 +240,7 @@ def test_FPSquareRoot() -> None:
 @skipif_unavailable
 def test_SIMD_FPSquareRoot() -> None:
     sf.set_tininess_mode(hwf.TininessMode.AFTER_ROUNDING)
-    sf.set_rounding_mode(hwf.RoundingMode.NEAR_EVEN)
+    sf.set_rounding_mode(hwf.RoundingMode.MIN)
     sf.set_exception_flags(0)
     test_i: list[tuple[list[int], list[hwf.Float], list[list[tuple[Word, float]]]]] = [
         (
@@ -295,10 +296,10 @@ def test_SIMD_FPSquareRoot() -> None:
                     (b'\x03', 1e-9 * (1 + _float_data_count * 3))
                 ],
                 [
-                    (hwf.TininessMode.AFTER_ROUNDING.to_bytes(1), 0e-9)
+                    (sf.get_tininess_mode().value.to_bytes(1), 0e-9)
                 ],
                 [
-                    (hwf.RoundingMode.NEAR_EVEN.to_bytes(1), 0e-9)
+                    (sf.get_rounding_mode().value.to_bytes(1), 0e-9)
                 ],
                 [
                     (b'\x00', 0e-9)
@@ -415,6 +416,7 @@ def test_SIMD_FPSquareRoot() -> None:
         ]
         for t in test_t
     ]
+    sf.set_rounding_mode(hwf.RoundingMode.MAX)  # set an option different from intended one
     for t, s in zip(test_i, test_o):
         w: int = t[0][0]
         e: int = t[0][-1]
