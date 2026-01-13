@@ -30,7 +30,7 @@ __all__ = [
     'raise_exception_if_not_available'
 ]
 
-_softfloatpy_least: Version = Version('1.2.2')
+_softfloatpy_least: Version = Version('1.2.3')
 
 _softfloatpy: Version | None = None
 _available: bool = False

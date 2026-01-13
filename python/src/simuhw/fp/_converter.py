@@ -90,7 +90,7 @@ class FPToIntegerConverter(UnaryOperator, FPState):
             if not isinstance(self._ports_i[0].signal.word, bytes):
                 self._port_o.post(Signal(Unknown, self._time))
             else:
-                o: int = self._dtype_i.from_bytes(self._ports_i[0].signal.word).to_ui64(sf.get_rounding_mode()).to_int()
+                o: int = self._dtype_i.from_bytes(self._ports_i[0].signal.word).to_ui64().to_int()
                 e: int = sf.get_exception_flags()
                 if (
                     (e & (sf.ExceptionFlag.OVERFLOW | sf.ExceptionFlag.INFINITE | sf.ExceptionFlag.INVALID)) == 0 and
@@ -196,7 +196,7 @@ class FPToSignedIntegerConverter(FPToIntegerConverter):
             if not isinstance(self._ports_i[0].signal.word, bytes):
                 self._port_o.post(Signal(Unknown, self._time))
             else:
-                o: int = self._dtype_i.from_bytes(self._ports_i[0].signal.word).to_i64(sf.get_rounding_mode()).to_int()
+                o: int = self._dtype_i.from_bytes(self._ports_i[0].signal.word).to_i64().to_int()
                 e: int = sf.get_exception_flags()
                 l: int = (1 << self._width_o) >> 1
                 if (
@@ -380,7 +380,7 @@ class SIMD_FPToIntegerConverter(SIMD_UnaryOperator, FPState):
                     range(0, self._width_o, t)
                 ):
                     e: int = sf.get_exception_flags()
-                    u: int = self._dtype_i.from_bytes(((v >> i) & m).to_bytes(s >> 3)).to_ui64(sf.get_rounding_mode()).to_int()
+                    u: int = self._dtype_i.from_bytes(((v >> i) & m).to_bytes(s >> 3)).to_ui64().to_int()
                     if (
                         (e & (sf.ExceptionFlag.OVERFLOW | sf.ExceptionFlag.INFINITE | sf.ExceptionFlag.INVALID)) == 0 and
                         u >= (1 << t)
@@ -503,7 +503,7 @@ class SIMD_FPToSignedIntegerConverter(SIMD_FPToIntegerConverter):
                     range(0, self._width_o, t)
                 ):
                     e: int = sf.get_exception_flags()
-                    u: int = self._dtype_i.from_bytes(((v >> i) & m).to_bytes(s >> 3)).to_i64(sf.get_rounding_mode()).to_int()
+                    u: int = self._dtype_i.from_bytes(((v >> i) & m).to_bytes(s >> 3)).to_i64().to_int()
                     if (
                         (e & (sf.ExceptionFlag.OVERFLOW | sf.ExceptionFlag.INFINITE | sf.ExceptionFlag.INVALID)) == 0 and
                         (u >= l or u < -l)
