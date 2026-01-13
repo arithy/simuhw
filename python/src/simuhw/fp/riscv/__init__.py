@@ -27,9 +27,9 @@ __all__ = []
 
 if is_available():
     __all__ += [
-        'FRec7', 'SIMD_FRec7',
-        'FRSqrt7', 'SIMD_FRSqrt7'
+        'FRec7', 'SIMD_FRec7', 'frec7',
+        'FRSqrt7', 'SIMD_FRSqrt7', 'frsqrt7'
     ]
 
-    from ._frec7 import FRec7, SIMD_FRec7
-    from ._frsqrt7 import FRSqrt7, SIMD_FRSqrt7
+    from ._frec7 import FRec7, SIMD_FRec7, frec7
+    from ._frsqrt7 import FRSqrt7, SIMD_FRSqrt7, frsqrt7

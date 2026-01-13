@@ -85,7 +85,7 @@ def _frsqrt7_core(bin: bytes, nbits_exp: int, nbits_man: int, bias_exp: int) -> 
     return ((e << nbits_man) | m).to_bytes(len(bin))
 
 
-def _frsqrt7(x: sf.Float16 | sf.Float32 | sf.Float64 | sf.Float128) -> sf.Float16 | sf.Float32 | sf.Float64 | sf.Float128:
+def frsqrt7(x: sf.Float16 | sf.Float32 | sf.Float64 | sf.Float128) -> sf.Float16 | sf.Float32 | sf.Float64 | sf.Float128:
     if isinstance(x, sf.Float16):
         return sf.Float16.from_bytes(_frsqrt7_core(x.to_bytes(), 5, 10, 15))
     elif isinstance(x, sf.Float32):
@@ -135,7 +135,7 @@ class FRSqrt7(FPUnaryOperator):
                 self._port_o.post(Signal(Unknown, self._time))
             else:
                 assert isinstance(self._ports_i[0].signal.word, bytes)
-                self._port_o.post(Signal(_frsqrt7(self._dtype.from_bytes(self._ports_i[0].signal.word)).to_bytes(), self._time))
+                self._port_o.post(Signal(frsqrt7(self._dtype.from_bytes(self._ports_i[0].signal.word)).to_bytes(), self._time))
             self.restore_states(self._time, not isinstance(self._port_o.signal.word, bytes))
             self._set_inputs_unchanged(ports_i)
         return (ports_i, None)
@@ -193,7 +193,7 @@ class SIMD_FRSqrt7(SIMD_FPUnaryOperator):
                 o: bytes = b''
                 for i in range(0, self._width, w):
                     u: bytes = ((v >> i) & m).to_bytes(w >> 3)
-                    o = _frsqrt7(self._dtype[s].from_bytes(u)).to_bytes() + o
+                    o = frsqrt7(self._dtype[s].from_bytes(u)).to_bytes() + o
                 self._port_o.post(Signal(o, self._time))
             self.restore_states(self._time, not isinstance(self._port_o.signal.word, bytes))
             self._set_inputs_unchanged(ports_i)
