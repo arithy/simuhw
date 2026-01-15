@@ -167,6 +167,10 @@ import simuhw as hw
       - [`fp.riscv.FRSqrt7`](https://arithy.github.io/simuhw/apidoc/simuhw.fp.riscv.html#simuhw.fp.riscv.FRSqrt7)
       - [`fp.riscv.SIMD_FRec7`](https://arithy.github.io/simuhw/apidoc/simuhw.fp.riscv.html#simuhw.fp.riscv.SIMD_FRec7)
       - [`fp.riscv.SIMD_FRSqrt7`](https://arithy.github.io/simuhw/apidoc/simuhw.fp.riscv.html#simuhw.fp.riscv.SIMD_FRSqrt7)
+    - Arithmetic Logic Unit
+      - [`alu.GenericArithmeticLogicUnit`](https://arithy.github.io/simuhw/apidoc/simuhw.alu.html#simuhw.alu.GenericArithmeticLogicUnit)
+      - [`alu.FullArithmeticLogicUnit`](https://arithy.github.io/simuhw/apidoc/simuhw.alu.html#simuhw.alu.FullArithmeticLogicUnit)
+      - [`alu.SIMD_FullArithmeticLogicUnit`](https://arithy.github.io/simuhw/apidoc/simuhw.alu.html#simuhw.alu.SIMD_FullArithmeticLogicUnit)
     - Counter
       - [`counter.SynchronousBinaryCounter74161`](https://arithy.github.io/simuhw/apidoc/simuhw.counter.html#simuhw.counter.SynchronousBinaryCounter74161)
       - [`counter.SynchronousBinaryCounter74163`](https://arithy.github.io/simuhw/apidoc/simuhw.counter.html#simuhw.counter.SynchronousBinaryCounter74163)
