@@ -20,6 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from collections.abc import Iterable, Callable
 from typing import cast
 from functools import reduce
 import math
@@ -314,6 +315,13 @@ def test_FullArithmeticLogicUnit() -> None:
 
 
 def test_SIMD_FullArithmeticLogicUnit() -> None:
+
+    def gen_simd_data_int_1(o: SIMD_Operator, s: int, f: Callable[[int], int], ax: Iterable[int]) -> int:
+        return reduce(lambda a, b: (a << o.dsize_o[s]) | (b & ((1 << o.dsize_o[s]) - 1)), (f(x) for x in ax), 0)
+
+    def gen_simd_data_int_2(o: SIMD_Operator, s: int, f: Callable[[int, int], int], ax: Iterable[int], ay: Iterable[int]) -> int:
+        return reduce(lambda a, b: (a << o.dsize_o[s]) | (b & ((1 << o.dsize_o[s]) - 1)), (f(x, y) for x, y in zip(ax, ay)), 0)
+
     test_lut: list[bytes] = [
         ((math.ceil(math.sin(i + 3) * (1 << 20))) & ((1 << 16) - 1)).to_bytes((16 + 7) >> 3)
         for i in range(1 << 8)
@@ -389,34 +397,31 @@ def test_SIMD_FullArithmeticLogicUnit() -> None:
                 (
                     cast(Word, [
                         ((
-                            reduce(lambda a, b: (a << o.dsize_o[s]) | (b & ((1 << o.dsize_o[s]) - 1)), (
-                                (
-                                    (x << y) if type(o) is hw.SIMD_LeftShifter else
-                                    (x >> y) if type(o) is hw.SIMD_RightShifter else
-                                    (_to_signed_int(o.dsize_i[s], x) >> y) if type(o) is hw.SIMD_ArithmeticRightShifter else
-                                    ((x << (y % o.dsize_o[s])) | (x >> (o.dsize_o[s] - y % o.dsize_o[s]))) if type(o) is hw.SIMD_LeftRotator else
-                                    ((x >> (y % o.dsize_o[s])) | (x << (o.dsize_o[s] - y % o.dsize_o[s]))) if type(o) is hw.SIMD_RightRotator else
-                                    p if type(o) is hw.SIMD_PopulationCounter else
-                                    (o.dsize_o[s] - r) if type(o) is hw.SIMD_LeadingZeroCounter else
-                                    t if type(o) is hw.SIMD_TrailingZeroCounter else
-                                    (v << (o.dsize_o[s] - 8)) if type(o) is hw.SIMD_BitReverser else
-                                    (-x) if type(o) is hw.SIMD_Negator else
-                                    (x + y) if type(o) is hw.SIMD_Adder else
-                                    (x - y) if type(o) is hw.SIMD_Subtractor else
-                                    (x * y) if type(o) is hw.SIMD_Multiplier else
-                                    (_to_signed_int(o.dsize_i[s], x) * _to_signed_int(o.dsize_i[s], y)) if type(o) is hw.SIMD_SignedMultiplier else
-                                    (x // y if y != 0 else 0) if type(o) is hw.SIMD_Divider else
-                                    (_div(_to_signed_int(o.dsize_i[s], x), _to_signed_int(o.dsize_i[s], y)) if y != 0 else 0) if type(o) is hw.SIMD_SignedDivider else
-                                    (x % y if y != 0 else 0) if type(o) is hw.SIMD_Remainder else
-                                    (_rem(_to_signed_int(o.dsize_i[s], x), _to_signed_int(o.dsize_i[s], y)) if y != 0 else 0) if type(o) is hw.SIMD_SignedRemainder else
-                                    _cmp(x, y) if type(o) is hw.SIMD_Comparator else
-                                    _cmp(_to_signed_int(o.dsize_i[s], x), _to_signed_int(o.dsize_i[s], y)) if type(o) is hw.SIMD_SignedComparator else
-                                    x if type(o) is hw.SIMD_IntegerConverter else
-                                    _to_signed_int(o.dsize_i[s], x) if type(o) is hw.SIMD_SignedIntegerConverter else
-                                    0
-                                )
-                                for x, y, p, r, t, v in zip(tx, ty, tp, tr, tt, tv)
-                            ), 0) if isinstance(o, SIMD_Operator) else (
+                            (
+                                gen_simd_data_int_2(o, s, lambda x, y: x << y, tx, ty) if type(o) is hw.SIMD_LeftShifter else
+                                gen_simd_data_int_2(o, s, lambda x, y: x >> y, tx, ty) if type(o) is hw.SIMD_RightShifter else
+                                gen_simd_data_int_2(o, s, lambda x, y: _to_signed_int(o.dsize_i[s], x) >> y, tx, ty) if type(o) is hw.SIMD_ArithmeticRightShifter else
+                                gen_simd_data_int_2(o, s, lambda x, y: (x << (y % o.dsize_o[s])) | (x >> (o.dsize_o[s] - y % o.dsize_o[s])), tx, ty) if type(o) is hw.SIMD_LeftRotator else
+                                gen_simd_data_int_2(o, s, lambda x, y: (x >> (y % o.dsize_o[s])) | (x << (o.dsize_o[s] - y % o.dsize_o[s])), tx, ty) if type(o) is hw.SIMD_RightRotator else
+                                gen_simd_data_int_1(o, s, lambda p: p, tp) if type(o) is hw.SIMD_PopulationCounter else
+                                gen_simd_data_int_1(o, s, lambda r: o.dsize_o[s] - r, tr) if type(o) is hw.SIMD_LeadingZeroCounter else
+                                gen_simd_data_int_1(o, s, lambda t: t, tt) if type(o) is hw.SIMD_TrailingZeroCounter else
+                                gen_simd_data_int_1(o, s, lambda v: v << (o.dsize_o[s] - 8), tv) if type(o) is hw.SIMD_BitReverser else
+                                gen_simd_data_int_1(o, s, lambda x: -x, tx) if type(o) is hw.SIMD_Negator else
+                                gen_simd_data_int_2(o, s, lambda x, y: x + y, tx, ty) if type(o) is hw.SIMD_Adder else
+                                gen_simd_data_int_2(o, s, lambda x, y: x - y, tx, ty) if type(o) is hw.SIMD_Subtractor else
+                                gen_simd_data_int_2(o, s, lambda x, y: x * y, tx, ty) if type(o) is hw.SIMD_Multiplier else
+                                gen_simd_data_int_2(o, s, lambda x, y: _to_signed_int(o.dsize_i[s], x) * _to_signed_int(o.dsize_i[s], y), tx, ty) if type(o) is hw.SIMD_SignedMultiplier else
+                                gen_simd_data_int_2(o, s, lambda x, y: x // y if y != 0 else 0, tx, ty) if type(o) is hw.SIMD_Divider else
+                                gen_simd_data_int_2(o, s, lambda x, y: _div(_to_signed_int(o.dsize_i[s], x), _to_signed_int(o.dsize_i[s], y)) if y != 0 else 0, tx, ty) if type(o) is hw.SIMD_SignedDivider else
+                                gen_simd_data_int_2(o, s, lambda x, y: x % y if y != 0 else 0, tx, ty) if type(o) is hw.SIMD_Remainder else
+                                gen_simd_data_int_2(o, s, lambda x, y: _rem(_to_signed_int(o.dsize_i[s], x), _to_signed_int(o.dsize_i[s], y)) if y != 0 else 0, tx, ty) if type(o) is hw.SIMD_SignedRemainder else
+                                gen_simd_data_int_2(o, s, lambda x, y: _cmp(x, y), tx, ty) if type(o) is hw.SIMD_Comparator else
+                                gen_simd_data_int_2(o, s, lambda x, y: _cmp(_to_signed_int(o.dsize_i[s], x), _to_signed_int(o.dsize_i[s], y)), tx, ty) if type(o) is hw.SIMD_SignedComparator else
+                                gen_simd_data_int_1(o, s, lambda x: x, tx) if type(o) is hw.SIMD_IntegerConverter else
+                                gen_simd_data_int_1(o, s, lambda x: _to_signed_int(o.dsize_i[s], x), tx) if type(o) is hw.SIMD_SignedIntegerConverter else
+                                0
+                            ) if isinstance(o, SIMD_Operator) else (
                                 x if type(o) is hw.Buffer else
                                 (~x) if type(o) is hw.Inverter else
                                 (x & y) if type(o) is hw.ANDGate else
@@ -761,6 +766,25 @@ def test_FPFullArithmeticLogicUnit() -> None:
 
 @skipif_unavailable
 def test_SIMD_FPFullArithmeticLogicUnit() -> None:
+
+    def gen_simd_data_int_1(o: SIMD_Operator, s: int, f: Callable[[int], int], ax: Iterable[int]) -> int:
+        return reduce(lambda a, b: (a << o.dsize_o[s]) | (b & ((1 << o.dsize_o[s]) - 1)), (f(x) for x in ax), 0)
+
+    def gen_simd_data_int_2(o: SIMD_Operator, s: int, f: Callable[[int, int], int], ax: Iterable[int], ay: Iterable[int]) -> int:
+        return reduce(lambda a, b: (a << o.dsize_o[s]) | (b & ((1 << o.dsize_o[s]) - 1)), (f(x, y) for x, y in zip(ax, ay)), 0)
+
+    def gen_simd_data_fp_1(o: SIMD_Operator, s: int, f: Callable[[float], bytes], ax: Iterable[float]) -> int:
+        return reduce(lambda a, b: (a << o.dsize_o[s]) | (b & ((1 << o.dsize_o[s]) - 1)), (int.from_bytes(f(x)) for x in ax), 0)
+
+    def gen_simd_data_fp_2(o: SIMD_Operator, s: int, f: Callable[[float, float], bytes], ax: Iterable[float], ay: Iterable[float]) -> int:
+        return reduce(lambda a, b: (a << o.dsize_o[s]) | (b & ((1 << o.dsize_o[s]) - 1)), (int.from_bytes(f(x, y)) for x, y in zip(ax, ay)), 0)
+
+    def gen_simd_data_fp_3(o: SIMD_Operator, s: int, f: Callable[[float, float, float], bytes], ax: Iterable[float], ay: Iterable[float], az: Iterable[float]) -> int:
+        return reduce(lambda a, b: (a << o.dsize_o[s]) | (b & ((1 << o.dsize_o[s]) - 1)), (int.from_bytes(f(x, y, z)) for x, y, z in zip(ax, ay, az)), 0)
+
+    def gen_simd_data_int_fp(o: SIMD_Operator, s: int, f: Callable[[int], bytes], ax: Iterable[int]) -> int:
+        return reduce(lambda a, b: (a << o.dsize_o[s]) | (b & ((1 << o.dsize_o[s]) - 1)), (int.from_bytes(f(x)) for x in ax), 0)
+
     test_lut: list[bytes] = [
         ((math.ceil(math.sin(i + 3) * (1 << 20))) & ((1 << 16) - 1)).to_bytes((16 + 7) >> 3)
         for i in range(1 << 8)
@@ -879,52 +903,49 @@ def test_SIMD_FPFullArithmeticLogicUnit() -> None:
                 (
                     cast(Word, [
                         ((
-                            reduce(lambda a, b: (a << o.dsize_o[s]) | (b & ((1 << o.dsize_o[s]) - 1)), (
-                                (
-                                    (x << y) if type(o) is hw.SIMD_LeftShifter else
-                                    (x >> y) if type(o) is hw.SIMD_RightShifter else
-                                    (_to_signed_int(o.dsize_i[s], x) >> y) if type(o) is hw.SIMD_ArithmeticRightShifter else
-                                    ((x << (y % o.dsize_o[s])) | (x >> (o.dsize_o[s] - y % o.dsize_o[s]))) if type(o) is hw.SIMD_LeftRotator else
-                                    ((x >> (y % o.dsize_o[s])) | (x << (o.dsize_o[s] - y % o.dsize_o[s]))) if type(o) is hw.SIMD_RightRotator else
-                                    p if type(o) is hw.SIMD_PopulationCounter else
-                                    (o.dsize_o[s] - r) if type(o) is hw.SIMD_LeadingZeroCounter else
-                                    t if type(o) is hw.SIMD_TrailingZeroCounter else
-                                    (v << (o.dsize_o[s] - 8)) if type(o) is hw.SIMD_BitReverser else
-                                    (-x) if type(o) is hw.SIMD_Negator else
-                                    (x + y) if type(o) is hw.SIMD_Adder else
-                                    (x - y) if type(o) is hw.SIMD_Subtractor else
-                                    (x * y) if type(o) is hw.SIMD_Multiplier else
-                                    (_to_signed_int(o.dsize_i[s], x) * _to_signed_int(o.dsize_i[s], y)) if type(o) is hw.SIMD_SignedMultiplier else
-                                    (x // y if y != 0 else 0) if type(o) is hw.SIMD_Divider else
-                                    (_div(_to_signed_int(o.dsize_i[s], x), _to_signed_int(o.dsize_i[s], y)) if y != 0 else 0) if type(o) is hw.SIMD_SignedDivider else
-                                    (x % y if y != 0 else 0) if type(o) is hw.SIMD_Remainder else
-                                    (_rem(_to_signed_int(o.dsize_i[s], x), _to_signed_int(o.dsize_i[s], y)) if y != 0 else 0) if type(o) is hw.SIMD_SignedRemainder else
-                                    _cmp(x, y) if type(o) is hw.SIMD_Comparator else
-                                    _cmp(_to_signed_int(o.dsize_i[s], x), _to_signed_int(o.dsize_i[s], y)) if type(o) is hw.SIMD_SignedComparator else
-                                    x if type(o) is hw.SIMD_IntegerConverter else
-                                    _to_signed_int(o.dsize_i[s], x) if type(o) is hw.SIMD_SignedIntegerConverter else
-                                    int.from_bytes(_fp_neg(fp.dsize_to_dtype(o.dsize_i[s]), f)) if type(o) is fp.SIMD_FPNegator else
-                                    int.from_bytes(_fp_add(fp.dsize_to_dtype(o.dsize_i[s]), f, g)) if type(o) is fp.SIMD_FPAdder else
-                                    int.from_bytes(_fp_sub(fp.dsize_to_dtype(o.dsize_i[s]), f, g)) if type(o) is fp.SIMD_FPSubtractor else
-                                    int.from_bytes(_fp_mul(fp.dsize_to_dtype(o.dsize_i[s]), f, g)) if type(o) is fp.SIMD_FPMultiplier else
-                                    int.from_bytes(_fp_mul_add(fp.dsize_to_dtype(o.dsize_i[s]), f, g, h)) if type(o) is fp.SIMD_FPMultiplyAdder else
-                                    int.from_bytes(_fp_div(fp.dsize_to_dtype(o.dsize_i[s]), f, g)) if type(o) is fp.SIMD_FPDivider else
-                                    int.from_bytes(_fp_rem(fp.dsize_to_dtype(o.dsize_i[s]), f, g)) if type(o) is fp.SIMD_FPRemainder else
-                                    int.from_bytes(_fp_sqrt(fp.dsize_to_dtype(o.dsize_i[s]), f)) if type(o) is fp.SIMD_FPSquareRoot else
-                                    int.from_bytes(_fp_cmp(fp.dsize_to_dtype(o.dsize_i[s]), f, g)) if type(o) is fp.SIMD_FPComparator else
-                                    0 if type(o) is fp.SIMD_FPClassifier else
-                                    int.from_bytes(_fp_round_to_int(fp.dsize_to_dtype(o.dsize_i[s]), f)) if type(o) is fp.SIMD_FPToIntegerRounder else
-                                    int.from_bytes(_fp_from_ui64(fp.dsize_to_dtype(o.dsize_o[s]), x)) if type(o) is fp.SIMD_FPFromIntegerConverter else
-                                    int.from_bytes(_fp_from_i64(fp.dsize_to_dtype(o.dsize_o[s]), _to_signed_int(o.dsize_i[s], x))) if type(o) is fp.SIMD_FPFromSignedIntegerConverter else
-                                    int.from_bytes(_fp_to_ui64(fp.dsize_to_dtype(o.dsize_i[s]), f)) if type(o) is fp.SIMD_FPToIntegerConverter else
-                                    int.from_bytes(_fp_to_i64(fp.dsize_to_dtype(o.dsize_i[s]), f)) if type(o) is fp.SIMD_FPToSignedIntegerConverter else
-                                    int.from_bytes(_fp_to_fp(fp.dsize_to_dtype(o.dsize_i[s]), fp.dsize_to_dtype(o.dsize_o[s]), f)) if type(o) is fp.SIMD_FPConverter else
-                                    int.from_bytes(_fp_frec7(fp.dsize_to_dtype(o.dsize_i[s]), f)) if type(o) is riscv.SIMD_FRec7 else
-                                    int.from_bytes(_fp_frsqrt7(fp.dsize_to_dtype(o.dsize_i[s]), f)) if type(o) is riscv.SIMD_FRSqrt7 else
-                                    0
-                                )
-                                for x, y, p, r, t, v, f, g, h in zip(tx, ty, tp, tr, tt, tv, tf, tg, th)
-                            ), 0) if isinstance(o, SIMD_Operator) else (
+                            (
+                                gen_simd_data_int_2(o, s, lambda x, y: x << y, tx, ty) if type(o) is hw.SIMD_LeftShifter else
+                                gen_simd_data_int_2(o, s, lambda x, y: x >> y, tx, ty) if type(o) is hw.SIMD_RightShifter else
+                                gen_simd_data_int_2(o, s, lambda x, y: _to_signed_int(o.dsize_i[s], x) >> y, tx, ty) if type(o) is hw.SIMD_ArithmeticRightShifter else
+                                gen_simd_data_int_2(o, s, lambda x, y: (x << (y % o.dsize_o[s])) | (x >> (o.dsize_o[s] - y % o.dsize_o[s])), tx, ty) if type(o) is hw.SIMD_LeftRotator else
+                                gen_simd_data_int_2(o, s, lambda x, y: (x >> (y % o.dsize_o[s])) | (x << (o.dsize_o[s] - y % o.dsize_o[s])), tx, ty) if type(o) is hw.SIMD_RightRotator else
+                                gen_simd_data_int_1(o, s, lambda p: p, tp) if type(o) is hw.SIMD_PopulationCounter else
+                                gen_simd_data_int_1(o, s, lambda r: o.dsize_o[s] - r, tr) if type(o) is hw.SIMD_LeadingZeroCounter else
+                                gen_simd_data_int_1(o, s, lambda t: t, tt) if type(o) is hw.SIMD_TrailingZeroCounter else
+                                gen_simd_data_int_1(o, s, lambda v: v << (o.dsize_o[s] - 8), tv) if type(o) is hw.SIMD_BitReverser else
+                                gen_simd_data_int_1(o, s, lambda x: -x, tx) if type(o) is hw.SIMD_Negator else
+                                gen_simd_data_int_2(o, s, lambda x, y: x + y, tx, ty) if type(o) is hw.SIMD_Adder else
+                                gen_simd_data_int_2(o, s, lambda x, y: x - y, tx, ty) if type(o) is hw.SIMD_Subtractor else
+                                gen_simd_data_int_2(o, s, lambda x, y: x * y, tx, ty) if type(o) is hw.SIMD_Multiplier else
+                                gen_simd_data_int_2(o, s, lambda x, y: _to_signed_int(o.dsize_i[s], x) * _to_signed_int(o.dsize_i[s], y), tx, ty) if type(o) is hw.SIMD_SignedMultiplier else
+                                gen_simd_data_int_2(o, s, lambda x, y: x // y if y != 0 else 0, tx, ty) if type(o) is hw.SIMD_Divider else
+                                gen_simd_data_int_2(o, s, lambda x, y: _div(_to_signed_int(o.dsize_i[s], x), _to_signed_int(o.dsize_i[s], y)) if y != 0 else 0, tx, ty) if type(o) is hw.SIMD_SignedDivider else
+                                gen_simd_data_int_2(o, s, lambda x, y: x % y if y != 0 else 0, tx, ty) if type(o) is hw.SIMD_Remainder else
+                                gen_simd_data_int_2(o, s, lambda x, y: _rem(_to_signed_int(o.dsize_i[s], x), _to_signed_int(o.dsize_i[s], y)) if y != 0 else 0, tx, ty) if type(o) is hw.SIMD_SignedRemainder else
+                                gen_simd_data_int_2(o, s, lambda x, y: _cmp(x, y), tx, ty) if type(o) is hw.SIMD_Comparator else
+                                gen_simd_data_int_2(o, s, lambda x, y: _cmp(_to_signed_int(o.dsize_i[s], x), _to_signed_int(o.dsize_i[s], y)), tx, ty) if type(o) is hw.SIMD_SignedComparator else
+                                gen_simd_data_int_1(o, s, lambda x: x, tx) if type(o) is hw.SIMD_IntegerConverter else
+                                gen_simd_data_int_1(o, s, lambda x: _to_signed_int(o.dsize_i[s], x), tx) if type(o) is hw.SIMD_SignedIntegerConverter else
+                                gen_simd_data_fp_1(o, s, lambda f: _fp_neg(fp.dsize_to_dtype(o.dsize_i[s]), f), tf) if type(o) is fp.SIMD_FPNegator else
+                                gen_simd_data_fp_2(o, s, lambda f, g: _fp_add(fp.dsize_to_dtype(o.dsize_i[s]), f, g), tf, tg) if type(o) is fp.SIMD_FPAdder else
+                                gen_simd_data_fp_2(o, s, lambda f, g: _fp_sub(fp.dsize_to_dtype(o.dsize_i[s]), f, g), tf, tg) if type(o) is fp.SIMD_FPSubtractor else
+                                gen_simd_data_fp_2(o, s, lambda f, g: _fp_mul(fp.dsize_to_dtype(o.dsize_i[s]), f, g), tf, tg) if type(o) is fp.SIMD_FPMultiplier else
+                                gen_simd_data_fp_3(o, s, lambda f, g, h: _fp_mul_add(fp.dsize_to_dtype(o.dsize_i[s]), f, g, h), tf, tg, th) if type(o) is fp.SIMD_FPMultiplyAdder else
+                                gen_simd_data_fp_2(o, s, lambda f, g: _fp_div(fp.dsize_to_dtype(o.dsize_i[s]), f, g), tf, tg) if type(o) is fp.SIMD_FPDivider else
+                                gen_simd_data_fp_2(o, s, lambda f, g: _fp_rem(fp.dsize_to_dtype(o.dsize_i[s]), f, g), tf, tg) if type(o) is fp.SIMD_FPRemainder else
+                                gen_simd_data_fp_1(o, s, lambda f: _fp_sqrt(fp.dsize_to_dtype(o.dsize_i[s]), f), tf) if type(o) is fp.SIMD_FPSquareRoot else
+                                gen_simd_data_fp_2(o, s, lambda f, g: _fp_cmp(fp.dsize_to_dtype(o.dsize_i[s]), f, g), tf, tg) if type(o) is fp.SIMD_FPComparator else
+                                0 if type(o) is fp.SIMD_FPClassifier else
+                                gen_simd_data_fp_1(o, s, lambda f: _fp_round_to_int(fp.dsize_to_dtype(o.dsize_i[s]), f), tf) if type(o) is fp.SIMD_FPToIntegerRounder else
+                                gen_simd_data_int_fp(o, s, lambda x: _fp_from_ui64(fp.dsize_to_dtype(o.dsize_o[s]), x), tx) if type(o) is fp.SIMD_FPFromIntegerConverter else
+                                gen_simd_data_int_fp(o, s, lambda x: _fp_from_i64(fp.dsize_to_dtype(o.dsize_o[s]), _to_signed_int(o.dsize_i[s], x)), tx) if type(o) is fp.SIMD_FPFromSignedIntegerConverter else
+                                gen_simd_data_fp_1(o, s, lambda f: _fp_to_ui64(fp.dsize_to_dtype(o.dsize_i[s]), f), tf) if type(o) is fp.SIMD_FPToIntegerConverter else
+                                gen_simd_data_fp_1(o, s, lambda f: _fp_to_i64(fp.dsize_to_dtype(o.dsize_i[s]), f), tf) if type(o) is fp.SIMD_FPToSignedIntegerConverter else
+                                gen_simd_data_fp_1(o, s, lambda f: _fp_to_fp(fp.dsize_to_dtype(o.dsize_i[s]), fp.dsize_to_dtype(o.dsize_o[s]), f), tf) if type(o) is fp.SIMD_FPConverter else
+                                gen_simd_data_fp_1(o, s, lambda f: _fp_frec7(fp.dsize_to_dtype(o.dsize_i[s]), f), tf) if type(o) is riscv.SIMD_FRec7 else
+                                gen_simd_data_fp_1(o, s, lambda f: _fp_frsqrt7(fp.dsize_to_dtype(o.dsize_i[s]), f), tf) if type(o) is riscv.SIMD_FRSqrt7 else
+                                0
+                            ) if isinstance(o, SIMD_Operator) else (
                                 x if type(o) is hw.Buffer else
                                 (~x) if type(o) is hw.Inverter else
                                 (x & y) if type(o) is hw.ANDGate else
