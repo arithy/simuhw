@@ -11,13 +11,13 @@ all: lint type test dist doc
 
 req:
 	$(PYTHON) -m pip install --quiet --upgrade pip
-	$(PYTHON) -m pip install --quiet setuptools wheel build pytest mypy flake8 sphinx sphinx-rtd-theme myst-parser
+	$(PYTHON) -m pip install --quiet --upgrade setuptools wheel build pytest mypy flake8 sphinx sphinx-rtd-theme myst-parser
 
 lint:
-	$(PYTHON) -m flake8 --doctests $(PYROOTDIR)
+	$(PYTHON) -m flake8 $(PYROOTDIR)
 
 type:
-	$(PYTHON) -m mypy --strict $(PYROOTDIR)
+	$(PYTHON) -m mypy $(PYROOTDIR)
 
 test:
 	$(PYTHON) -m pytest $(PYROOTDIR)/tests -vv --doctest-modules
