@@ -36,7 +36,7 @@ class Operator(Device, metaclass=ABCMeta):
         Args:
             width_i: The input word width in bits.
             width_o: The output word width in bits.
-            ninputs: The number of the input ports.
+            ninputs: The number of the operand input ports.
 
         """
         super().__init__()
@@ -51,9 +51,9 @@ class Operator(Device, metaclass=ABCMeta):
         self._mask: int = (1 << width_o) - 1
         """The bit mask for the output."""
         self._ports_i: tuple[InputPort, ...] = tuple(InputPort(width_i) for _ in range(ninputs))
-        """The input ports."""
+        """The operand input ports."""
         self._port_o: OutputPort = OutputPort(width_o)
-        """The output port."""
+        """The result output port."""
 
     def __str__(self) -> str:
         return f'{self.__class__.__name__}({self._width_i} bits -> {self._width_o} bits)'
@@ -70,12 +70,12 @@ class Operator(Device, metaclass=ABCMeta):
 
     @property
     def ports_i(self) -> tuple[InputPort, ...]:
-        """The input ports."""
+        """The operand input ports."""
         return self._ports_i
 
     @property
     def port_o(self) -> OutputPort:
-        """The output port."""
+        """The result output port."""
         return self._port_o
 
     def reset(self) -> None:
@@ -102,7 +102,7 @@ class UnaryOperator(Operator, metaclass=ABCMeta):
 
     @property
     def port_i(self) -> InputPort:
-        """The input port."""
+        """The operand input port."""
         return self._ports_i[0]
 
 
@@ -122,12 +122,12 @@ class BinaryOperator(Operator, metaclass=ABCMeta):
 
     @property
     def port_i0(self) -> InputPort:
-        """The input port 0."""
+        """The operand input port 0."""
         return self._ports_i[0]
 
     @property
     def port_i1(self) -> InputPort:
-        """The input port 1."""
+        """The operand input port 1."""
         return self._ports_i[1]
 
 
@@ -147,17 +147,17 @@ class TernaryOperator(Operator, metaclass=ABCMeta):
 
     @property
     def port_i0(self) -> InputPort:
-        """The input port 0."""
+        """The operand input port 0."""
         return self._ports_i[0]
 
     @property
     def port_i1(self) -> InputPort:
-        """The input port 1."""
+        """The operand input port 1."""
         return self._ports_i[1]
 
     @property
     def port_i2(self) -> InputPort:
-        """The input port 2."""
+        """The operand input port 2."""
         return self._ports_i[2]
 
 
@@ -171,7 +171,7 @@ class SIMD_Operator(Operator, metaclass=ABCMeta):
             width_i: The total width of input words in bits.
             dsize_i: The selectable input word width or widths in bits.
             width_o: The total width of output words in bits.
-            ninputs: The number of the input ports.
+            ninputs: The number of the operand input ports.
 
         Raises:
             ValueError: If ``width_i`` is not divisible by any of ``dsize_i``, or if ``width_o`` is inconsistent with them.
@@ -242,7 +242,7 @@ class SIMD_UnaryOperator(SIMD_Operator, metaclass=ABCMeta):
 
     @property
     def port_i(self) -> InputPort:
-        """The input port."""
+        """The operand input port."""
         return self._ports_i[0]
 
 
@@ -266,12 +266,12 @@ class SIMD_BinaryOperator(SIMD_Operator, metaclass=ABCMeta):
 
     @property
     def port_i0(self) -> InputPort:
-        """The input port 0."""
+        """The operand input port 0."""
         return self._ports_i[0]
 
     @property
     def port_i1(self) -> InputPort:
-        """The input port 1."""
+        """The operand input port 1."""
         return self._ports_i[1]
 
 
@@ -295,15 +295,15 @@ class SIMD_TernaryOperator(SIMD_Operator, metaclass=ABCMeta):
 
     @property
     def port_i0(self) -> InputPort:
-        """The input port 0."""
+        """The operand input port 0."""
         return self._ports_i[0]
 
     @property
     def port_i1(self) -> InputPort:
-        """The input port 1."""
+        """The operand input port 1."""
         return self._ports_i[1]
 
     @property
     def port_i2(self) -> InputPort:
-        """The input port 2."""
+        """The operand input port 2."""
         return self._ports_i[2]
