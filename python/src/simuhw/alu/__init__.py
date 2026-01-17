@@ -22,8 +22,10 @@
 
 __all__ = [
     'GenericArithmeticLogicUnit',
-    'FullArithmeticLogicUnit', 'SIMD_FullArithmeticLogicUnit'
+    'FullArithmeticLogicUnit', 'SIMD_FullArithmeticLogicUnit',
+    'ArithmeticLogicUnit74181'
 ]
 
 from ._generic import GenericArithmeticLogicUnit
 from ._full import FullArithmeticLogicUnit, SIMD_FullArithmeticLogicUnit
+from ._74181 import ArithmeticLogicUnit74181

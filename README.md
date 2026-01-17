@@ -171,6 +171,7 @@ import simuhw as hw
       - [`alu.GenericArithmeticLogicUnit`](https://arithy.github.io/simuhw/apidoc/simuhw.alu.html#simuhw.alu.GenericArithmeticLogicUnit)
       - [`alu.FullArithmeticLogicUnit`](https://arithy.github.io/simuhw/apidoc/simuhw.alu.html#simuhw.alu.FullArithmeticLogicUnit)
       - [`alu.SIMD_FullArithmeticLogicUnit`](https://arithy.github.io/simuhw/apidoc/simuhw.alu.html#simuhw.alu.SIMD_FullArithmeticLogicUnit)
+      - [`alu.ArithmeticLogicUnit74181`](https://arithy.github.io/simuhw/apidoc/simuhw.alu.html#simuhw.alu.ArithmeticLogicUnit74181)
     - Counter
       - [`counter.SynchronousBinaryCounter74161`](https://arithy.github.io/simuhw/apidoc/simuhw.counter.html#simuhw.counter.SynchronousBinaryCounter74161)
       - [`counter.SynchronousBinaryCounter74163`](https://arithy.github.io/simuhw/apidoc/simuhw.counter.html#simuhw.counter.SynchronousBinaryCounter74163)
