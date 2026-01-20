@@ -23,12 +23,23 @@ $ python -m pip install simuhw
 You can install the development version by the following commands.
 
 ```sh
+$ git clone https://github.com/arithy/simuhw.git
 $ cd simuhw   # the repository root directory
 $ make req
 $ make clean
 $ make dist
 $ python -m pip install --no-index --find-links=./dist simuhw
 ```
+
+### Optional Module
+
+If the module [softfloatpy](https://pypi.org/project/softfloatpy/) is available for the platform you use, it is recommended to install it.
+
+```sh
+$ python -m pip install softfloatpy
+```
+
+Then, you will be able to use the floating-point arithmetic functionality.
 
 ## Usage
 
@@ -44,6 +55,7 @@ $ python -m pip install --no-index --find-links=./dist simuhw
 ### Import of Module
 
 To use SimuHW, import `simuhw` module. An example is shown below.
+
 ```py
 import simuhw as hw
 ```
@@ -237,6 +249,7 @@ import simuhw as hw
    
 1. Start the simulation.
    An example is shown below.
+   
     ```py
     sim.start()
     ```
