@@ -33,9 +33,6 @@ class Simulator:
 
     """
 
-    default_max_iter: int | None = 1000
-    """The default maximum iteration count during the same current time. No limit in iteration if ``None``."""
-
     def __init__(self, devices: Iterable[Device]) -> None:
         """Creates a simulator.
 
@@ -60,7 +57,7 @@ class Simulator:
 
     def start(
         self, *,
-        duration: float | None = None, max_iter: int | None = default_max_iter, show_time: bool = False
+        duration: float | None = None, max_iter: int | None = None, show_time: bool = False
     ) -> None:
         """Starts the simulation.
 
@@ -75,7 +72,7 @@ class Simulator:
 
     def resume(
         self, *,
-        duration: float | None = None, max_iter: int | None = default_max_iter, show_time: bool = False, first: bool = False
+        duration: float | None = None, max_iter: int | None = None, show_time: bool = False, first: bool = False
     ) -> None:
         """Resumes the simulation.
 

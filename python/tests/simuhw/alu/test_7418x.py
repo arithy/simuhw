@@ -245,7 +245,7 @@ def test_ArithmeticLogicUnit74181() -> None:
             q.connect(to[i].port_i)
             q.add_probe(po[i])
         sim: Simulator = Simulator([*ti, *to, dev])
-        sim.start(max_iter=None, show_time=True)
+        sim.start(show_time=True)
         for ro, a in zip(po, t[2]):
             rp: list[tuple[Word, float]] = [a[i] for i in range(len(a)) if i == 0 or a[i][0] != a[i - 1][0]]
             assert len(ro) == len(rp)
@@ -325,7 +325,7 @@ def test_LookAheadCarryGenerator74182() -> None:
             q.connect(to[i].port_i)
             q.add_probe(po[i])
         sim: Simulator = Simulator([*ti, *to, dev])
-        sim.start(max_iter=None, show_time=True)
+        sim.start(show_time=True)
         for ro, a in zip(po, t[2]):
             rp: list[tuple[Word, float]] = [a[i] for i in range(len(a)) if i == 0 or a[i][0] != a[i - 1][0]]
             assert len(ro) == len(rp)
@@ -503,7 +503,7 @@ def test_ArithmeticLogicUnit74181_With74182() -> None:
             *alu, *(d for e in lcg for d in e), *spl,
             cmb, dst_s, dst_m, *(d for f in dst_c for e in f for d in e)
         ])
-        sim.start(max_iter=None, show_time=True)
+        sim.start(show_time=True)
         for ro, a in zip(po, t[2]):
             rp: list[tuple[Word, float]] = [a[i] for i in range(len(a)) if i == 0 or a[i][0] != a[i - 1][0]]
             assert len(ro) == len(rp)

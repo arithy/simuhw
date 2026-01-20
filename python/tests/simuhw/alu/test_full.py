@@ -305,7 +305,7 @@ def test_FullArithmeticLogicUnit() -> None:
         q.connect(to[i].port_i)
         q.add_probe(po[i])
     sim: Simulator = Simulator([*ti, *to, dev])
-    sim.start(max_iter=10000, show_time=True)
+    sim.start(show_time=True)
     for ro, a in zip(po, t[1]):
         rp: list[tuple[Word, float]] = [a[i] for i in range(len(a)) if i == 0 or a[i][0] != a[i - 1][0]]
         assert len(ro) == len(rp)
@@ -533,7 +533,7 @@ def test_SIMD_FullArithmeticLogicUnit() -> None:
         q.connect(to[i].port_i)
         q.add_probe(po[i])
     sim: Simulator = Simulator([*ti, *to, dev])
-    sim.start(max_iter=10000, show_time=True)
+    sim.start(show_time=True)
     for ro, a in zip(po, t[1]):
         rp: list[tuple[Word, float]] = [a[i] for i in range(len(a)) if i == 0 or a[i][0] != a[i - 1][0]]
         assert len(ro) == len(rp)
@@ -755,7 +755,7 @@ def test_FPFullArithmeticLogicUnit() -> None:
         q.connect(to[i].port_i)
         q.add_probe(po[i])
     sim: Simulator = Simulator([*ti, *to, dev])
-    sim.start(max_iter=10000, show_time=True)
+    sim.start(show_time=True)
     for ro, a in zip(po, t[1]):
         rp: list[tuple[Word, float]] = [a[i] for i in range(len(a)) if i == 0 or a[i][0] != a[i - 1][0]]
         assert len(ro) == len(rp)
@@ -1109,7 +1109,7 @@ def test_SIMD_FPFullArithmeticLogicUnit() -> None:
         q.connect(to[i].port_i)
         q.add_probe(po[i])
     sim: Simulator = Simulator([*ti, *to, dev])
-    sim.start(max_iter=10000, show_time=True)
+    sim.start(show_time=True)
     for ro, a in zip(po, t[1]):
         rp: list[tuple[Word, float]] = [a[i] for i in range(len(a)) if i == 0 or a[i][0] != a[i - 1][0]]
         assert len(ro) == len(rp)
